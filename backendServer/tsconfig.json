@@ -2,7 +2,7 @@
   // Visit https://aka.ms/tsconfig to read more about this file
   "compilerOptions": {
     // File Layout
-    "rootDir": "./",
+    "rootDir": "src",
     "outDir": "./dist",
 
     // Environment Settings
@@ -44,6 +44,6 @@
     "esModuleInterop": true, // Essential for importing Express/Cors
     "forceConsistentCasingInFileNames": true
   },
-  "include": ["src/**/*", "prisma.config.ts"], // Tell TS to look at your code AND the prisma config
+  "include": ["src/**/*"], // Tell TS to look at your code AND the prisma config
   "exclude": ["node_modules", "dist"]
 }
