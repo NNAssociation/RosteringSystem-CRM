@@ -6,26 +6,34 @@ on:
   pull_request:
     branches: [master]
 
+# This ensures all 'run' commands happen inside the backendServer folder
+defaults:
+  run:
+    working-directory: backendServer
+
 jobs:
   validate:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout Code
+        uses: actions/checkout@v4
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 22 # Matching your Railway logs
+          node-version: 22
           cache: "npm"
+          # Explicitly point to the lock file in the subfolder for caching
+          cache-dependency-path: backendServer/package-lock.json
 
       - name: Install dependencies
         run: npm install
 
-      - name: Run Linting
-        run: npx tsc --noEmit # Checks for TypeScript errors without building
+      - name: Run Linting (Type Check)
+        run: npx tsc --noEmit
 
       - name: Run Prisma Validation
-        run: npx prisma validate # Ensures schema.prisma is valid
+        run: npx prisma validate
 
       - name: Run Tests
         run: npm test
