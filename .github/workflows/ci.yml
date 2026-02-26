@@ -1,4 +1,4 @@
-name: CI Validation
+name: Backend CI/CD
 
 on:
   push:
