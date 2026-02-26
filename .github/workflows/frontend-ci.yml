@@ -29,5 +29,16 @@ jobs:
       - name: Run Linting
         run: npm run lint
 
+      - name: Type Check (TypeScript)
+        run: npx tsc --noEmit
+
       - name: Run Tests
-        run: npm test # Ensure this command is set in your package.json
+        run: npm test
+
+      - name: Production Build Check
+        run: npm run build
+
+      - name: Trigger Vercel Deploy
+        # Only trigger if the push is to master AND all previous steps passed
+        if: github.ref == 'refs/heads/master' && success()
+        run: curl -X POST ${{ secrets.VERCEL_DEPLOY_HOOK }}
