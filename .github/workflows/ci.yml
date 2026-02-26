@@ -15,7 +15,8 @@ jobs:
   validate:
     runs-on: ubuntu-latest
     env:
-      DATABASE_URL: ${{ secrets.DATABASE_URL }} # This makes it available to all steps
+      DATABASE_URL: ${{ secrets.DATABASE_URL }}
+      DIRECT_URL: ${{ secrets.DIRECT_URL }}
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
