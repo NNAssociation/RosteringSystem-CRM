@@ -15,8 +15,12 @@ jobs:
   validate:
     runs-on: ubuntu-latest
     env:
+      # Secrets from GitHub Settings -> Secrets and variables -> Actions
       DATABASE_URL: ${{ secrets.DATABASE_URL }}
       DIRECT_URL: ${{ secrets.DIRECT_URL }}
+      # Fix for Supabase socket hang up: Skips downloading CLI during CI
+      SUPABASE_SKIP_POSTINSTALL: true
+
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
@@ -26,11 +30,11 @@ jobs:
         with:
           node-version: 22
           cache: "npm"
-          # Explicitly point to the lock file in the subfolder for caching
           cache-dependency-path: backendServer/package-lock.json
 
       - name: Install dependencies
-        run: npm install
+        # Using --prefer-offline helps speed up and avoid some network issues
+        run: npm install --prefer-offline
 
       - name: Run Linting (Type Check)
         run: npx tsc --noEmit
