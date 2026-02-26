@@ -1,0 +1,193 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client"
+  output   = "../generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model User {
+  id        Int      @id @default(autoincrement())
+  email     String   @unique
+  name      String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  isActive  Boolean  @default(true)
+
+  // Many-to-many with Role via UserRole
+  roles UserRole[]
+
+  // One-to-one with UserProfile
+  profile  UserProfile?
+  auditLog AuditLog?
+  userJobs UserJob[]
+}
+
+model UserProfile {
+  id                  Int       @id @default(autoincrement())
+  address             String?
+  avatarUrl           String?
+  bankAccount         Int?
+  bankBSB             String?
+  bankName            String?
+  phoneNumber1        String?
+  phoneNumber2        String?
+  dateOfBirth         DateTime?
+  driverLicense       String?
+  driverLicenseExpiry DateTime?
+  driverLicenseState  String?
+  taxFileNumber       String?
+  occupation          String?
+  maxfatigueMinutes      Int?      @default(300) // default to 8 hours
+  createdAt           DateTime  @default(now())
+  updatedAt           DateTime  @updatedAt
+
+  userId Int  @unique
+  user   User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model Role {
+  id          Int      @id @default(autoincrement())
+  roleName    String   @unique
+  description String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  userRoles UserRole[]
+}
+
+model UserRole {
+  userId Int
+  roleId Int
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  role Role @relation(fields: [roleId], references: [id], onDelete: Cascade)
+
+  @@id([userId, roleId]) // composite primary key
+}
+
+model Customer {
+  id        Int      @id @default(autoincrement())
+  email     String   @unique
+  name      String?
+  address   String?
+  company   String?
+  phone1    String?
+  phone2    String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  isActive  Boolean  @default(true)
+
+  // One-to-many relationship
+  inquiries Inquiry[]
+}
+
+model Inquiry {
+  id        Int      @id @default(autoincrement())
+  subject   String
+  inquiryDetails   String?
+  status    String   @default("OPEN")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  noOfVehicles     Int?      @default(1)
+  passengerCount   Int?      @default(0)
+  tripCount         Int?      @default(1)
+  startDateTime      DateTime
+  startLocation      String
+  endLocation        String
+  endDateTime        DateTime?
+
+  // Foreign key
+  customerId Int
+  customer   Customer @relation(fields: [customerId], references: [id], onDelete: Restrict)
+
+  // One-to-many relationship
+  jobs Job[]
+}
+
+model Job {
+  id               Int       @id @default(autoincrement())
+  driverStatus     Boolean   @default(false)
+  driverStatusAt   DateTime?
+  jobStartLocation String?
+  jobEndLocation   String?
+  jobStartDateTime DateTime?
+  jobEndDateTime   DateTime?
+  jobNotes         String?
+  jobPriority      String?
+  jobCategory      String?
+  status           String    @default("OPEN")
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+  jobStartLat      Float?
+  jobStartLng      Float?
+  jobEndLat        Float?
+  jobEndLng        Float?
+  /// Duration in hours (e.g. 1.5 = 1h 30m)
+  durationHours    Decimal?  @db.Decimal(5, 2)
+
+  inquiry   Inquiry?   @relation(fields: [inquiryId], references: [id])
+  inquiryId Int?
+  fleetJobs FleetJob[]
+  userJobs  UserJob[]
+}
+
+model AuditLog {
+  id        Int      @id @default(autoincrement())
+  action    String
+  entity    String
+  timestamp DateTime @default(now())
+  userId    Int      @unique
+  user      User     @relation(fields: [userId], references: [id], onDelete: Restrict)
+}
+
+model FleetVehicle {
+  id           Int        @id @default(autoincrement())
+  make         String
+  model        String
+  year         Int
+  licensePlate String     @unique
+  regoState    String?
+  vin          String     @unique
+  status       String     @default("ACTIVE")
+  availableFrom DateTime?
+  availableTo   DateTime?
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+  maxPassengers Int?
+  maxCargoVolume Decimal?  @db.Decimal(10, 2) // in cubic
+  fleetJobs    FleetJob[]
+}
+
+// Join table: FleetVehicle <-> Job
+model FleetJob {
+  fleetId Int
+  jobId   Int
+
+  fleet FleetVehicle @relation(fields: [fleetId], references: [id], onDelete: Restrict)
+  job   Job          @relation(fields: [jobId], references: [id], onDelete: Restrict)
+
+  assignedAt DateTime @default(now())
+
+  @@id([fleetId, jobId])
+}
+
+// Join table: User <-> Job
+model UserJob {
+  userId Int
+  jobId  Int
+
+  user User @relation(fields: [userId], references: [id], onDelete: Restrict)
+  job  Job  @relation(fields: [jobId], references: [id], onDelete: Restrict)
+
+  assignedAt DateTime @default(now())
+
+  @@id([userId, jobId])
+}
