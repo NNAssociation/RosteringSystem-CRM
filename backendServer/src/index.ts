@@ -37,7 +37,7 @@ app.listen(port, () => {
 app.use(
   cors({
     origin: [
-      "https://rosteringsystemfrontend.vercel.app/",
+      "https://rosteringsystem-crm-production.up.railway.app",
       `http://localhost:${port}`,
     ], // Add both!
     methods: ["GET", "POST", "PUT", "PATCH", "DELETE"],
