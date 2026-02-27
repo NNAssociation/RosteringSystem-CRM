@@ -21,6 +21,7 @@ app.use(morgan("common"));
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(cors());
+dotenv.config();
 
 /* Routes */
 app.get("/", (req, res) => {
@@ -32,3 +33,14 @@ const port = process.env.PORT || 3000;
 app.listen(port, () => {
   console.log(`Server is running on port - ${port}`);
 });
+
+app.use(
+  cors({
+    origin: [
+      "https://rosteringsystemfrontend.vercel.app/",
+      `http://localhost:${port}`,
+    ], // Add both!
+    methods: ["GET", "POST", "PUT", "PATCH", "DELETE"],
+    credentials: true,
+  }),
+);
