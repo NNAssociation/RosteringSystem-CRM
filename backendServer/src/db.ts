@@ -1,10 +1,11 @@
 // src/db.ts
 import "dotenv/config";
-import { PrismaClient } from "@prisma/client/index.js";
+import pkg from "@prisma/client";
+const { PrismaClient } = pkg;
 import { PrismaPg } from "@prisma/adapter-pg";
 import pg from "pg";
 
-const globalForPrisma = global as unknown as { prisma: PrismaClient };
+const globalForPrisma = global as unknown as { prisma: any };
 
 // Debugging: This will help you see if the variable is actually loading
 if (!process.env.DATABASE_URL) {
