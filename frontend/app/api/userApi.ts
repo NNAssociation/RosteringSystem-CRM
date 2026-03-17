@@ -2,7 +2,8 @@ import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
 import { User } from "../state/user/userSlice";
 
 // Fallback to localhost if the env variable is missing for some reason
-const baseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/";
+const baseUrl =
+  process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8000/";
 console.log("Current API URL:", baseUrl);
 
 export const userApi = createApi({
