@@ -45,6 +45,9 @@ jobs:
       - name: Run Linting (Type Check)
         run: npx tsc --noEmit
 
+      - name: Debug File Structure
+        run: ls -R generated/prisma
+
       - name: Run Prisma Validation
         run: npx prisma validate
 
