@@ -1,14 +1,14 @@
 // src/db.ts
 import "dotenv/config";
-// Import from the alias defined in tsconfig
-import { PrismaClient } from "@prisma/client/index.js";
+import pkg from "@prisma/client/index.js";
 import { PrismaPg } from "@prisma/adapter-pg";
 import pg from "pg";
 
-// Using the actual PrismaClient type for better type safety
-const globalForPrisma = global as unknown as {
-  prisma: PrismaClient | undefined;
-};
+// Destructure PrismaClient from the default package export
+const { PrismaClient } = pkg;
+
+// Correct the type definition for global caching
+const globalForPrisma = global as unknown as { prisma: any };
 
 // Debugging: This will help you see if the variable is actually loading
 if (!process.env.DATABASE_URL) {
