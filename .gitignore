@@ -7,7 +7,7 @@ node_modules/
 **/.env
 
 # Build outputs
-dist/
+dist
 build/
 .next/
 
@@ -65,4 +65,5 @@ next-env.d.ts
 
 # Prisma
 node_modules/.prisma
+generated
 backendServer/generated
