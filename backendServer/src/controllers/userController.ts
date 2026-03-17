@@ -2,7 +2,7 @@ import type { Request, Response, NextFunction } from "express";
 import bcrypt from "bcrypt";
 import HttpError from "../models/errorModel.js";
 import jwt from "jsonwebtoken";
-import { Prisma } from "../../generated/prisma/index.js";
+// import { Prisma } from "@prisma/client";
 
 import { prisma } from "../db.js";
 
@@ -17,7 +17,11 @@ export const getUsers = async (
   console.error("----------------:", "Inside getUsers controller : " + roles);
   //let whereClause = {};
   // 1. Initialize whereClause with the mandatory isActive filter
-  let whereClause: Prisma.UserWhereInput = {
+  // let whereClause: Prisma.UserWhereInput = {
+  //   isActive: true,
+  // };
+
+  let whereClause: any = {
     isActive: true,
   };
 
