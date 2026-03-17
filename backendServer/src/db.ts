@@ -1,6 +1,8 @@
 // src/db.ts
 import "dotenv/config";
-import pkg from "@prisma/client/index.js";
+// Go up one level from 'src' to find 'generated'
+// We use the .js extension because your project is "type": "module"
+import pkg from "../generated/prisma/index.js";
 import { PrismaPg } from "@prisma/adapter-pg";
 import pg from "pg";
 
@@ -20,14 +22,14 @@ if (!process.env.DATABASE_URL) {
 // 1. Setup the connection pool using your Env var
 const pool = new pg.Pool({ connectionString: process.env.DATABASE_URL });
 
-// 2. Create the adapter
-const adapter = new PrismaPg(pool);
+// Bypass the type version mismatch
+const adapter = new PrismaPg(pool as any);
 
 // 3. Pass the adapter to the Client
 export const prisma =
   globalForPrisma.prisma ||
   new PrismaClient({
-    adapter: adapter, // This satisfies the "requires either adapter or accelerateUrl" error
+    adapter: adapter,
     log: ["query", "error", "warn"],
   });
 

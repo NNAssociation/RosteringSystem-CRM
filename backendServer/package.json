@@ -5,10 +5,14 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 0",
-    "build": "prisma generate && rimraf dist && npx tsc",
-    "start": "npm run build && ls -R dist && node dist/index.js",
+    "build_old": "prisma generate && rimraf dist && tsc",
+    "build": "prisma generate && rimraf dist && tsc",
+    "start_old": "npm run build && ls -R dist && node dist/index.js",
+    "start": "node -r tsconfig-paths/register dist/index.js",
     "dev": "tsx watch src/index.ts",
-    "postinstall": "npx prisma generate",
+    "build-run": "npm run build && npm start",
+    "postinstall_old": "npx prisma generate",
+    "postinstall": "prisma generate",
     "seed": "tsx prisma/seed.ts"
   },
   "prisma": {
@@ -29,6 +33,7 @@
     "prisma": "^7.4.1",
     "supabase": "^2.76.15",
     "ts-node-dev": "^2.0.0",
+    "tsconfig-paths": "^4.2.0",
     "tsx": "^4.21.0",
     "typescript": "^5.9.3"
   },
