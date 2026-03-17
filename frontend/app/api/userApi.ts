@@ -1,9 +1,12 @@
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
 import { User } from "../state/user/userSlice";
 
+// Fallback to localhost if the env variable is missing for some reason
+const baseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/";
+
 export const userApi = createApi({
   reducerPath: "userApi",
-  baseQuery: fetchBaseQuery({ baseUrl: "http://localhost:8000/" }),
+  baseQuery: fetchBaseQuery({ baseUrl: baseUrl }),
   tagTypes: ["User"], // Used for automated re-fetching
   endpoints: (builder) => ({
     // GET all users
