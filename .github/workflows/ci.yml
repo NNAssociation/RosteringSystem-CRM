@@ -20,6 +20,8 @@ jobs:
       DIRECT_URL: ${{ secrets.DIRECT_URL }}
       # Fix for Supabase socket hang up: Skips downloading CLI during CI
       SUPABASE_SKIP_POSTINSTALL: true
+      # This addresses the deprecation warning for Node 24
+      FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 
     steps:
       - name: Checkout Code
