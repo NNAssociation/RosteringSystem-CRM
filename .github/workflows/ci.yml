@@ -36,6 +36,9 @@ jobs:
         # Using --prefer-offline helps speed up and avoid some network issues
         run: npm install --prefer-offline
 
+      - name: Generate Prisma Client
+        run: npx prisma generate
+
       - name: Run Linting (Type Check)
         run: npx tsc --noEmit
 
