@@ -2,9 +2,9 @@ name: Backend CI/CD
 
 on:
   push:
-    branches: [master]
+    branches: [master, develop]
   pull_request:
-    branches: [master]
+    branches: [master, develop]
 
 # This ensures all 'run' commands happen inside the backendServer folder
 defaults:
