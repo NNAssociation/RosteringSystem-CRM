@@ -6,12 +6,13 @@
     "outDir": "./dist",
     "baseUrl": ".", // Required for paths to work
     "paths": {
-      "../../generated/prisma/*": ["./generated/prisma/*"]
+      "@prisma/client": ["./generated/prisma/index.d.ts"],
+      "@prisma/client/*": ["./generated/prisma/*"]
     },
 
     // Environment Settings
     // See also https://aka.ms/tsconfig/module
-    "module": "nodenext",
+    "module": "NodeNext",
     "target": "esnext",
     "moduleResolution": "NodeNext",
     "types": [],
@@ -50,5 +51,5 @@
     "forceConsistentCasingInFileNames": true
   },
   "include": ["src/**/*"],
-  "exclude": ["node_modules", "dist", "generated/prisma"]
+  "exclude": ["node_modules", "dist"]
 }
