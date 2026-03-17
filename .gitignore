@@ -64,6 +64,5 @@ next-env.d.ts
 
 
 # Prisma
-
 node_modules/.prisma
 backendServer/generated/prisma
