@@ -4,10 +4,15 @@
     // File Layout
     "rootDir": "src",
     "outDir": "./dist",
+    "baseUrl": ".", // Required for paths to work
+    "paths": {
+      "@prisma/client": ["./generated/prisma/index.d.ts"],
+      "@prisma/client/*": ["./generated/prisma/*"]
+    },
 
     // Environment Settings
     // See also https://aka.ms/tsconfig/module
-    "module": "nodenext",
+    "module": "NodeNext",
     "target": "esnext",
     "moduleResolution": "NodeNext",
     "types": [],
@@ -34,6 +39,7 @@
     // "noPropertyAccessFromIndexSignature": true,
 
     // Recommended Options
+    "allowJs": true,
     "strict": true,
     "jsx": "react-jsx",
     "verbatimModuleSyntax": true,
@@ -44,6 +50,6 @@
     "esModuleInterop": true, // Essential for importing Express/Cors
     "forceConsistentCasingInFileNames": true
   },
-  "include": ["src/**/*"], // Tell TS to look at your code AND the prisma config
+  "include": ["src/**/*", "generated/prisma/index.d.ts"],
   "exclude": ["node_modules", "dist"]
 }

@@ -2,9 +2,12 @@ name: Backend CI/CD
 
 on:
   push:
-    branches: [master]
+    branches: [master, develop]
   pull_request:
-    branches: [master]
+    branches: [master, develop]
+
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 
 # This ensures all 'run' commands happen inside the backendServer folder
 defaults:
@@ -36,8 +39,14 @@ jobs:
         # Using --prefer-offline helps speed up and avoid some network issues
         run: npm install --prefer-offline
 
+      - name: Generate Prisma Client
+        run: npx prisma generate
+
       - name: Run Linting (Type Check)
         run: npx tsc --noEmit
+
+      - name: Debug File Structure
+        run: ls -R generated/prisma
 
       - name: Run Prisma Validation
         run: npx prisma validate

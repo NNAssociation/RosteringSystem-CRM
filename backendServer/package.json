@@ -5,10 +5,18 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 0",
-    "build": "rimraf dist && npx tsc",
-    "start": "npm run build && ls -R dist && node dist/index.js",
+    "build_old": "prisma generate && rimraf dist && tsc",
+    "build": "prisma generate && rimraf dist && tsc",
+    "start_old": "npm run build && ls -R dist && node dist/index.js",
+    "start": "node -r tsconfig-paths/register dist/index.js",
     "dev": "tsx watch src/index.ts",
-    "postinstall": "npx prisma generate"
+    "build-run": "npm run build && npm start",
+    "postinstall_old": "npx prisma generate",
+    "postinstall": "prisma generate",
+    "seed": "tsx prisma/seed.ts"
+  },
+  "prisma": {
+    "seed": "tsx prisma/seed.ts"
   },
   "keywords": [],
   "author": "",
@@ -21,13 +29,16 @@
     "@types/jsonwebtoken": "^9.0.10",
     "@types/morgan": "^1.9.10",
     "@types/node": "^25.3.1",
+    "@types/pg": "^8.18.0",
     "prisma": "^7.4.1",
     "supabase": "^2.76.15",
     "ts-node-dev": "^2.0.0",
+    "tsconfig-paths": "^4.2.0",
     "tsx": "^4.21.0",
     "typescript": "^5.9.3"
   },
   "dependencies": {
+    "@prisma/adapter-pg": "^7.4.2",
     "@prisma/client": "^7.4.1",
     "bcrypt": "^6.0.0",
     "cors": "^2.8.6",
@@ -38,6 +49,7 @@
     "http-status-codes": "^2.3.0",
     "jsonwebtoken": "^9.0.3",
     "morgan": "^1.10.1",
+    "pg": "^8.20.0",
     "zod": "^4.3.6"
   }
 }

@@ -4,7 +4,7 @@ import bodyParser from "body-parser";
 import cors from "cors";
 import helmet from "helmet";
 import morgan from "morgan";
-// import userRoutes from "./routes/userRoutes.js";
+import userRoutes from "./routes/userRoutes.js";
 // import customerRoutes from "./routes/customerRoutes.js";
 // import jobRoutes from "./routes/jobRoutes.js";
 // import { notFound, errorHandler } from "./middleware/errorMiddleware.js";
@@ -25,8 +25,14 @@ dotenv.config();
 
 /* Routes */
 app.get("/", (req, res) => {
-  res.send("--This is home route--");
+  res.send("---This is home route---");
 });
+
+app.use("/users", userRoutes);
+
+// //Error handling middlewares should come after routes
+// app.use(notFound);
+// app.use(errorHandler);
 
 //Server setup
 const port = process.env.PORT || 3000;
