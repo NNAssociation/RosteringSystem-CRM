@@ -11,6 +11,36 @@ export interface User {
     roles?: UserRole[];
 }
 
+export interface CreateUserRequest {
+    email: string;
+    name?: string;
+    phone?: string;
+    phoneNumber1?: string;
+    phoneNumber2?: string;
+    address?: string;
+    licenseNumber?: string;
+    driverLicense?: string;
+    driverLicenseExpiry?: string;
+    driverLicenseState?: string;
+    taxFileNumber?: string;
+    bankName?: string;
+    bankBSB?: string;
+    bankAccount?: string | number;
+    dateOfBirth?: string;
+    occupation?: string;
+    maxfatigueMinutes?: number;
+    avatarUrl?: string;
+    roleName?: string;
+    status?: string;
+}
+
+export interface ApiResponseError {
+    data?: {
+        error?: string;
+        message?: string;
+    };
+}
+
 export interface UserProfile {
     id: number;
     address?: string;
@@ -98,6 +128,15 @@ export interface Vehicle {
     status: 'Available' | 'Maintenance' | 'On Trip' | string;
     availableFrom?: string;
     availableTo?: string;
+    fleetJobs?: Array<{
+        jobId: number | string;
+        job?: {
+            status?: string;
+            jobStartDateTime?: string;
+            jobStartLocation?: string;
+            jobEndLocation?: string;
+        };
+    }>;
     createdAt?: string;
     updatedAt?: string;
 }

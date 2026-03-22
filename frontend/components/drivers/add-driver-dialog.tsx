@@ -2,6 +2,7 @@
 
 import React, { useState } from 'react';
 import { useCreateUserMutation } from '@/app/api/userApi';
+import { ApiResponseError } from '@/app/types';
 import { DialogBox } from "@/components/shared/dialog-box";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -39,9 +40,9 @@ export function AddDriverDialog() {
                 driverLicenseExpiry: '',
             });
             toast.success("Driver added successfully!");
-        } catch (error: any) {
+        } catch (error: unknown) {
             console.error("Failed to add driver:", error);
-            const errorMessage = error?.data?.error || "Failed to add driver.";
+            const errorMessage = (error as ApiResponseError)?.data?.error || "Failed to add driver.";
             toast.error(errorMessage);
         }
     };

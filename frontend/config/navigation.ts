@@ -1,12 +1,9 @@
 import WorkOutlineIcon from "@mui/icons-material/WorkOutline";
 import DashboardOutlinedIcon from "@mui/icons-material/DashboardOutlined";
-import CalendarMonthOutlinedIcon from "@mui/icons-material/CalendarMonthOutlined";
-import GroupsOutlinedIcon from "@mui/icons-material/GroupsOutlined";
 import DirectionsBusOutlinedIcon from "@mui/icons-material/DirectionsBusOutlined";
 import SettingsOutlinedIcon from "@mui/icons-material/SettingsOutlined";
 import PersonIcon from "@mui/icons-material/Person";
 import DriveEtaIcon from "@mui/icons-material/DriveEta";
-import ContactSupportIcon from "@mui/icons-material/ContactSupport";
 import type { NavItem } from "@/types";
 
 export const mainNavItems: NavItem[] = [

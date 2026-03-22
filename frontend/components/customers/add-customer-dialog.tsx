@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useCreateCustomerMutation } from '@/app/api/customersApi';
+import { ApiResponseError } from '@/app/types';
 import { DialogBox } from "@/components/shared/dialog-box";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -35,9 +36,9 @@ export function AddCustomerDialog() {
                 address: '',
             });
             toast.success("Customer added successfully!");
-        } catch (error: any) {
+        } catch (error: unknown) {
             console.error("Failed to add customer:", error);
-            const errorMessage = error?.data?.error || "Failed to add customer.";
+            const errorMessage = (error as ApiResponseError)?.data?.error || "Failed to add customer.";
             toast.error(errorMessage);
         }
     };

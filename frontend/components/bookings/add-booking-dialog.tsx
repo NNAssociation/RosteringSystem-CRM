@@ -2,6 +2,7 @@
 
 import React, { useState } from 'react';
 import { useCreateBookingMutation } from '@/app/api/bookingsApi';
+import { ApiResponseError } from '@/app/types';
 import { DialogBox } from "@/components/shared/dialog-box";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -44,9 +45,9 @@ export function AddBookingDialog() {
                 startTime: '09:00',
             });
             toast.success("Booking created successfully!");
-        } catch (error: any) {
+        } catch (error: unknown) {
             console.error("Failed to add booking:", error);
-            const errorMessage = error?.data?.error || "Failed to add booking.";
+            const errorMessage = (error as ApiResponseError)?.data?.error || "Failed to add booking.";
             toast.error(errorMessage);
         }
     };

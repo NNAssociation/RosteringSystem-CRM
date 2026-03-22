@@ -1,6 +1,6 @@
 "use client";
 
-import React, { use } from "react";
+import React from "react";
 import { useEffect } from "react";
 import { useHeader } from "@/providers/header-provider";
 

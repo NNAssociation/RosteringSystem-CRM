@@ -9,7 +9,6 @@ import {
   UserCheck,
   TrendingUp,
   Clock,
-  CheckCircle2,
   AlertCircle,
   Plus,
   ArrowRight
@@ -28,7 +27,7 @@ import {
   Legend
 } from "recharts";
 
-import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -47,7 +46,7 @@ import { useGetCustomersQuery } from "../api/customersApi";
 import { useGetDriversQuery } from "../api/driversApi";
 import { useGetVehiclesQuery } from "../api/fleetApi";
 import { useGetUsersQuery } from "../api/userApi";
-import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
+import { ChartContainer, ChartTooltipContent } from "@/components/ui/chart";
 import Link from "next/link";
 
 // Animation variants
@@ -76,7 +75,7 @@ export default function Dashboard() {
   const { data: customers = [], isLoading: isLoadingCustomers } = useGetCustomersQuery();
   const { data: drivers = [], isLoading: isLoadingDrivers } = useGetDriversQuery();
   const { data: vehicles = [], isLoading: isLoadingVehicles } = useGetVehiclesQuery();
-  const { data: users = [], isLoading: isLoadingUsers } = useGetUsersQuery();
+  const { isLoading: isLoadingUsers } = useGetUsersQuery();
 
   // Loading state
   const isLoading = isLoadingBookings || isLoadingCustomers || isLoadingDrivers || isLoadingVehicles || isLoadingUsers;
@@ -164,7 +163,7 @@ export default function Dashboard() {
             Operations Dashboard
           </h1>
           <p className="text-slate-500 dark:text-slate-400 mt-1">
-            Welcome back! Here's what's happening today in the system.
+            Welcome back! Here&apos;s what&apos;s happening today in the system.
           </p>
         </div>
         <div className="flex items-center gap-3">

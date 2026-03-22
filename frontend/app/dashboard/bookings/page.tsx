@@ -1,9 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useMemo } from "react";
-import { useSelector } from "react-redux";
 import { useGetBookingsQuery } from "@/app/api/bookingsApi";
-import { RootState, AppDispatch } from "@/app/state/store";
 import { useHeader } from "@/providers/header-provider";
 import { BookingsTable } from "@/components/bookings/booking-table";
 import { AddBookingDialog } from "@/components/bookings/add-booking-dialog";
@@ -15,7 +13,6 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import {
   Search,
-  CalendarMonth,
   FileDownload,
   KeyboardArrowDown
 } from "@mui/icons-material";

@@ -153,7 +153,7 @@ export function DriversTable({
                 <BadgeIcon style={{ fontSize: '32px' }} className="text-slate-200" />
             </div>
             <p className="text-2xl font-semibold text-slate-900 tracking-tight">No drivers found</p>
-            <p className="text-slate-400 font-medium max-w-xs mx-auto text-center text-sm">Try adjusting your search filters to find what you're looking for.</p>
+            <p className="text-slate-400 font-medium max-w-xs mx-auto text-center text-sm">Try adjusting your search filters to find what you&apos;re looking for.</p>
         </div>
     );
 

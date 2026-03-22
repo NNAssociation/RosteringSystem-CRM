@@ -27,9 +27,12 @@ export function Header() {
   );
   const [isCalendarOpen, setIsCalendarOpen] = useState(false);
 
-  useEffect(() => {
+  const [prevConfigDate, setPrevConfigDate] = useState(config.date);
+
+  if (config.date !== prevConfigDate) {
+    setPrevConfigDate(config.date);
     setSelectedDate(config.date instanceof Date ? config.date : new Date());
-  }, [config.date]);
+  }
 
   const handleDateSelect = (date: Date | undefined) => {
     if (date) {

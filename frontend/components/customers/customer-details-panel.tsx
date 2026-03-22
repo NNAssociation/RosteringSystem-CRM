@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useUpdateCustomerMutation, useDeleteCustomerMutation } from '@/app/api/customersApi';
-import { Customer } from '@/app/state/customers/customersSlice';
+import { Customer, ApiResponseError } from '@/app/types';
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -84,9 +84,9 @@ export function CustomerDetailsPanel({ customer, onClose }: CustomerDetailsPanel
             }).unwrap();
             toast.success("Customer updated successfully");
             setIsEditing(false);
-        } catch (error: any) {
+        } catch (error: unknown) {
             console.error("Failed to update customer:", error);
-            const errorMessage = error?.data?.error || "Failed to update customer.";
+            const errorMessage = (error as ApiResponseError)?.data?.error || "Failed to update customer.";
             toast.error(errorMessage);
         } finally {
             setIsUpdating(false);
@@ -98,9 +98,9 @@ export function CustomerDetailsPanel({ customer, onClose }: CustomerDetailsPanel
             await deleteCustomer(customer.id).unwrap();
             toast.success("Customer deleted successfully");
             onClose();
-        } catch (error: any) {
+        } catch (error: unknown) {
             console.error("Failed to delete customer:", error);
-            toast.error(error?.data?.error || "Failed to delete customer.");
+            toast.error((error as ApiResponseError)?.data?.error || "Failed to delete customer.");
         }
     };
 

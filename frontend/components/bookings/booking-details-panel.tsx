@@ -23,7 +23,7 @@ import {
     Notes
 } from "@mui/icons-material";
 import { format } from "date-fns";
-import { Booking } from "@/app/types";
+import { Booking, ApiResponseError } from "@/app/types";
 import { cn } from "@/lib/utils";
 import { SidePanel } from "@/components/shared/side-panel";
 import { Tabs, TabContent } from "@/components/ui/tabs";
@@ -67,7 +67,10 @@ export function BookingDetailsPanel({ booking, onClose }: BookingDetailsPanelPro
         endTime: '',
     });
 
-    useEffect(() => {
+    // Sync editForm with booking during render
+    const [prevBooking, setPrevBooking] = useState<Booking | null>(null);
+    if (booking !== prevBooking) {
+        setPrevBooking(booking);
         if (booking) {
             setEditForm({
                 customerName: booking.customerName,
@@ -86,7 +89,7 @@ export function BookingDetailsPanel({ booking, onClose }: BookingDetailsPanelPro
             });
             setIsEditing(false);
         }
-    }, [booking]);
+    }
 
     if (!booking) return null;
 
@@ -119,9 +122,9 @@ export function BookingDetailsPanel({ booking, onClose }: BookingDetailsPanelPro
             }).unwrap();
             toast.success("Booking updated successfully");
             setIsEditing(false);
-        } catch (error: any) {
+        } catch (error: unknown) {
             console.error("Failed to update booking:", error);
-            const errorMessage = error?.data?.error || "Failed to update booking.";
+            const errorMessage = (error as ApiResponseError)?.data?.error || "Failed to update booking.";
             toast.error(errorMessage);
         } finally {
             setIsUpdating(false);
@@ -133,9 +136,9 @@ export function BookingDetailsPanel({ booking, onClose }: BookingDetailsPanelPro
             await deleteBooking(booking.id).unwrap();
             toast.success("Booking deleted successfully");
             onClose();
-        } catch (error: any) {
+        } catch (error: unknown) {
             console.error("Failed to delete booking:", error);
-            toast.error(error?.data?.error || "Failed to delete booking.");
+            toast.error((error as ApiResponseError)?.data?.error || "Failed to delete booking.");
         }
     };
 
@@ -471,7 +474,7 @@ export function BookingDetailsPanel({ booking, onClose }: BookingDetailsPanelPro
                             ) : (
                                 <div className="p-6 rounded-2xl bg-amber-50/30 border border-amber-100 min-h-[100px] relative">
                                     <p className="text-sm font-medium text-slate-600 leading-relaxed italic pr-4">
-                                        "{booking.bookingDetails || "No additional requirements provided for this trip."}"
+                                        &quot;{booking.bookingDetails || "No additional requirements provided for this trip."}&quot;
                                     </p>
                                     <Notes className="absolute top-4 right-4 text-amber-200" style={{ fontSize: '24px' }} />
                                 </div>

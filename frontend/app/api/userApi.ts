@@ -1,5 +1,5 @@
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
-import { User } from "../types";
+import { User, Driver, CreateUserRequest } from "../types";
 
 // Fallback to localhost if the env variable is missing for some reason
 const baseUrl =
@@ -18,9 +18,9 @@ export const userApi = createApi({
     }),
 
     // GET drivers specifically (to sync with creation)
-    getDrivers: builder.query<any[], void>({
+    getDrivers: builder.query<Driver[], void>({
       query: () => "users?roles=DRIVER",
-      transformResponse: (response: any[]) => {
+      transformResponse: (response: User[]) => {
         return response.map(user => ({
           id: user.id,
           name: user.name,
@@ -28,7 +28,7 @@ export const userApi = createApi({
           status: user.isActive ? "Active" : "Inactive",
           joinedDate: user.createdAt?.split('T')[0],
           ...user.profile // Flatten profile fields (phoneNumber1, driverLicense, etc.)
-        }));
+        })) as Driver[];
       },
       providesTags: ["User"], // Shares same tag so createUser invalidates it
     }),
@@ -40,7 +40,7 @@ export const userApi = createApi({
     }),
 
     // POST create user
-    createUser: builder.mutation<User, Partial<User>>({
+    createUser: builder.mutation<User, CreateUserRequest>({
       query: (body) => ({
         url: "users",
         method: "POST",

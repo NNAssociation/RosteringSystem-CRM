@@ -2,6 +2,7 @@
 
 import React, { useState } from 'react';
 import { useCreateVehicleMutation } from '@/app/api/fleetApi';
+import { ApiResponseError } from '@/app/types';
 import { DialogBox } from "@/components/shared/dialog-box";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -32,11 +33,11 @@ export function AddFleetDialog() {
                 year: parseInt(formData.year) || 2024,
                 status: 'ACTIVE',
                 maxPassengers: parseInt(formData.maxPassengers) || 4,
-                maxCargoVolume: formData.maxCargoVolume ? parseFloat(formData.maxCargoVolume) : null,
+                maxCargoVolume: formData.maxCargoVolume ? parseFloat(formData.maxCargoVolume) : undefined,
                 regoState: formData.regoState,
                 vin: formData.vin,
-                availableFrom: formData.availableFrom || null,
-                availableTo: formData.availableTo || null,
+                availableFrom: formData.availableFrom || undefined,
+                availableTo: formData.availableTo || undefined,
             }).unwrap();
             setIsOpen(false);
             setFormData({
@@ -52,9 +53,9 @@ export function AddFleetDialog() {
                 availableTo: '',
             });
             toast.success("Vehicle added successfully!");
-        } catch (error: any) {
+        } catch (error: unknown) {
             console.error("Failed to add vehicle:", error);
-            const errorMessage = error?.data?.error || "Failed to add vehicle.";
+            const errorMessage = (error as ApiResponseError)?.data?.error || "Failed to add vehicle.";
             toast.error(errorMessage);
         }
     };

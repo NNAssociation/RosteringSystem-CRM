@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { useUpdateUserMutation, useDeleteUserMutation } from '@/app/api/userApi';
-import { Driver } from '@/app/state/drivers/driversSlice';
+import { Driver, ApiResponseError } from '@/app/types';
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -69,29 +69,30 @@ export function DriverDetailsPanel({ driver, onClose }: DriverDetailsPanelProps)
         status: '',
     });
 
-    useEffect(() => {
-        if (driver) {
-            setEditForm({
-                name: driver.name || '',
-                email: driver.email || '',
-                phoneNumber1: driver.phoneNumber1 || '',
-                phoneNumber2: driver.phoneNumber2 || '',
-                address: driver.address || '',
-                driverLicense: driver.driverLicense || '',
-                driverLicenseExpiry: driver.driverLicenseExpiry || '',
-                driverLicenseState: driver.driverLicenseState || '',
-                taxFileNumber: driver.taxFileNumber || '',
-                occupation: driver.occupation || 'Driver',
-                maxfatigueMinutes: (driver.maxfatigueMinutes || 600).toString(),
-                bankName: driver.bankName || '',
-                bankBSB: driver.bankBSB || '',
-                bankAccount: (driver.bankAccount || '').toString(),
-                dateOfBirth: driver.dateOfBirth ? (driver.dateOfBirth.includes('T') ? driver.dateOfBirth.split('T')[0] : driver.dateOfBirth) : '',
-                status: driver.status || '',
-            });
-            setIsEditing(false);
-        }
-    }, [driver]);
+    const [prevDriverId, setPrevDriverId] = useState<number | string | null>(driver?.id || null);
+
+    if (driver && driver.id !== prevDriverId) {
+        setPrevDriverId(driver.id);
+        setEditForm({
+            name: driver.name || '',
+            email: driver.email || '',
+            phoneNumber1: driver.phoneNumber1 || '',
+            phoneNumber2: driver.phoneNumber2 || '',
+            address: driver.address || '',
+            driverLicense: driver.driverLicense || '',
+            driverLicenseExpiry: driver.driverLicenseExpiry || '',
+            driverLicenseState: driver.driverLicenseState || '',
+            taxFileNumber: driver.taxFileNumber || '',
+            occupation: driver.occupation || 'Driver',
+            maxfatigueMinutes: (driver.maxfatigueMinutes || 600).toString(),
+            bankName: driver.bankName || '',
+            bankBSB: driver.bankBSB || '',
+            bankAccount: (driver.bankAccount || '').toString(),
+            dateOfBirth: driver.dateOfBirth ? (driver.dateOfBirth.includes('T') ? driver.dateOfBirth.split('T')[0] : driver.dateOfBirth) : '',
+            status: driver.status || '',
+        });
+        setIsEditing(false);
+    }
 
     if (!driver) return null;
 
@@ -107,9 +108,9 @@ export function DriverDetailsPanel({ driver, onClose }: DriverDetailsPanelProps)
             }).unwrap();
             toast.success("Driver updated successfully");
             setIsEditing(false);
-        } catch (error: any) {
+        } catch (error: unknown) {
             console.error("Failed to update driver:", error);
-            const errorMessage = error?.data?.error || "Failed to update driver.";
+            const errorMessage = (error as ApiResponseError)?.data?.error || "Failed to update driver.";
             toast.error(errorMessage);
         }
     };
@@ -119,9 +120,9 @@ export function DriverDetailsPanel({ driver, onClose }: DriverDetailsPanelProps)
             await deleteUser(driver.id as number).unwrap();
             toast.success("Driver deleted successfully");
             onClose();
-        } catch (error: any) {
+        } catch (error: unknown) {
             console.error("Failed to delete driver:", error);
-            toast.error(error?.data?.error || "Failed to delete driver.");
+            toast.error((error as ApiResponseError)?.data?.error || "Failed to delete driver.");
         }
     };
 
