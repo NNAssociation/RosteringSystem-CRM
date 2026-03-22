@@ -1,0 +1,27 @@
+import WorkOutlineIcon from "@mui/icons-material/WorkOutline";
+import DashboardOutlinedIcon from "@mui/icons-material/DashboardOutlined";
+import DirectionsBusOutlinedIcon from "@mui/icons-material/DirectionsBusOutlined";
+import SettingsOutlinedIcon from "@mui/icons-material/SettingsOutlined";
+import PersonIcon from "@mui/icons-material/Person";
+import DriveEtaIcon from "@mui/icons-material/DriveEta";
+import type { NavItem } from "@/types";
+
+export const mainNavItems: NavItem[] = [
+  { name: "Dashboard", icon: DashboardOutlinedIcon, href: "/dashboard" },
+  {
+    name: "Drivers",
+    icon: DriveEtaIcon,
+    href: "/dashboard/drivers",
+  },
+  { name: "Customers", icon: PersonIcon, href: "/dashboard/customers" },
+  {
+    name: "Fleet Ops",
+    icon: DirectionsBusOutlinedIcon,
+    href: "/dashboard/fleet-ops",
+  },
+  { name: "Bookings", icon: WorkOutlineIcon, href: "/dashboard/bookings" },
+];
+
+export const secondaryNavItems: NavItem[] = [
+  { name: "Settings", icon: SettingsOutlinedIcon, href: "/dashboard/settings" },
+];

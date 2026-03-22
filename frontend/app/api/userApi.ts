@@ -1,5 +1,5 @@
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
-import { User } from "../state/user/userSlice";
+import { User, Driver, CreateUserRequest } from "../types";
 
 // Fallback to localhost if the env variable is missing for some reason
 const baseUrl =
@@ -17,6 +17,22 @@ export const userApi = createApi({
       providesTags: ["User"],
     }),
 
+    // GET drivers specifically (to sync with creation)
+    getDrivers: builder.query<Driver[], void>({
+      query: () => "users?roles=DRIVER",
+      transformResponse: (response: User[]) => {
+        return response.map(user => ({
+          id: user.id,
+          name: user.name,
+          email: user.email,
+          status: user.isActive ? "Active" : "Inactive",
+          joinedDate: user.createdAt?.split('T')[0],
+          ...user.profile // Flatten profile fields (phoneNumber1, driverLicense, etc.)
+        })) as Driver[];
+      },
+      providesTags: ["User"], // Shares same tag so createUser invalidates it
+    }),
+
     // GET single user
     getUserById: builder.query<User, number>({
       query: (id) => `users/${id}`,
@@ -24,7 +40,7 @@ export const userApi = createApi({
     }),
 
     // POST create user
-    createUser: builder.mutation<User, Partial<User>>({
+    createUser: builder.mutation<User, CreateUserRequest>({
       query: (body) => ({
         url: "users",
         method: "POST",
@@ -34,7 +50,7 @@ export const userApi = createApi({
     }),
 
     // PATCH update user
-    updateUser: builder.mutation<User, { id: number; data: Partial<User> }>({
+    updateUser: builder.mutation<User, { id: number; data: Partial<User & CreateUserRequest> }>({
       query: ({ id, data }) => ({
         url: `users/${id}`,
         method: "PATCH",
@@ -59,6 +75,7 @@ export const userApi = createApi({
 
 export const {
   useGetUsersQuery,
+  useGetDriversQuery,
   useGetUserByIdQuery,
   useCreateUserMutation,
   useUpdateUserMutation,
