@@ -5,8 +5,9 @@ import cors from "cors";
 import helmet from "helmet";
 import morgan from "morgan";
 import userRoutes from "./routes/userRoutes.js";
-// import customerRoutes from "./routes/customerRoutes.js";
-// import jobRoutes from "./routes/jobRoutes.js";
+import customerRoutes from "./routes/customerRoutes.js";
+import fleetRoutes from "./routes/fleetRoutes.js";
+import bookingRoutes from "./routes/bookingRoutes.js";
 // import { notFound, errorHandler } from "./middleware/errorMiddleware.js";
 
 //Router imports
@@ -20,8 +21,18 @@ app.use(helmet.crossOriginResourcePolicy({ policy: "cross-origin" }));
 app.use(morgan("common"));
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
-app.use(cors());
-dotenv.config();
+
+const port = process.env.PORT || 3000;
+app.use(
+  cors({
+    origin: [
+      "https://rosteringsystem-crm-production.up.railway.app",
+      `http://localhost:${port}`,
+    ],
+    methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+    credentials: true,
+  }),
+);
 
 /* Routes */
 app.get("/", (req, res) => {
@@ -29,24 +40,15 @@ app.get("/", (req, res) => {
 });
 
 app.use("/users", userRoutes);
+app.use("/customers", customerRoutes);
+app.use("/fleet", fleetRoutes);
+app.use("/bookings", bookingRoutes);
 
 // //Error handling middlewares should come after routes
 // app.use(notFound);
 // app.use(errorHandler);
 
 //Server setup
-const port = process.env.PORT || 3000;
 app.listen(port, () => {
   console.log(`Server is running on port - ${port}`);
 });
-
-app.use(
-  cors({
-    origin: [
-      "https://rosteringsystem-crm-production.up.railway.app",
-      `http://localhost:${port}`,
-    ], // Add both!
-    methods: ["GET", "POST", "PUT", "PATCH", "DELETE"],
-    credentials: true,
-  }),
-);
