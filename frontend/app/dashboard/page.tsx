@@ -164,7 +164,7 @@ export default function Dashboard() {
             Operations Dashboard
           </h1>
           <p className="text-slate-500 dark:text-slate-400 mt-1">
-            Welcome back! Here&apos;s what&apos;s happening today in the system.
+            Welcome back! Here's what's happening today in the system.
           </p>
         </div>
         <div className="flex items-center gap-3">

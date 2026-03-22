@@ -1,5 +1,5 @@
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
-import { User, Driver } from "../types";
+import { User } from "../types";
 
 // Fallback to localhost if the env variable is missing for some reason
 const baseUrl =
@@ -18,9 +18,9 @@ export const userApi = createApi({
     }),
 
     // GET drivers specifically (to sync with creation)
-    getDrivers: builder.query<Driver[], void>({
+    getDrivers: builder.query<any[], void>({
       query: () => "users?roles=DRIVER",
-      transformResponse: (response: User[]) => {
+      transformResponse: (response: any[]) => {
         return response.map(user => ({
           id: user.id,
           name: user.name,

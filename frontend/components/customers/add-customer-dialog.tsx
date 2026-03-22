@@ -35,9 +35,8 @@ export function AddCustomerDialog() {
                 address: '',
             });
             toast.success("Customer added successfully!");
-        } catch (e) {
-            const error = e as { data?: { error?: string } };
-            console.error("Failed to add customer:", e);
+        } catch (error: any) {
+            console.error("Failed to add customer:", error);
             const errorMessage = error?.data?.error || "Failed to add customer.";
             toast.error(errorMessage);
         }

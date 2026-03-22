@@ -9,7 +9,10 @@ import { toast } from "react-hot-toast";
 import {
     MailOutline,
     Edit,
+    Print,
     Cancel,
+    CheckCircle,
+    ErrorOutline,
     Save,
     Close,
     History,
@@ -95,7 +98,7 @@ export function BookingDetailsPanel({ booking, onClose }: BookingDetailsPanelPro
                 data: { status: 'Cancelled' }
             }).unwrap();
             toast.success("Booking cancelled successfully");
-        } catch {
+        } catch (error) {
             toast.error("Failed to cancel booking");
         } finally {
             setIsUpdating(false);
@@ -116,9 +119,8 @@ export function BookingDetailsPanel({ booking, onClose }: BookingDetailsPanelPro
             }).unwrap();
             toast.success("Booking updated successfully");
             setIsEditing(false);
-        } catch (e) {
-            const error = e as { data?: { error?: string } };
-            console.error("Failed to update booking:", e);
+        } catch (error: any) {
+            console.error("Failed to update booking:", error);
             const errorMessage = error?.data?.error || "Failed to update booking.";
             toast.error(errorMessage);
         } finally {
@@ -131,9 +133,8 @@ export function BookingDetailsPanel({ booking, onClose }: BookingDetailsPanelPro
             await deleteBooking(booking.id).unwrap();
             toast.success("Booking deleted successfully");
             onClose();
-        } catch (e) {
-            const error = e as { data?: { error?: string } };
-            console.error("Failed to delete booking:", e);
+        } catch (error: any) {
+            console.error("Failed to delete booking:", error);
             toast.error(error?.data?.error || "Failed to delete booking.");
         }
     };
@@ -470,7 +471,7 @@ export function BookingDetailsPanel({ booking, onClose }: BookingDetailsPanelPro
                             ) : (
                                 <div className="p-6 rounded-2xl bg-amber-50/30 border border-amber-100 min-h-[100px] relative">
                                     <p className="text-sm font-medium text-slate-600 leading-relaxed italic pr-4">
-                                        &quot;{booking.bookingDetails || "No additional requirements provided for this trip."}&quot;
+                                        "{booking.bookingDetails || "No additional requirements provided for this trip."}"
                                     </p>
                                     <Notes className="absolute top-4 right-4 text-amber-200" style={{ fontSize: '24px' }} />
                                 </div>

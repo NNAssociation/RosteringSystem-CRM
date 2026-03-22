@@ -52,9 +52,8 @@ export function AddFleetDialog() {
                 availableTo: '',
             });
             toast.success("Vehicle added successfully!");
-        } catch (e) {
-            const error = e as { data?: { error?: string } };
-            console.error("Failed to add vehicle:", e);
+        } catch (error: any) {
+            console.error("Failed to add vehicle:", error);
             const errorMessage = error?.data?.error || "Failed to add vehicle.";
             toast.error(errorMessage);
         }
