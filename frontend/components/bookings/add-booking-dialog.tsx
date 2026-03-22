@@ -44,8 +44,9 @@ export function AddBookingDialog() {
                 startTime: '09:00',
             });
             toast.success("Booking created successfully!");
-        } catch (error: any) {
-            console.error("Failed to add booking:", error);
+        } catch (e) {
+            const error = e as { data?: { error?: string } };
+            console.error("Failed to add booking:", e);
             const errorMessage = error?.data?.error || "Failed to add booking.";
             toast.error(errorMessage);
         }

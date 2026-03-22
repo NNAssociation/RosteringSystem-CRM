@@ -8,16 +8,10 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { toast } from "react-hot-toast";
 import {
-    MailOutline,
     Edit,
     Print,
-    Cancel,
-    CheckCircle,
-    ErrorOutline,
     Save,
     Close,
-    Phone,
-    Badge as BadgeIcon,
     DeleteOutline,
     Person,
     Payments,
@@ -71,6 +65,7 @@ export function DriverDetailsPanel({ driver, onClose }: DriverDetailsPanelProps)
 
     useEffect(() => {
         if (driver) {
+            // eslint-disable-next-line react-hooks/set-state-in-effect
             setEditForm({
                 name: driver.name || '',
                 email: driver.email || '',
@@ -107,8 +102,9 @@ export function DriverDetailsPanel({ driver, onClose }: DriverDetailsPanelProps)
             }).unwrap();
             toast.success("Driver updated successfully");
             setIsEditing(false);
-        } catch (error: any) {
-            console.error("Failed to update driver:", error);
+        } catch (e) {
+            const error = e as { data?: { error?: string } };
+            console.error("Failed to update driver:", e);
             const errorMessage = error?.data?.error || "Failed to update driver.";
             toast.error(errorMessage);
         }
@@ -119,8 +115,9 @@ export function DriverDetailsPanel({ driver, onClose }: DriverDetailsPanelProps)
             await deleteUser(driver.id as number).unwrap();
             toast.success("Driver deleted successfully");
             onClose();
-        } catch (error: any) {
-            console.error("Failed to delete driver:", error);
+        } catch (e) {
+            const error = e as { data?: { error?: string } };
+            console.error("Failed to delete driver:", e);
             toast.error(error?.data?.error || "Failed to delete driver.");
         }
     };

@@ -2,10 +2,9 @@
 
 import React from 'react';
 import { Badge } from "@/components/ui/badge";
-import { format } from "date-fns";
 import { Customer } from "@/app/types";
 import { cn } from "@/lib/utils";
-import { Visibility, Edit, Person, CalendarToday } from "@mui/icons-material";
+import { Visibility, Edit, Person } from "@mui/icons-material";
 import { Button } from "@/components/ui/button";
 import { Pagination } from "@/components/shared/pagination";
 import { DataTable, Column } from "@/components/shared/data-table";
@@ -141,7 +140,7 @@ export function CustomersTable({
                 <Person style={{ fontSize: '32px' }} className="text-slate-200" />
             </div>
             <p className="text-2xl font-semibold text-slate-900 tracking-tight">No customers found</p>
-            <p className="text-slate-400 font-medium max-w-xs mx-auto text-center text-sm">Try adjusting your search filters to find what you're looking for.</p>
+            <p className="text-slate-400 font-medium max-w-xs mx-auto text-center text-sm">Try adjusting your search filters to find what you&apos;re looking for.</p>
         </div>
     );
 

@@ -6,21 +6,14 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { toast } from "react-hot-toast";
 import {
-    MailOutline,
     Edit,
-    Print,
-    Cancel,
-    CheckCircle,
-    ErrorOutline,
     Save,
     Close,
-    Phone,
     History,
     DeleteOutline,
     Person,
     LocationOn
 } from "@mui/icons-material";
-import { format } from "date-fns";
 import { cn } from "@/lib/utils";
 import { SidePanel } from "@/components/shared/side-panel";
 import { Tabs, TabContent } from "@/components/ui/tabs";
@@ -84,8 +77,9 @@ export function CustomerDetailsPanel({ customer, onClose }: CustomerDetailsPanel
             }).unwrap();
             toast.success("Customer updated successfully");
             setIsEditing(false);
-        } catch (error: any) {
-            console.error("Failed to update customer:", error);
+        } catch (e) {
+            const error = e as { data?: { error?: string } };
+            console.error("Failed to update customer:", e);
             const errorMessage = error?.data?.error || "Failed to update customer.";
             toast.error(errorMessage);
         } finally {
@@ -98,8 +92,9 @@ export function CustomerDetailsPanel({ customer, onClose }: CustomerDetailsPanel
             await deleteCustomer(customer.id).unwrap();
             toast.success("Customer deleted successfully");
             onClose();
-        } catch (error: any) {
-            console.error("Failed to delete customer:", error);
+        } catch (e) {
+            const error = e as { data?: { error?: string } };
+            console.error("Failed to delete customer:", e);
             toast.error(error?.data?.error || "Failed to delete customer.");
         }
     };

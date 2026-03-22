@@ -39,8 +39,9 @@ export function AddDriverDialog() {
                 driverLicenseExpiry: '',
             });
             toast.success("Driver added successfully!");
-        } catch (error: any) {
-            console.error("Failed to add driver:", error);
+        } catch (e) {
+            const error = e as { data?: { error?: string } };
+            console.error("Failed to add driver:", e);
             const errorMessage = error?.data?.error || "Failed to add driver.";
             toast.error(errorMessage);
         }

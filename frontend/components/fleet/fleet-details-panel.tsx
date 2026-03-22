@@ -11,8 +11,6 @@ import {
     Edit,
     Save,
     Close,
-    Commute,
-    Build,
     History,
     DeleteOutline,
     DirectionsCar,
@@ -38,6 +36,16 @@ import {
 interface FleetDetailsPanelProps {
     vehicle: Vehicle | null;
     onClose: () => void;
+}
+
+type FleetJob = {
+    jobId: number | string;
+    job?: {
+        status?: string;
+        jobStartDateTime?: string;
+        jobStartLocation?: string;
+        jobEndLocation?: string;
+    }
 }
 
 export function FleetDetailsPanel({ vehicle, onClose }: FleetDetailsPanelProps) {
@@ -96,8 +104,9 @@ export function FleetDetailsPanel({ vehicle, onClose }: FleetDetailsPanelProps) 
             }).unwrap();
             toast.success("Vehicle updated successfully");
             setIsEditing(false);
-        } catch (error: any) {
-            console.error("Failed to update vehicle:", error);
+        } catch (e) {
+            const error = e as { data?: { error?: string } };
+            console.error("Failed to update vehicle:", e);
             const errorMessage = error?.data?.error || "Failed to update vehicle.";
             toast.error(errorMessage);
         } finally {
@@ -110,8 +119,9 @@ export function FleetDetailsPanel({ vehicle, onClose }: FleetDetailsPanelProps) 
             await deleteVehicle(vehicle.id).unwrap();
             toast.success("Vehicle deleted successfully");
             onClose();
-        } catch (error: any) {
-            console.error("Failed to delete vehicle:", error);
+        } catch (e) {
+            const error = e as { data?: { error?: string } };
+            console.error("Failed to delete vehicle:", e);
             toast.error(error?.data?.error || "Failed to delete vehicle.");
         }
     };
@@ -397,7 +407,7 @@ export function FleetDetailsPanel({ vehicle, onClose }: FleetDetailsPanelProps) 
                                 <h4 className="text-xs font-bold text-slate-400 uppercase tracking-widest ml-1">Assigned Jobs / Bookings</h4>
                                 {vehicle.fleetJobs && vehicle.fleetJobs.length > 0 ? (
                                     <div className="space-y-3">
-                                        {vehicle.fleetJobs.map((fj: any) => (
+                                        {vehicle.fleetJobs.map((fj: FleetJob) => (
                                             <div key={fj.jobId} className="p-4 rounded-2xl bg-slate-50 border border-slate-100 flex flex-col gap-2">
                                                 <div className="flex justify-between items-start">
                                                     <span className="text-xs font-bold text-slate-900 uppercase">Job #{fj.jobId}</span>
