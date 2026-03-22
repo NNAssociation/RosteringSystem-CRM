@@ -2,10 +2,9 @@
 
 import React from 'react';
 import { Badge } from "@/components/ui/badge";
-import { format } from "date-fns";
 import { Customer } from "@/app/types";
 import { cn } from "@/lib/utils";
-import { Visibility, Edit, Person, CalendarToday } from "@mui/icons-material";
+import { Visibility, Edit, Person } from "@mui/icons-material";
 import { Button } from "@/components/ui/button";
 import { Pagination } from "@/components/shared/pagination";
 import { DataTable, Column } from "@/components/shared/data-table";

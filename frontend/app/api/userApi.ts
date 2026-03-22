@@ -50,7 +50,7 @@ export const userApi = createApi({
     }),
 
     // PATCH update user
-    updateUser: builder.mutation<User, { id: number; data: Partial<User> }>({
+    updateUser: builder.mutation<User, { id: number; data: Partial<User & CreateUserRequest> }>({
       query: ({ id, data }) => ({
         url: `users/${id}`,
         method: "PATCH",

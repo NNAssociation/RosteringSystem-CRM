@@ -2,7 +2,6 @@
 
 import React from 'react';
 import { Badge } from "@/components/ui/badge";
-import { format } from "date-fns";
 import { Vehicle } from "@/app/types";
 import { cn } from "@/lib/utils";
 import { Visibility, Edit, DirectionsCar, ConfirmationNumber } from "@mui/icons-material";

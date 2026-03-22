@@ -60,8 +60,11 @@ export function Tabs({ tabs, activeTab, onChange, className, contentClassName, c
                         className="h-full"
                     >
                         {React.Children.map(children, (child) => {
-                            if (React.isValidElement(child) && child.props.value === activeTab) {
-                                return child;
+                            if (React.isValidElement(child)) {
+                                const element = child as React.ReactElement<{ value: string }>;
+                                if (element.props.value === activeTab) {
+                                    return element;
+                                }
                             }
                             return null;
                         })}
@@ -72,7 +75,7 @@ export function Tabs({ tabs, activeTab, onChange, className, contentClassName, c
     );
 }
 
-export function TabContent({ value, children, className }: { value: string; children: React.ReactNode; className?: string }) {
+export function TabContent({ value: _value, children, className }: { value: string; children: React.ReactNode; className?: string }) {
     return (
         <div className={cn("p-6 space-y-8 pb-12", className)}>
             {children}

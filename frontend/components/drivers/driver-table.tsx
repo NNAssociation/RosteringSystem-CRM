@@ -5,7 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { format } from "date-fns";
 import { Driver } from "@/app/types";
 import { cn } from "@/lib/utils";
-import { Visibility, Edit, Phone, Email, Badge as BadgeIcon } from "@mui/icons-material";
+import { Visibility, Edit, Badge as BadgeIcon } from "@mui/icons-material";
 import { Button } from "@/components/ui/button";
 import { Pagination } from "@/components/shared/pagination";
 import { DataTable, Column } from "@/components/shared/data-table";

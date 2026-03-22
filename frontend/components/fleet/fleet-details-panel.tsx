@@ -11,8 +11,6 @@ import {
     Edit,
     Save,
     Close,
-    Commute,
-    Build,
     History,
     DeleteOutline,
     DirectionsCar,

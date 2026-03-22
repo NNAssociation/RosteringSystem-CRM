@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { useUpdateUserMutation, useDeleteUserMutation } from '@/app/api/userApi';
 import { Driver, ApiResponseError } from '@/app/types';
 import { Badge } from "@/components/ui/badge";
@@ -8,16 +8,10 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { toast } from "react-hot-toast";
 import {
-    MailOutline,
     Edit,
     Print,
-    Cancel,
-    CheckCircle,
-    ErrorOutline,
     Save,
     Close,
-    Phone,
-    Badge as BadgeIcon,
     DeleteOutline,
     Person,
     Payments,
@@ -103,7 +97,7 @@ export function DriverDetailsPanel({ driver, onClose }: DriverDetailsPanelProps)
                 data: {
                     ...editForm,
                     maxfatigueMinutes: parseInt(editForm.maxfatigueMinutes) || 600,
-                    driverLicenseExpiry: editForm.driverLicenseExpiry || null
+                    driverLicenseExpiry: editForm.driverLicenseExpiry || undefined
                 }
             }).unwrap();
             toast.success("Driver updated successfully");

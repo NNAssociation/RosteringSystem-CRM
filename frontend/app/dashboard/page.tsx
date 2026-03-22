@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useMemo } from "react";
-import { motion } from "framer-motion";
+import { motion, Variants } from "framer-motion";
 import {
   Users,
   Calendar,
@@ -38,10 +38,8 @@ import {
   TableHeader,
   TableRow
 } from "@/components/ui/table";
-import {
-  useGetBookingsQuery,
-  Booking
-} from "../api/bookingsApi";
+import { useGetBookingsQuery } from "../api/bookingsApi";
+import { Booking } from "../types";
 import { useGetCustomersQuery } from "../api/customersApi";
 import { useGetDriversQuery } from "../api/driversApi";
 import { useGetVehiclesQuery } from "../api/fleetApi";
@@ -50,7 +48,7 @@ import { ChartContainer, ChartTooltipContent } from "@/components/ui/chart";
 import Link from "next/link";
 
 // Animation variants
-const containerVariants = {
+const containerVariants: Variants = {
   hidden: { opacity: 0 },
   visible: {
     opacity: 1,
@@ -58,16 +56,16 @@ const containerVariants = {
       staggerChildren: 0.1
     }
   }
-};
+} as const;
 
-const itemVariants = {
+const itemVariants: Variants = {
   hidden: { y: 20, opacity: 0 },
   visible: {
     y: 0,
     opacity: 1,
-    transition: { type: "spring", stiffness: 300, damping: 24 }
+    transition: { type: "spring", stiffness: 300, damping: 24 } as const
   }
-};
+} as const;
 
 export default function Dashboard() {
   // Fetch data from multiple APIs
