@@ -26,9 +26,11 @@ const port = process.env.PORT || 3000;
 app.use(
   cors({
     origin: [
+      process.env.FRONTEND_URL, // <-- Put your Production Frontend URL here in Railway
       "https://rosteringsystem-crm-production.up.railway.app",
-      `http://localhost:${port}`,
-    ],
+      "http://localhost:3000",
+      "http://localhost:3001",
+    ].filter((url): url is string => Boolean(url)),
     methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
     credentials: true,
   }),
