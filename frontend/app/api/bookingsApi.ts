@@ -6,7 +6,7 @@ const baseUrl =
 
 export const bookingsApi = createApi({
     reducerPath: "bookingsApi",
-    baseQuery: fetchBaseQuery({ baseUrl: baseUrl }),
+    baseQuery: fetchBaseQuery({ baseUrl, credentials: "include" }),
     tagTypes: ["Booking"],
     endpoints: (builder) => ({
         getBookings: builder.query<Booking[], void>({

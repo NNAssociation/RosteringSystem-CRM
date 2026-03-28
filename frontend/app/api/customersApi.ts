@@ -6,7 +6,7 @@ const baseUrl =
 
 export const customersApi = createApi({
     reducerPath: "customersApi",
-    baseQuery: fetchBaseQuery({ baseUrl: baseUrl }),
+    baseQuery: fetchBaseQuery({ baseUrl, credentials: "include" }),
     tagTypes: ["Customer"],
     endpoints: (builder) => ({
         getCustomers: builder.query<Customer[], void>({
