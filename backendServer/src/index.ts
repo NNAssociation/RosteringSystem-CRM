@@ -15,6 +15,44 @@ import bookingRoutes from "./routes/bookingRoutes.js";
 //Configuring environment variables
 dotenv.config();
 const app = express();
+
+// Configure allowed origins
+const allowedOrigins = [
+  process.env.FRONTEND_URL,
+  process.env.ALLOWED_ORIGINS,
+  "https://rosteringsystemfrontend.vercel.app",
+  "https://www.rosteringsystemfrontend.vercel.app",
+  "http://localhost:3000",
+  "http://localhost:5173",
+].flatMap(o => (o ? o.split(",").map(s => s.trim()) : []))
+  .filter((url): url is string => Boolean(url));
+
+app.use(
+  cors({
+    origin: (origin, callback) => {
+      // Allow requests with no origin (like mobile apps)
+      if (!origin) return callback(null, true);
+
+      const isAllowed = allowedOrigins.some(ao =>
+        origin === ao || origin === ao.replace(/\/$/, "")
+      );
+
+      if (isAllowed) {
+        callback(null, true);
+      } else {
+        console.warn(`CORS: Origin ${origin} not explicitly allowed.`);
+        // For development, we can be more permissive if we want, 
+        // but for prod it's better to log the blocked origin to debug.
+        callback(null, false);
+      }
+    },
+    methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+    credentials: true,
+    allowedHeaders: ["Content-Type", "Authorization", "X-Requested-With", "Accept"],
+    optionsSuccessStatus: 200
+  }),
+);
+
 app.use(express.json());
 app.use(helmet());
 app.use(helmet.crossOriginResourcePolicy({ policy: "cross-origin" }));
@@ -23,18 +61,6 @@ app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
 
 const port = process.env.PORT || 3000;
-app.use(
-  cors({
-    origin: [
-      process.env.FRONTEND_URL, // <-- Put your Production Frontend URL here in Railway
-      "https://rosteringsystem-crm-production.up.railway.app",
-      "http://localhost:3000",
-      "https://rosteringsystemfrontend.vercel.app"
-    ].filter((url): url is string => Boolean(url)),
-    methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
-    credentials: true,
-  }),
-);
 
 /* Routes */
 app.get("/", (req, res) => {
