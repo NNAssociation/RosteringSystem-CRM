@@ -6,7 +6,7 @@ const baseUrl =
 
 export const driversApi = createApi({
     reducerPath: "driversApi",
-    baseQuery: fetchBaseQuery({ baseUrl: baseUrl }),
+    baseQuery: fetchBaseQuery({ baseUrl, credentials: "include" }),
     tagTypes: ["Driver"],
     endpoints: (builder) => ({
         getDrivers: builder.query<Driver[], void>({

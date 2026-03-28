@@ -6,7 +6,7 @@ const baseUrl =
 
 export const fleetApi = createApi({
     reducerPath: "fleetApi",
-    baseQuery: fetchBaseQuery({ baseUrl: baseUrl }),
+    baseQuery: fetchBaseQuery({ baseUrl, credentials: "include" }),
     tagTypes: ["Vehicle"],
     endpoints: (builder) => ({
         getVehicles: builder.query<Vehicle[], void>({
