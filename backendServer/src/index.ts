@@ -29,23 +29,7 @@ const allowedOrigins = [
 
 app.use(
   cors({
-    origin: (origin, callback) => {
-      // Allow requests with no origin (like mobile apps)
-      if (!origin) return callback(null, true);
-
-      const isAllowed = allowedOrigins.some(ao =>
-        origin === ao || origin === ao.replace(/\/$/, "")
-      );
-
-      if (isAllowed) {
-        callback(null, true);
-      } else {
-        console.warn(`CORS: Origin ${origin} not explicitly allowed.`);
-        // For development, we can be more permissive if we want, 
-        // but for prod it's better to log the blocked origin to debug.
-        callback(null, false);
-      }
-    },
+    origin: true, // Specifically allows reflecting origin which is robust for credentials
     methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
     credentials: true,
     allowedHeaders: ["Content-Type", "Authorization", "X-Requested-With", "Accept"],
@@ -54,8 +38,12 @@ app.use(
 );
 
 app.use(express.json());
-app.use(helmet());
-app.use(helmet.crossOriginResourcePolicy({ policy: "cross-origin" }));
+app.use(
+  helmet({
+    crossOriginResourcePolicy: { policy: "cross-origin" },
+    crossOriginOpenerPolicy: { policy: "unsafe-none" } // Helps with some cross-origin redirect/popups
+  })
+);
 app.use(morgan("common"));
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
