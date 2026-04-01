@@ -87,10 +87,10 @@ model Customer {
   isActive  Boolean  @default(true)
 
   // One-to-many relationship
-  inquiries Inquiry[]
+  bookings Booking[]
 }
 
-model Inquiry {
+model Booking {
   id        Int      @id @default(autoincrement())
   subject   String
   inquiryDetails   String?
@@ -134,8 +134,8 @@ model Job {
   /// Duration in hours (e.g. 1.5 = 1h 30m)
   durationHours    Decimal?  @db.Decimal(5, 2)
 
-  inquiry   Inquiry?   @relation(fields: [inquiryId], references: [id])
-  inquiryId Int?
+  booking   Booking?   @relation(fields: [bookingId], references: [id])
+  bookingId Int?
   fleetJobs FleetJob[]
   userJobs  UserJob[]
 }

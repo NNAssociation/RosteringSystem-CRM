@@ -1,12 +1,12 @@
 "use client";
 
 import React, { useState, useEffect, useMemo } from "react";
-import { useGetDriversQuery } from "@/app/api/userApi";
+import { useGetDriversQuery } from "@/services/api";
 import { useHeader } from "@/providers/header-provider";
 import { DriversTable } from "@/components/drivers/driver-table";
 import { AddDriverDialog } from "@/components/drivers/add-driver-dialog";
 import { DriverDetailsPanel } from "@/components/drivers/driver-details-panel";
-import { Driver } from "@/app/types";
+import { Driver } from "@/types";
 import { PageHeader } from "@/components/shared/page-header";
 import { FilterBar, FilterGroup } from "@/components/shared/filter-bar";
 import { Input } from "@/components/ui/input";

@@ -29,7 +29,7 @@ export const getCustomerById = async (req: Request, res: Response, next: NextFun
     try {
         const customer = await prisma.customer.findUnique({
             where: { id: Number(req.params.id) },
-            include: { inquiries: true }
+            include: { bookings: true }
         });
 
         if (!customer) {

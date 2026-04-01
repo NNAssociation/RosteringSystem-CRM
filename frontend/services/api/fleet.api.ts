@@ -1,12 +1,10 @@
-import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
-import { Vehicle } from "../types";
-
-const baseUrl =
-    process.env.NEXT_PUBLIC_API_BASE_URL || "https://rosteringsystem-crm-production.up.railway.app/";
+import { createApi } from "@reduxjs/toolkit/query/react";
+import { Vehicle } from "@/types";
+import { baseQuery } from "./base-query";
 
 export const fleetApi = createApi({
     reducerPath: "fleetApi",
-    baseQuery: fetchBaseQuery({ baseUrl, credentials: "include" }),
+    baseQuery,
     tagTypes: ["Vehicle"],
     endpoints: (builder) => ({
         getVehicles: builder.query<Vehicle[], void>({

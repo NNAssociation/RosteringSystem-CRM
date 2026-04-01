@@ -1,8 +1,8 @@
 "use client";
 
 import React, { useState } from 'react';
-import { useUpdateUserMutation, useDeleteUserMutation } from '@/app/api/userApi';
-import { Driver, ApiResponseError } from '@/app/types';
+import { useUpdateUserMutation, useDeleteUserMutation } from '@/services/api';
+import { Driver, ApiResponseError } from '@/types';
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -44,49 +44,31 @@ export function DriverDetailsPanel({ driver, onClose }: DriverDetailsPanelProps)
     const [isEditing, setIsEditing] = useState(false);
     const [activeTab, setActiveTab] = useState("profile");
 
-    const [editForm, setEditForm] = useState({
-        name: '',
-        email: '',
-        phoneNumber1: '',
-        phoneNumber2: '',
-        address: '',
-        driverLicense: '',
-        driverLicenseExpiry: '',
-        driverLicenseState: '',
-        taxFileNumber: '',
-        occupation: 'Driver',
-        maxfatigueMinutes: '600',
-        bankName: '',
-        bankBSB: '',
-        bankAccount: '',
-        dateOfBirth: '',
-        status: '',
+    const getInitialFormState = (d: Driver | null) => ({
+        name: d?.name || '',
+        email: d?.email || '',
+        phoneNumber1: d?.phoneNumber1 || '',
+        phoneNumber2: d?.phoneNumber2 || '',
+        address: d?.address || '',
+        driverLicense: d?.driverLicense || '',
+        driverLicenseExpiry: d?.driverLicenseExpiry || '',
+        driverLicenseState: d?.driverLicenseState || '',
+        taxFileNumber: d?.taxFileNumber || '',
+        occupation: d?.occupation || 'Driver',
+        maxfatigueMinutes: (d?.maxfatigueMinutes || 600).toString(),
+        bankName: d?.bankName || '',
+        bankBSB: d?.bankBSB || '',
+        bankAccount: (d?.bankAccount || '').toString(),
+        dateOfBirth: d?.dateOfBirth ? (d.dateOfBirth.includes('T') ? d.dateOfBirth.split('T')[0] : d.dateOfBirth) : '',
+        status: d?.status || '',
     });
 
-    const [prevDriverId, setPrevDriverId] = useState<number | string | null>(driver?.id || null);
+    const [editForm, setEditForm] = React.useState(() => getInitialFormState(driver));
 
-    if (driver && driver.id !== prevDriverId) {
-        setPrevDriverId(driver.id);
-        setEditForm({
-            name: driver.name || '',
-            email: driver.email || '',
-            phoneNumber1: driver.phoneNumber1 || '',
-            phoneNumber2: driver.phoneNumber2 || '',
-            address: driver.address || '',
-            driverLicense: driver.driverLicense || '',
-            driverLicenseExpiry: driver.driverLicenseExpiry || '',
-            driverLicenseState: driver.driverLicenseState || '',
-            taxFileNumber: driver.taxFileNumber || '',
-            occupation: driver.occupation || 'Driver',
-            maxfatigueMinutes: (driver.maxfatigueMinutes || 600).toString(),
-            bankName: driver.bankName || '',
-            bankBSB: driver.bankBSB || '',
-            bankAccount: (driver.bankAccount || '').toString(),
-            dateOfBirth: driver.dateOfBirth ? (driver.dateOfBirth.includes('T') ? driver.dateOfBirth.split('T')[0] : driver.dateOfBirth) : '',
-            status: driver.status || '',
-        });
+    React.useEffect(() => {
+        setEditForm(getInitialFormState(driver));
         setIsEditing(false);
-    }
+    }, [driver]);
 
     if (!driver) return null;
 

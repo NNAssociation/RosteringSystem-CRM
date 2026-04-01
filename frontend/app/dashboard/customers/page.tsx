@@ -1,12 +1,12 @@
 "use client";
 
 import React, { useState, useEffect, useMemo } from "react";
-import { useGetCustomersQuery } from "@/app/api/customersApi";
+import { useGetCustomersQuery } from "@/services/api";
 import { useHeader } from "@/providers/header-provider";
 import { CustomersTable } from "@/components/customers/customer-table";
 import { AddCustomerDialog } from "@/components/customers/add-customer-dialog";
 import { CustomerDetailsPanel } from "@/components/customers/customer-details-panel";
-import { Customer } from "@/app/types";
+import { Customer } from "@/types";
 import { PageHeader } from "@/components/shared/page-header";
 import { FilterBar, FilterGroup } from "@/components/shared/filter-bar";
 import { Input } from "@/components/ui/input";

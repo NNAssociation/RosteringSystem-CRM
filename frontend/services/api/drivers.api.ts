@@ -1,12 +1,10 @@
-import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
-import { Driver } from "../types";
-
-const baseUrl =
-    process.env.NEXT_PUBLIC_API_BASE_URL || "https://rosteringsystem-crm-production.up.railway.app/";
+import { createApi } from "@reduxjs/toolkit/query/react";
+import { Driver } from "@/types";
+import { baseQuery } from "./base-query";
 
 export const driversApi = createApi({
     reducerPath: "driversApi",
-    baseQuery: fetchBaseQuery({ baseUrl, credentials: "include" }),
+    baseQuery,
     tagTypes: ["Driver"],
     endpoints: (builder) => ({
         getDrivers: builder.query<Driver[], void>({

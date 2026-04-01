@@ -16,7 +16,7 @@ import { usePathname } from "next/navigation";
 import { mainNavItems, secondaryNavItems } from "@/config/navigation";
 import Link from "next/link";
 import DirectionsBusOutlinedIcon from "@mui/icons-material/DirectionsBusOutlined";
-import { useUser, SignOutButton } from "@clerk/nextjs";
+import { useUser, useClerk } from "@clerk/nextjs";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -30,6 +30,7 @@ import LogoutIcon from "@mui/icons-material/Logout";
 export function AppSidebar() {
   const pathname = usePathname();
   const { user, isLoaded } = useUser();
+  const { signOut } = useClerk();
 
   const isActive = (href: string) => {
     if (pathname === href) return true;
@@ -38,8 +39,10 @@ export function AppSidebar() {
   };
 
   const userInitials = user
-    ? `${user.firstName?.[0] ?? ""}${user.lastName?.[0] ?? ""}`.toUpperCase() ||
-    "U"
+    ? (`${user.firstName?.[0] ?? ""}${user.lastName?.[0] ?? ""}`.trim() ||
+      user.username?.[0] ||
+      user.primaryEmailAddress?.emailAddress?.[0] ||
+      "U").toUpperCase()
     : "...";
 
   return (
@@ -123,12 +126,16 @@ export function AppSidebar() {
                     size="lg"
                     className="data-[state=open]:bg-slate-50 rounded-xl hover:bg-slate-50 transition-colors"
                   >
-                    <div className="h-10 w-10 rounded-full border border-slate-100 bg-red-50 text-red-600 flex items-center justify-center font-bold text-sm">
-                      {userInitials}
+                    <div className="h-10 w-10 rounded-full border border-slate-100 bg-red-50 text-red-600 flex items-center justify-center font-bold text-sm overflow-hidden shrink-0">
+                      {user?.imageUrl ? (
+                        <img src={user.imageUrl} alt="Profile" className="h-full w-full object-cover" />
+                      ) : (
+                        userInitials
+                      )}
                     </div>
                     <div className="grid flex-1 text-left text-sm leading-tight group-data-[collapsible=icon]:hidden ml-2">
                       <span className="truncate font-bold text-slate-900">
-                        {isLoaded ? (user?.fullName ?? "User") : "Loading..."}
+                        {isLoaded ? (user?.fullName || user?.username || user?.primaryEmailAddress?.emailAddress?.split('@')[0] || "User") : "Loading..."}
                       </span>
                       <span className="truncate text-xs text-slate-400">
                         {isLoaded
@@ -155,15 +162,16 @@ export function AppSidebar() {
                     />
                     Settings
                   </DropdownMenuItem>
-                  <SignOutButton>
-                    <DropdownMenuItem className="text-destructive focus:bg-destructive/10 rounded-lg">
-                      <LogoutIcon
-                        className="mr-2 size-4"
-                        sx={{ fontSize: 18 }}
-                      />
-                      Log out
-                    </DropdownMenuItem>
-                  </SignOutButton>
+                  <DropdownMenuItem
+                    className="text-destructive focus:bg-destructive/10 rounded-lg cursor-pointer"
+                    onClick={() => signOut({ redirectUrl: '/' })}
+                  >
+                    <LogoutIcon
+                      className="mr-2 size-4"
+                      sx={{ fontSize: 18 }}
+                    />
+                    Log out
+                  </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
             </SidebarMenuItem>

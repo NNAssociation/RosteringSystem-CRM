@@ -3,7 +3,7 @@
 import React from 'react';
 import { Badge } from "@/components/ui/badge";
 import { format } from "date-fns";
-import { Driver } from "@/app/types";
+import { Driver } from "@/types";
 import { cn } from "@/lib/utils";
 import { Visibility, Edit, Badge as BadgeIcon } from "@mui/icons-material";
 import { Button } from "@/components/ui/button";

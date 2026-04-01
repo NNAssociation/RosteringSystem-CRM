@@ -1,12 +1,12 @@
 "use client";
 
 import React, { useState, useEffect, useMemo } from "react";
-import { useGetVehiclesQuery } from "@/app/api/fleetApi";
+import { useGetVehiclesQuery } from "@/services/api";
 import { useHeader } from "@/providers/header-provider";
 import { FleetTable } from "@/components/fleet/fleet-table";
 import { AddFleetDialog } from "@/components/fleet/add-fleet-dialog";
 import { FleetDetailsPanel } from "@/components/fleet/fleet-details-panel";
-import { Vehicle } from "@/app/types";
+import { Vehicle } from "@/types";
 import { PageHeader } from "@/components/shared/page-header";
 import { FilterBar, FilterGroup } from "@/components/shared/filter-bar";
 import { Input } from "@/components/ui/input";

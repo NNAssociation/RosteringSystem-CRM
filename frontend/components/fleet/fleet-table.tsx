@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { Badge } from "@/components/ui/badge";
-import { Vehicle } from "@/app/types";
+import { Vehicle } from "@/types";
 import { cn } from "@/lib/utils";
 import { Visibility, Edit, DirectionsCar, ConfirmationNumber } from "@mui/icons-material";
 import { Button } from "@/components/ui/button";

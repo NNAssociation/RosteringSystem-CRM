@@ -5,27 +5,29 @@ import HttpError from "../models/errorModel.js";
 // GET /bookings
 export const getBookings = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
-        const inquiries = await prisma.inquiry.findMany({
+        const bookings = await prisma.booking.findMany({
             include: { customer: true },
             orderBy: { createdAt: "desc" }
         });
 
-        const formattedBookings = inquiries.map((inq: any) => ({
-            id: inq.id,
-            customerName: inq.customer.name || 'Unknown',
-            customerEmail: inq.customer.email,
-            pickupLocation: inq.startLocation,
-            dropoffLocation: inq.endLocation,
-            passengerCount: inq.passengerCount || 0,
-            noOfVehicles: inq.noOfVehicles || 0,
-            tripCount: inq.tripCount || 1,
-            date: inq.startDateTime.toISOString().split('T')[0],
-            startTime: inq.startDateTime.toISOString(),
-            status: inq.status,
-            subject: inq.subject,
-            inquiryDetails: inq.inquiryDetails || "",
-            createdAt: inq.createdAt.toISOString(),
-            updatedAt: inq.updatedAt.toISOString()
+        const formattedBookings = bookings.map((booking: any) => ({
+            id: booking.id,
+            customerName: booking.customer.name || 'Unknown',
+            customerEmail: booking.customer.email,
+            pickupLocation: booking.startLocation,
+            dropoffLocation: booking.endLocation,
+            passengerCount: booking.passengerCount || 0,
+            noOfVehicles: booking.noOfVehicles || 0,
+            tripCount: booking.tripCount || 1,
+            date: booking.startDateTime.toISOString().split('T')[0],
+            startTime: booking.startDateTime.toISOString(),
+            endDate: booking.endDateTime ? booking.endDateTime.toISOString().split('T')[0] : null,
+            endTime: booking.endDateTime ? booking.endDateTime.toISOString() : null,
+            status: booking.status,
+            subject: booking.subject,
+            bookingDetails: booking.inquiryDetails || "",
+            createdAt: booking.createdAt.toISOString(),
+            updatedAt: booking.updatedAt.toISOString()
         }));
 
         res.json(formattedBookings);
@@ -38,32 +40,34 @@ export const getBookings = async (req: Request, res: Response, next: NextFunctio
 // GET /bookings/:id
 export const getBookingById = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
-        const inquiry = await prisma.inquiry.findUnique({
+        const booking = await prisma.booking.findUnique({
             where: { id: Number(req.params.id) },
             include: { customer: true, jobs: true }
         });
 
-        if (!inquiry) {
+        if (!booking) {
             res.status(404).json({ error: "Booking not found" });
             return;
         }
 
         res.json({
-            id: inquiry.id,
-            customerName: inquiry.customer.name || 'Unknown',
-            customerEmail: inquiry.customer.email,
-            pickupLocation: inquiry.startLocation,
-            dropoffLocation: inquiry.endLocation,
-            passengerCount: inquiry.passengerCount || 0,
-            noOfVehicles: inquiry.noOfVehicles || 0,
-            tripCount: inquiry.tripCount || 1,
-            date: inquiry.startDateTime.toISOString().split('T')[0],
-            startTime: inquiry.startDateTime.toISOString(),
-            status: inquiry.status,
-            subject: inquiry.subject,
-            inquiryDetails: inquiry.inquiryDetails || "",
-            createdAt: inquiry.createdAt.toISOString(),
-            updatedAt: inquiry.updatedAt.toISOString()
+            id: booking.id,
+            customerName: booking.customer.name || 'Unknown',
+            customerEmail: booking.customer.email,
+            pickupLocation: booking.startLocation,
+            dropoffLocation: booking.endLocation,
+            passengerCount: booking.passengerCount || 0,
+            noOfVehicles: booking.noOfVehicles || 0,
+            tripCount: booking.tripCount || 1,
+            date: booking.startDateTime.toISOString().split('T')[0],
+            startTime: booking.startDateTime.toISOString(),
+            endDate: booking.endDateTime ? booking.endDateTime.toISOString().split('T')[0] : null,
+            endTime: booking.endDateTime ? booking.endDateTime.toISOString() : null,
+            status: booking.status,
+            subject: booking.subject,
+            bookingDetails: booking.inquiryDetails || "",
+            createdAt: booking.createdAt.toISOString(),
+            updatedAt: booking.updatedAt.toISOString()
         });
     } catch (error) {
         console.error("Error fetching booking:", error);
@@ -129,10 +133,10 @@ export const createBooking = async (req: Request, res: Response, next: NextFunct
             });
         }
 
-        const newInquiry = await prisma.inquiry.create({
+        const newBooking = await prisma.booking.create({
             data: {
                 subject,
-                inquiryDetails: req.body.inquiryDetails || (amount ? `Amount: ${amount}` : "No details"),
+                inquiryDetails: req.body.bookingDetails || req.body.inquiryDetails || (amount ? `Amount: ${amount}` : "No details"),
                 status: status || "Pending",
                 startDateTime,
                 startLocation,
@@ -147,23 +151,23 @@ export const createBooking = async (req: Request, res: Response, next: NextFunct
         });
 
         res.status(201).json({
-            id: newInquiry.id,
-            customerName: newInquiry.customer.name,
-            customerEmail: newInquiry.customer.email,
-            pickupLocation: newInquiry.startLocation,
-            dropoffLocation: newInquiry.endLocation,
-            passengerCount: newInquiry.passengerCount,
-            noOfVehicles: newInquiry.noOfVehicles,
-            tripCount: newInquiry.tripCount,
-            inquiryDetails: newInquiry.inquiryDetails,
-            date: newInquiry.startDateTime.toISOString().split('T')[0],
-            startTime: newInquiry.startDateTime.toISOString(),
-            endDate: newInquiry.endDateTime ? newInquiry.endDateTime.toISOString().split('T')[0] : null,
-            endTime: newInquiry.endDateTime ? newInquiry.endDateTime.toISOString() : null,
-            status: newInquiry.status,
-            subject: newInquiry.subject,
-            createdAt: newInquiry.createdAt.toISOString(),
-            updatedAt: newInquiry.updatedAt.toISOString()
+            id: newBooking.id,
+            customerName: newBooking.customer.name,
+            customerEmail: newBooking.customer.email,
+            pickupLocation: newBooking.startLocation,
+            dropoffLocation: newBooking.endLocation,
+            passengerCount: newBooking.passengerCount,
+            noOfVehicles: newBooking.noOfVehicles,
+            tripCount: newBooking.tripCount,
+            bookingDetails: newBooking.inquiryDetails,
+            date: newBooking.startDateTime.toISOString().split('T')[0],
+            startTime: newBooking.startDateTime.toISOString(),
+            endDate: newBooking.endDateTime ? newBooking.endDateTime.toISOString().split('T')[0] : null,
+            endTime: newBooking.endDateTime ? newBooking.endDateTime.toISOString() : null,
+            status: newBooking.status,
+            subject: newBooking.subject,
+            createdAt: newBooking.createdAt.toISOString(),
+            updatedAt: newBooking.updatedAt.toISOString()
         });
     } catch (error: any) {
         console.error("Error creating booking:", error);
@@ -185,7 +189,7 @@ export const updateBooking = async (req: Request, res: Response, next: NextFunct
         if (passengers || req.body.passengerCount) updateData.passengerCount = Number(passengers || req.body.passengerCount);
         if (vehicles || req.body.noOfVehicles) updateData.noOfVehicles = Number(vehicles || req.body.noOfVehicles);
         if (req.body.tripCount) updateData.tripCount = Number(req.body.tripCount);
-        if (req.body.inquiryDetails) updateData.inquiryDetails = req.body.inquiryDetails;
+        if (req.body.inquiryDetails || req.body.bookingDetails) updateData.inquiryDetails = req.body.inquiryDetails || req.body.bookingDetails;
 
         if (date) {
             updateData.startDateTime = new Date(date);
@@ -197,27 +201,27 @@ export const updateBooking = async (req: Request, res: Response, next: NextFunct
             updateData.endDateTime = new Date(req.body.endDateTime);
         }
 
-        const updatedInquiry = await prisma.inquiry.update({
+        const updatedBooking = await prisma.booking.update({
             where: { id: Number(req.params.id) },
             data: updateData,
             include: { customer: true }
         });
 
         res.json({
-            id: updatedInquiry.id,
-            customerName: updatedInquiry.customer.name,
-            customerEmail: updatedInquiry.customer.email,
-            pickupLocation: updatedInquiry.startLocation,
-            dropoffLocation: updatedInquiry.endLocation,
-            passengerCount: updatedInquiry.passengerCount,
-            noOfVehicles: updatedInquiry.noOfVehicles,
-            tripCount: updatedInquiry.tripCount,
-            date: updatedInquiry.startDateTime.toISOString().split('T')[0],
-            startTime: updatedInquiry.startDateTime.toISOString(),
-            status: updatedInquiry.status,
-            subject: updatedInquiry.subject,
-            createdAt: updatedInquiry.createdAt.toISOString(),
-            updatedAt: updatedInquiry.updatedAt.toISOString()
+            id: updatedBooking.id,
+            customerName: updatedBooking.customer.name,
+            customerEmail: updatedBooking.customer.email,
+            pickupLocation: updatedBooking.startLocation,
+            dropoffLocation: updatedBooking.endLocation,
+            passengerCount: updatedBooking.passengerCount,
+            noOfVehicles: updatedBooking.noOfVehicles,
+            tripCount: updatedBooking.tripCount,
+            date: updatedBooking.startDateTime.toISOString().split('T')[0],
+            startTime: updatedBooking.startDateTime.toISOString(),
+            status: updatedBooking.status,
+            subject: updatedBooking.subject,
+            createdAt: updatedBooking.createdAt.toISOString(),
+            updatedAt: updatedBooking.updatedAt.toISOString()
         });
     } catch (error: any) {
         console.error("Error updating booking:", error);
@@ -232,7 +236,7 @@ export const updateBooking = async (req: Request, res: Response, next: NextFunct
 // DELETE /bookings/:id
 export const deleteBooking = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
-        await prisma.inquiry.update({
+        await prisma.booking.update({
             where: { id: Number(req.params.id) },
             data: { status: "Cancelled" },
         });

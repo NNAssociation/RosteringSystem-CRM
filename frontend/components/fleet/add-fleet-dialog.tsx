@@ -1,17 +1,20 @@
 "use client";
 
 import React, { useState } from 'react';
-import { useCreateVehicleMutation } from '@/app/api/fleetApi';
-import { ApiResponseError } from '@/app/types';
+import { useCreateVehicleMutation } from '@/services/api';
+import { ApiResponseError } from '@/types';
 import { DialogBox } from "@/components/shared/dialog-box";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Add } from "@mui/icons-material";
+import { Add, DirectionsCar, Settings, Event } from "@mui/icons-material";
 import { toast } from "react-hot-toast";
+import { Tabs, TabContent } from "@/components/ui/tabs";
 
 export function AddFleetDialog() {
     const [createVehicle, { isLoading }] = useCreateVehicleMutation();
     const [isOpen, setIsOpen] = useState(false);
+    const [activeTab, setActiveTab] = useState("vehicle");
+
     const [formData, setFormData] = useState({
         make: '',
         model: '',
@@ -24,6 +27,22 @@ export function AddFleetDialog() {
         availableFrom: '',
         availableTo: '',
     });
+
+    const resetForm = () => {
+        setFormData({
+            make: '',
+            model: '',
+            year: new Date().getFullYear().toString(),
+            licensePlate: '',
+            regoState: '',
+            vin: '',
+            maxPassengers: '4',
+            maxCargoVolume: '',
+            availableFrom: '',
+            availableTo: '',
+        });
+        setActiveTab("vehicle");
+    };
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -40,18 +59,7 @@ export function AddFleetDialog() {
                 availableTo: formData.availableTo || undefined,
             }).unwrap();
             setIsOpen(false);
-            setFormData({
-                make: '',
-                model: '',
-                year: new Date().getFullYear().toString(),
-                licensePlate: '',
-                regoState: '',
-                vin: '',
-                maxPassengers: '4',
-                maxCargoVolume: '',
-                availableFrom: '',
-                availableTo: '',
-            });
+            resetForm();
             toast.success("Vehicle added successfully!");
         } catch (error: unknown) {
             console.error("Failed to add vehicle:", error);
@@ -60,139 +68,191 @@ export function AddFleetDialog() {
         }
     };
 
+    const tabs = [
+        { id: "vehicle", label: "Vehicle", icon: <DirectionsCar style={{ fontSize: '16px' }} /> },
+        { id: "specs", label: "Specs", icon: <Settings style={{ fontSize: '16px' }} /> },
+        { id: "scheduling", label: "Availability", icon: <Event style={{ fontSize: '16px' }} /> },
+    ];
+
+    const currentIndex = tabs.findIndex(t => t.id === activeTab);
+    const isLastTab = currentIndex === tabs.length - 1;
+
     return (
         <DialogBox
             open={isOpen}
-            onOpenChange={setIsOpen}
+            onOpenChange={(open) => {
+                setIsOpen(open);
+                if (!open) resetForm();
+            }}
             title="Add New Vehicle"
-            maxWidth="sm:max-w-[500px]"
+            maxWidth="sm:max-w-[600px]"
             trigger={
                 <Button className="bg-primary hover:bg-primary/90 text-white shadow-md shadow-primary/10 rounded-xl px-6 gap-2 border-none h-11 transition-all active:scale-[0.98]">
                     <Add style={{ fontSize: '18px' }} />
                     <span className="font-semibold">Add Vehicle</span>
                 </Button>
             }
-            contentClassName="p-0"
+            contentClassName="p-0 overflow-hidden flex flex-col"
         >
-            <form onSubmit={handleSubmit} className="p-6 space-y-5">
-                <div className="grid grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                        <label className="text-xs font-semibold text-slate-400 ml-1">Make</label>
-                        <Input
-                            required
-                            placeholder="e.g. Toyota"
-                            className="rounded-xl border-slate-200 h-12 focus:ring-primary/20 bg-slate-50/50"
-                            value={formData.make}
-                            onChange={(e) => setFormData({ ...formData, make: e.target.value })}
-                        />
-                    </div>
-                    <div className="space-y-2">
-                        <label className="text-xs font-semibold text-slate-400 ml-1">Model</label>
-                        <Input
-                            required
-                            placeholder="e.g. HiAce"
-                            className="rounded-xl border-slate-200 h-12 focus:ring-primary/20 bg-slate-50/50"
-                            value={formData.model}
-                            onChange={(e) => setFormData({ ...formData, model: e.target.value })}
-                        />
-                    </div>
-                </div>
+            <form onSubmit={handleSubmit} className="flex flex-col h-full max-h-[85vh]">
+                <Tabs tabs={tabs} activeTab={activeTab} onChange={setActiveTab} className="flex-1 overflow-hidden" contentClassName="p-6 overflow-y-auto">
+                    <TabContent value="vehicle" className="p-0 pb-4">
+                        <div className="grid grid-cols-2 gap-4">
+                            <div className="space-y-2">
+                                <label className="text-xs font-semibold text-slate-400 ml-1">Make</label>
+                                <Input
+                                    required
+                                    placeholder="e.g. Toyota"
+                                    className="h-10 text-xs font-semibold border-slate-200 bg-slate-50/50 rounded-xl"
+                                    value={formData.make}
+                                    onChange={(e) => setFormData({ ...formData, make: e.target.value })}
+                                />
+                            </div>
+                            <div className="space-y-2">
+                                <label className="text-xs font-semibold text-slate-400 ml-1">Model</label>
+                                <Input
+                                    required
+                                    placeholder="e.g. HiAce"
+                                    className="h-10 text-xs font-semibold border-slate-200 bg-slate-50/50 rounded-xl"
+                                    value={formData.model}
+                                    onChange={(e) => setFormData({ ...formData, model: e.target.value })}
+                                />
+                            </div>
+                            <div className="space-y-2">
+                                <label className="text-xs font-semibold text-slate-400 ml-1">Year</label>
+                                <Input
+                                    type="number"
+                                    required
+                                    placeholder="2024"
+                                    className="h-10 text-xs font-semibold border-slate-200 bg-slate-50/50 rounded-xl"
+                                    value={formData.year}
+                                    onChange={(e) => setFormData({ ...formData, year: e.target.value })}
+                                />
+                            </div>
+                            <div className="space-y-2">
+                                <label className="text-xs font-semibold text-slate-400 ml-1">Plate</label>
+                                <Input
+                                    required
+                                    placeholder="ABC-1234"
+                                    className="h-10 text-xs font-semibold border-slate-200 bg-slate-50/50 rounded-xl uppercase"
+                                    value={formData.licensePlate}
+                                    onChange={(e) => setFormData({ ...formData, licensePlate: e.target.value })}
+                                />
+                            </div>
+                        </div>
+                    </TabContent>
 
-                <div className="grid grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                        <label className="text-xs font-semibold text-slate-400 ml-1">Year</label>
-                        <Input
-                            type="number"
-                            required
-                            placeholder="2024"
-                            className="rounded-xl border-slate-200 h-12 focus:ring-primary/20 bg-slate-50/50"
-                            value={formData.year}
-                            onChange={(e) => setFormData({ ...formData, year: e.target.value })}
-                        />
-                    </div>
-                    <div className="space-y-2">
-                        <label className="text-xs font-semibold text-slate-400 ml-1">Plate Number</label>
-                        <Input
-                            required
-                            placeholder="ABC-1234"
-                            className="rounded-xl border-slate-200 h-12 focus:ring-primary/20 bg-slate-50/50 uppercase"
-                            value={formData.licensePlate}
-                            onChange={(e) => setFormData({ ...formData, licensePlate: e.target.value })}
-                        />
-                    </div>
-                </div>
+                    <TabContent value="specs" className="p-0 pb-4">
+                        <div className="space-y-6">
+                            <div className="grid grid-cols-2 gap-4">
+                                <div className="space-y-2">
+                                    <label className="text-xs font-semibold text-slate-400 ml-1">VIN Number</label>
+                                    <Input
+                                        required
+                                        placeholder="VIN123456789"
+                                        className="h-10 text-xs font-semibold border-slate-200 bg-slate-50/50 rounded-xl uppercase"
+                                        value={formData.vin}
+                                        onChange={(e) => setFormData({ ...formData, vin: e.target.value })}
+                                    />
+                                </div>
+                                <div className="space-y-2">
+                                    <label className="text-xs font-semibold text-slate-400 ml-1">Rego State</label>
+                                    <Input
+                                        placeholder="e.g. NSW"
+                                        className="h-10 text-xs font-semibold border-slate-200 bg-slate-50/50 rounded-xl uppercase"
+                                        value={formData.regoState}
+                                        onChange={(e) => setFormData({ ...formData, regoState: e.target.value })}
+                                    />
+                                </div>
+                                <div className="space-y-2">
+                                    <label className="text-xs font-semibold text-slate-400 ml-1">Capacity (Seats)</label>
+                                    <Input
+                                        type="number"
+                                        required
+                                        placeholder="4"
+                                        className="h-10 text-xs font-semibold border-slate-200 bg-slate-50/50 rounded-xl"
+                                        value={formData.maxPassengers}
+                                        onChange={(e) => setFormData({ ...formData, maxPassengers: e.target.value })}
+                                    />
+                                </div>
+                                <div className="space-y-2">
+                                    <label className="text-xs font-semibold text-slate-400 ml-1">Max Cargo Volume (m³)</label>
+                                    <Input
+                                        type="number"
+                                        placeholder="e.g. 0.5"
+                                        className="h-10 text-xs font-semibold border-slate-200 bg-slate-50/50 rounded-xl"
+                                        value={formData.maxCargoVolume}
+                                        onChange={(e) => setFormData({ ...formData, maxCargoVolume: e.target.value })}
+                                    />
+                                </div>
+                            </div>
+                        </div>
+                    </TabContent>
 
-                <div className="grid grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                        <label className="text-xs font-semibold text-slate-400 ml-1">VIN Number</label>
-                        <Input
-                            required
-                            placeholder="VIN123456789"
-                            className="rounded-xl border-slate-200 h-12 focus:ring-primary/20 bg-slate-50/50 uppercase"
-                            value={formData.vin}
-                            onChange={(e) => setFormData({ ...formData, vin: e.target.value })}
-                        />
-                    </div>
-                    <div className="space-y-2">
-                        <label className="text-xs font-semibold text-slate-400 ml-1">Rego State</label>
-                        <Input
-                            placeholder="e.g. NSW"
-                            className="rounded-xl border-slate-200 h-12 focus:ring-primary/20 bg-slate-50/50 uppercase"
-                            value={formData.regoState}
-                            onChange={(e) => setFormData({ ...formData, regoState: e.target.value })}
-                        />
-                    </div>
-                </div>
+                    <TabContent value="scheduling" className="p-0 pb-4">
+                        <div className="space-y-6">
+                            <div className="grid grid-cols-2 gap-4">
+                                <div className="space-y-2">
+                                    <label className="text-xs font-semibold text-slate-400 ml-1">Available From</label>
+                                    <Input
+                                        type="date"
+                                        className="h-10 text-xs font-semibold border-slate-200 bg-slate-50/50 rounded-xl"
+                                        value={formData.availableFrom}
+                                        onChange={(e) => setFormData({ ...formData, availableFrom: e.target.value })}
+                                    />
+                                </div>
+                                <div className="space-y-2">
+                                    <label className="text-xs font-semibold text-slate-400 ml-1">Available To</label>
+                                    <Input
+                                        type="date"
+                                        className="h-10 text-xs font-semibold border-slate-200 bg-slate-50/50 rounded-xl"
+                                        value={formData.availableTo}
+                                        onChange={(e) => setFormData({ ...formData, availableTo: e.target.value })}
+                                    />
+                                </div>
+                            </div>
+                        </div>
+                    </TabContent>
+                </Tabs>
 
-                <div className="grid grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                        <label className="text-xs font-semibold text-slate-400 ml-1">Capacity (Seats)</label>
-                        <Input
-                            type="number"
-                            required
-                            placeholder="4"
-                            className="rounded-xl border-slate-200 h-12 focus:ring-primary/20 bg-slate-50/50"
-                            value={formData.maxPassengers}
-                            onChange={(e) => setFormData({ ...formData, maxPassengers: e.target.value })}
-                        />
-                    </div>
-                    <div className="space-y-2">
-                        <label className="text-xs font-semibold text-slate-400 ml-1">Cargo Volume (m³)</label>
-                        <Input
-                            type="number"
-                            placeholder="e.g. 0.5"
-                            className="rounded-xl border-slate-200 h-12 focus:ring-primary/20 bg-slate-50/50"
-                            value={formData.maxCargoVolume}
-                            onChange={(e) => setFormData({ ...formData, maxCargoVolume: e.target.value })}
-                        />
-                    </div>
-                </div>
-
-                <div className="grid grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                        <label className="text-xs font-semibold text-slate-400 ml-1">Available From</label>
-                        <Input
-                            type="date"
-                            className="rounded-xl border-slate-200 h-12 focus:ring-primary/20 bg-slate-50/50"
-                            value={formData.availableFrom}
-                            onChange={(e) => setFormData({ ...formData, availableFrom: e.target.value })}
-                        />
-                    </div>
-                    <div className="space-y-2">
-                        <label className="text-xs font-semibold text-slate-400 ml-1">Available To</label>
-                        <Input
-                            type="date"
-                            className="rounded-xl border-slate-200 h-12 focus:ring-primary/20 bg-slate-50/50"
-                            value={formData.availableTo}
-                            onChange={(e) => setFormData({ ...formData, availableTo: e.target.value })}
-                        />
-                    </div>
-                </div>
-
-                <div className="pt-4">
-                    <Button type="submit" disabled={isLoading} className="w-full bg-primary hover:bg-primary/90 text-white rounded-xl h-14 text-base font-semibold shadow-xl shadow-primary/20 transition-all hover:scale-[1.02] active:scale-[0.98]">
-                        {isLoading ? "Adding..." : "Add to Fleet"}
+                <div className="flex justify-between items-center p-6 pt-4 border-t border-slate-100 bg-slate-50/30 mt-auto">
+                    <Button
+                        type="button"
+                        variant="ghost"
+                        onClick={() => setIsOpen(false)}
+                        className="rounded-xl h-11 px-6 font-semibold"
+                    >
+                        Cancel
                     </Button>
+                    <div className="flex gap-3">
+                        {currentIndex > 0 && (
+                            <Button
+                                type="button"
+                                variant="outline"
+                                onClick={() => setActiveTab(tabs[currentIndex - 1].id)}
+                                className="rounded-xl h-11 px-6 font-semibold border-slate-200"
+                            >
+                                Back
+                            </Button>
+                        )}
+                        {!isLastTab ? (
+                            <Button
+                                type="button"
+                                onClick={() => setActiveTab(tabs[currentIndex + 1].id)}
+                                className="bg-slate-900 hover:bg-slate-800 text-white rounded-xl h-11 px-6 font-semibold shadow-md active:scale-[0.98] transition-all"
+                            >
+                                Next
+                            </Button>
+                        ) : (
+                            <Button
+                                type="submit"
+                                disabled={isLoading}
+                                className="bg-primary hover:bg-primary/90 text-white rounded-xl h-11 px-6 font-semibold shadow-xl shadow-primary/20 transition-all hover:scale-[1.02] active:scale-[0.98]"
+                            >
+                                {isLoading ? "Adding..." : "Add to Fleet"}
+                            </Button>
+                        )}
+                    </div>
                 </div>
             </form>
         </DialogBox>

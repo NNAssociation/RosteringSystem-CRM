@@ -1,12 +1,10 @@
-import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
-import { Booking } from "../types";
-
-const baseUrl =
-    process.env.NEXT_PUBLIC_API_BASE_URL || "https://rosteringsystem-crm-production.up.railway.app/";
+import { createApi } from "@reduxjs/toolkit/query/react";
+import { Booking } from "@/types";
+import { baseQuery } from "./base-query";
 
 export const bookingsApi = createApi({
     reducerPath: "bookingsApi",
-    baseQuery: fetchBaseQuery({ baseUrl, credentials: "include" }),
+    baseQuery,
     tagTypes: ["Booking"],
     endpoints: (builder) => ({
         getBookings: builder.query<Booking[], void>({

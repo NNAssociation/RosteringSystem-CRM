@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { useUpdateCustomerMutation, useDeleteCustomerMutation } from '@/app/api/customersApi';
-import { Customer, ApiResponseError } from '@/app/types';
+import { useUpdateCustomerMutation, useDeleteCustomerMutation } from '@/services/api';
+import { Customer, ApiResponseError } from '@/types';
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
