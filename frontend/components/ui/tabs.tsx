@@ -75,7 +75,7 @@ export function Tabs({ tabs, activeTab, onChange, className, contentClassName, c
     );
 }
 
-export function TabContent({ value: _value, children, className }: { value: string; children: React.ReactNode; className?: string }) {
+export function TabContent({ children, className }: { value: string; children: React.ReactNode; className?: string }) {
     return (
         <div className={cn("p-6 space-y-8 pb-12", className)}>
             {children}

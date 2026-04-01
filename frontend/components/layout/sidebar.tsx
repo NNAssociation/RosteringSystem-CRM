@@ -17,6 +17,7 @@ import { mainNavItems, secondaryNavItems } from "@/config/navigation";
 import Link from "next/link";
 import DirectionsBusOutlinedIcon from "@mui/icons-material/DirectionsBusOutlined";
 import { useUser, useClerk } from "@clerk/nextjs";
+import Image from "next/image";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -128,7 +129,7 @@ export function AppSidebar() {
                   >
                     <div className="h-10 w-10 rounded-full border border-slate-100 bg-red-50 text-red-600 flex items-center justify-center font-bold text-sm overflow-hidden shrink-0">
                       {user?.imageUrl ? (
-                        <img src={user.imageUrl} alt="Profile" className="h-full w-full object-cover" />
+                        <Image src={user.imageUrl} alt="Profile" width={40} height={40} className="h-full w-full object-cover" />
                       ) : (
                         userInitials
                       )}
