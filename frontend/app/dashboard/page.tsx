@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useMemo } from "react";
+import React, { useMemo, useEffect } from "react";
 import { motion, Variants } from "framer-motion";
 import {
   Users,
@@ -41,6 +41,7 @@ import {
 import { useGetBookingsQuery, useGetCustomersQuery, useGetDriversQuery, useGetVehiclesQuery, useGetUsersQuery } from "@/services/api";
 import { Booking, Vehicle } from "@/types";
 import { ChartContainer, ChartTooltipContent } from "@/components/ui/chart";
+import { useHeader } from "@/providers/header-provider";
 import Link from "next/link";
 
 // Animation variants
@@ -64,6 +65,15 @@ const itemVariants: Variants = {
 } as const;
 
 export default function Dashboard() {
+  const { setHeaderConfig } = useHeader();
+
+  useEffect(() => {
+    setHeaderConfig({
+      title: "Operations Dashboard",
+      description: "Welcome back! Here's what's happening today in the system.",
+    });
+  }, [setHeaderConfig]);
+
   // Fetch data from multiple APIs
   const { data: bookings = [], isLoading: isLoadingBookings } = useGetBookingsQuery();
   const { data: customers = [], isLoading: isLoadingCustomers } = useGetCustomersQuery();
