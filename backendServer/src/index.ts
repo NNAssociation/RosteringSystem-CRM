@@ -19,11 +19,7 @@ const app = express();
 // Configure allowed origins
 const allowedOrigins = [
   process.env.FRONTEND_URL,
-  process.env.ALLOWED_ORIGINS,
-  "https://rosteringsystemfrontend.vercel.app",
-  "https://www.rosteringsystemfrontend.vercel.app",
   "http://localhost:3000",
-  "http://localhost:5173",
 ].flatMap(o => (o ? o.split(",").map(s => s.trim()) : []))
   .filter((url): url is string => Boolean(url));
 

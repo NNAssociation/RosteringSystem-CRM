@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { useUpdateBookingMutation, useDeleteBookingMutation } from '@/services/api';
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -9,10 +9,7 @@ import { toast } from "react-hot-toast";
 import {
     MailOutline,
     Edit,
-    Print,
     Cancel,
-    CheckCircle,
-    ErrorOutline,
     Save,
     Close,
     History,
@@ -101,7 +98,7 @@ export function BookingDetailsPanel({ booking, onClose }: BookingDetailsPanelPro
                 data: { status: 'Cancelled' }
             }).unwrap();
             toast.success("Booking cancelled successfully");
-        } catch (error) {
+        } catch {
             toast.error("Failed to cancel booking");
         } finally {
             setIsUpdating(false);

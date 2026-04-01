@@ -6,21 +6,14 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { toast } from "react-hot-toast";
 import {
-    MailOutline,
     Edit,
-    Print,
-    Cancel,
-    CheckCircle,
-    ErrorOutline,
     Save,
     Close,
-    Phone,
     History,
     DeleteOutline,
     Person,
     LocationOn
 } from "@mui/icons-material";
-import { format } from "date-fns";
 import { cn } from "@/lib/utils";
 import { SidePanel } from "@/components/shared/side-panel";
 import { Tabs, TabContent } from "@/components/ui/tabs";
