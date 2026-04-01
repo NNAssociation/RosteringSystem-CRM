@@ -1,12 +1,12 @@
 "use client";
 
 import React, { useState, useEffect, useMemo } from "react";
-import { useGetBookingsQuery } from "@/app/api/bookingsApi";
+import { useGetBookingsQuery } from "@/services/api";
 import { useHeader } from "@/providers/header-provider";
 import { BookingsTable } from "@/components/bookings/booking-table";
 import { AddBookingDialog } from "@/components/bookings/add-booking-dialog";
 import { BookingDetailsPanel } from "@/components/bookings/booking-details-panel";
-import { Booking } from "@/app/types";
+import { Booking } from "@/types";
 import { PageHeader } from "@/components/shared/page-header";
 import { FilterBar, FilterGroup } from "@/components/shared/filter-bar";
 import { Input } from "@/components/ui/input";

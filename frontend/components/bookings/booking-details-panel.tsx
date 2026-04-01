@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from 'react';
-import { useUpdateBookingMutation, useDeleteBookingMutation } from '@/app/api/bookingsApi';
+import { useUpdateBookingMutation, useDeleteBookingMutation } from '@/services/api';
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -23,7 +23,7 @@ import {
     Notes
 } from "@mui/icons-material";
 import { format } from "date-fns";
-import { Booking, ApiResponseError } from "@/app/types";
+import { Booking, ApiResponseError } from "@/types";
 import { cn } from "@/lib/utils";
 import { SidePanel } from "@/components/shared/side-panel";
 import { Tabs, TabContent } from "@/components/ui/tabs";

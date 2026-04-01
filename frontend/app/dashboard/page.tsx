@@ -38,12 +38,8 @@ import {
   TableHeader,
   TableRow
 } from "@/components/ui/table";
-import { useGetBookingsQuery } from "../api/bookingsApi";
-import { Booking } from "../types";
-import { useGetCustomersQuery } from "../api/customersApi";
-import { useGetDriversQuery } from "../api/driversApi";
-import { useGetVehiclesQuery } from "../api/fleetApi";
-import { useGetUsersQuery } from "../api/userApi";
+import { useGetBookingsQuery, useGetCustomersQuery, useGetDriversQuery, useGetVehiclesQuery, useGetUsersQuery } from "@/services/api";
+import { Booking, Vehicle } from "@/types";
 import { ChartContainer, ChartTooltipContent } from "@/components/ui/chart";
 import Link from "next/link";
 
@@ -98,7 +94,7 @@ export default function Dashboard() {
     },
     {
       title: "Fleet Utilization",
-      value: `${vehicles.filter(v => v.status === "On Trip").length}/${vehicles.length}`,
+      value: `${vehicles.filter((v: Vehicle) => v.status === "On Trip").length}/${vehicles.length}`,
       icon: Car,
       trend: "Optimal",
       trendUp: true,
@@ -128,9 +124,9 @@ export default function Dashboard() {
 
   // Fleet status data for the PieChart
   const fleetStatusData = useMemo(() => [
-    { name: "Available", value: vehicles.filter(v => v.status === "Available").length, fill: "#10b981" },
-    { name: "On Trip", value: vehicles.filter(v => v.status === "On Trip").length, fill: "#3b82f6" },
-    { name: "Maintenance", value: vehicles.filter(v => v.status === "Maintenance").length, fill: "#ef4444" }
+    { name: "Available", value: vehicles.filter((v: Vehicle) => v.status === "Available").length, fill: "#10b981" },
+    { name: "On Trip", value: vehicles.filter((v: Vehicle) => v.status === "On Trip").length, fill: "#3b82f6" },
+    { name: "Maintenance", value: vehicles.filter((v: Vehicle) => v.status === "Maintenance").length, fill: "#ef4444" }
   ].filter(item => item.value > 0), [vehicles]);
 
   const recentBookings = useMemo(() => {
@@ -284,15 +280,15 @@ export default function Dashboard() {
               </div>
               <div className="grid grid-cols-3 gap-4 w-full mt-6 text-center">
                 <div>
-                  <div className="text-xl font-bold">{vehicles.filter(v => v.status === "Available").length}</div>
+                  <div className="text-xl font-bold">{vehicles.filter((v: Vehicle) => v.status === "Available").length}</div>
                   <div className="text-[10px] uppercase text-slate-500 font-bold tracking-wider">Free</div>
                 </div>
                 <div className="border-x border-slate-100 dark:border-slate-800">
-                  <div className="text-xl font-bold text-blue-600">{vehicles.filter(v => v.status === "On Trip").length}</div>
+                  <div className="text-xl font-bold text-blue-600">{vehicles.filter((v: Vehicle) => v.status === "On Trip").length}</div>
                   <div className="text-[10px] uppercase text-slate-500 font-bold tracking-wider">Active</div>
                 </div>
                 <div>
-                  <div className="text-xl font-bold text-red-500">{vehicles.filter(v => v.status === "Maintenance").length}</div>
+                  <div className="text-xl font-bold text-red-500">{vehicles.filter((v: Vehicle) => v.status === "Maintenance").length}</div>
                   <div className="text-[10px] uppercase text-slate-500 font-bold tracking-wider">Repair</div>
                 </div>
               </div>

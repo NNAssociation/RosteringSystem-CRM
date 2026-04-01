@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { Badge } from "@/components/ui/badge";
-import { Customer } from "@/app/types";
+import { Customer } from "@/types";
 import { cn } from "@/lib/utils";
 import { Visibility, Edit, Person } from "@mui/icons-material";
 import { Button } from "@/components/ui/button";

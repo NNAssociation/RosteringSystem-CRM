@@ -1,8 +1,8 @@
 "use client";
 
 import React, { useState, useEffect } from 'react';
-import { useUpdateVehicleMutation, useDeleteVehicleMutation } from '@/app/api/fleetApi';
-import { Vehicle, ApiResponseError } from '@/app/types';
+import { useUpdateVehicleMutation, useDeleteVehicleMutation } from '@/services/api';
+import { Vehicle, ApiResponseError } from '@/types';
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
