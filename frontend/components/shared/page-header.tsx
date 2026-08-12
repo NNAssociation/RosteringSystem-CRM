@@ -28,7 +28,7 @@ interface PageHeaderProps {
 export function PageHeader({
   title,
   description,
-  breadcrumbs,
+  breadcrumbs = [],
   actions,
   className,
 }: PageHeaderProps) {
@@ -43,31 +43,33 @@ export function PageHeader({
       )}
     >
       <div className="space-y-4">
-        <Breadcrumb>
-          <BreadcrumbList className="text-[11px] font-medium tracking-wide text-slate-400">
-            {breadcrumbs.map((item, index) => (
-              <React.Fragment key={item.label}>
-                <BreadcrumbItem>
-                  {item.href ? (
-                    <BreadcrumbLink
-                      href={item.href}
-                      className="hover:text-primary transition-colors capitalize"
-                    >
-                      {item.label}
-                    </BreadcrumbLink>
-                  ) : (
-                    <BreadcrumbPage className="text-slate-900 font-semibold capitalize">
-                      {item.label}
-                    </BreadcrumbPage>
+        {breadcrumbs.length > 0 && (
+          <Breadcrumb>
+            <BreadcrumbList className="text-[11px] font-medium tracking-wide text-slate-400">
+              {breadcrumbs.map((item, index) => (
+                <React.Fragment key={item.label}>
+                  <BreadcrumbItem>
+                    {item.href ? (
+                      <BreadcrumbLink
+                        href={item.href}
+                        className="hover:text-primary transition-colors capitalize"
+                      >
+                        {item.label}
+                      </BreadcrumbLink>
+                    ) : (
+                      <BreadcrumbPage className="text-slate-900 font-semibold capitalize">
+                        {item.label}
+                      </BreadcrumbPage>
+                    )}
+                  </BreadcrumbItem>
+                  {index < breadcrumbs.length - 1 && (
+                    <BreadcrumbSeparator className="text-slate-300" />
                   )}
-                </BreadcrumbItem>
-                {index < breadcrumbs.length - 1 && (
-                  <BreadcrumbSeparator className="text-slate-300" />
-                )}
-              </React.Fragment>
-            ))}
-          </BreadcrumbList>
-        </Breadcrumb>
+                </React.Fragment>
+              ))}
+            </BreadcrumbList>
+          </Breadcrumb>
+        )}
         <div className="space-y-1">
           <h1 className="text-2xl font-bold text-slate-900 tracking-tight">
             {title}

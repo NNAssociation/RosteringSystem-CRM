@@ -91,14 +91,19 @@ export function BookingsTable({
             key: "date",
             header: "Date & Time",
             headerClassName: "text-xs font-semibold text-slate-500",
-            render: (booking) => (
-                <div className="flex flex-col py-1">
-                    <span className="text-sm font-semibold text-slate-700 leading-none mb-1 tracking-tight">
-                        {format(new Date(booking.date), "MMM dd, yyyy")}
-                    </span>
-                    <span className="text-xs font-medium text-slate-400">{booking.startTime}</span>
-                </div>
-            )
+            render: (booking) => {
+                const startDate = new Date(booking.startTime);
+                return (
+                    <div className="flex flex-col py-1">
+                        <span className="text-sm font-semibold text-slate-700 leading-none mb-1 tracking-tight">
+                            {format(startDate, "MMM dd, yyyy")}
+                        </span>
+                        <span className="text-xs font-medium text-slate-400">
+                            {format(startDate, "hh:mm aa")}
+                        </span>
+                    </div>
+                );
+            }
         },
         {
             key: "details",

@@ -45,6 +45,23 @@ export const driversApi = createApi({
             }),
             invalidatesTags: ["Driver"],
         }),
+
+        getDriverAvailability: builder.query<any[], number | string>({
+            query: (id) => `users/${id}/availability`,
+            providesTags: (result, error, id) => [{ type: "Driver", id: `avail-${id}` }],
+        }),
+
+        addDriverAvailability: builder.mutation<any, { driverId: number | string; data: any }>({
+            query: ({ driverId, data }) => ({
+                url: `users/${driverId}/availability`,
+                method: "POST",
+                body: data,
+            }),
+            invalidatesTags: (result, error, { driverId }) => [
+                { type: "Driver", id: `avail-${driverId}` },
+                "Driver", // Invalidate main driver tag too
+            ],
+        }),
     }),
 });
 
@@ -54,4 +71,6 @@ export const {
     useCreateDriverMutation,
     useUpdateDriverMutation,
     useDeleteDriverMutation,
+    useGetDriverAvailabilityQuery,
+    useAddDriverAvailabilityMutation,
 } = driversApi;

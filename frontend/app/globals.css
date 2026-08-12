@@ -125,3 +125,8 @@
     @apply bg-background text-foreground;
   }
 }
+/* Fix for Google Maps Autocomplete inside Radix UI Dialogs */
+.pac-container {
+  z-index: 9999 !important;
+  pointer-events: auto !important;
+}

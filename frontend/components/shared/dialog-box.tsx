@@ -22,6 +22,8 @@ interface DialogBoxProps {
   className?: string;
   headerClassName?: string;
   contentClassName?: string;
+  onInteractOutside?: (e: any) => void;
+  modal?: boolean;
 }
 
 export function DialogBox({
@@ -35,11 +37,14 @@ export function DialogBox({
   className,
   headerClassName,
   contentClassName,
+  onInteractOutside,
+  modal = true,
 }: DialogBoxProps) {
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
+    <Dialog open={open} onOpenChange={onOpenChange} modal={modal}>
       {trigger && <DialogTrigger asChild>{trigger}</DialogTrigger>}
       <DialogContent
+        onInteractOutside={onInteractOutside}
         className={cn(
           "rounded-3xl border-none shadow-2xl bg-white p-0 overflow-hidden",
           maxWidth,

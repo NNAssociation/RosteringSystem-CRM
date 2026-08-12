@@ -8,6 +8,7 @@ export interface NavItem {
     strokeWidth?: number;
   }>;
   href: string;
+  subItems?: { name: string; href: string }[];
 }
 
 export interface User {
@@ -32,12 +33,7 @@ export interface CreateUserRequest {
   driverLicense?: string;
   driverLicenseExpiry?: string;
   driverLicenseState?: string;
-  taxFileNumber?: string;
-  bankName?: string;
-  bankBSB?: string;
-  bankAccount?: string | number;
   dateOfBirth?: string;
-  occupation?: string;
   maxfatigueMinutes?: number;
   avatarUrl?: string;
   roleName?: string;
@@ -138,6 +134,10 @@ export interface Vehicle {
   status: 'Available' | 'Maintenance' | 'On Trip' | string;
   availableFrom?: string;
   availableTo?: string;
+  homeDepotId?: number;
+  assignedDriverId?: number;
+  assignedDriver?: { id: number; name?: string; email: string };
+  homeDepot?: { id: number; name: string; address?: string };
   fleetJobs?: Array<{
     jobId: number | string;
     job?: {
@@ -165,3 +165,67 @@ export interface Customer {
   createdAt?: string;
   updatedAt?: string;
 }
+
+// ── Booking Flow Types ────────────────────────────────────
+
+export type BookingCategory = 'one_way' | 'round_trip' | 'repeatable';
+export type RepeatType = 'daily' | 'weekly' | 'monthly';
+
+export interface StructuredLocation {
+  address: string;
+  lat?: number;
+  lng?: number;
+  placeId?: string;
+}
+
+export interface BookingFormData {
+  // Category
+  bookingType: BookingCategory;
+
+  // Customer
+  customerId?: number | string;
+  customerName: string;
+  customerEmail: string;
+  customerPhone?: string;
+
+  // Locations
+  pickupLocation: StructuredLocation;
+  dropLocation: StructuredLocation;
+
+  // Schedule
+  pickupDate: string;
+  pickupTime: string;
+
+  // Round Trip additions
+  returnDate?: string;
+  returnTime?: string;
+  waitingDuration?: number; // minutes
+
+  // Repeatable additions
+  repeatType?: RepeatType;
+  repeatDays?: number[]; // 0=Sun..6=Sat
+  repeatStartDate?: string;
+  repeatEndDate?: string;
+
+  // Transport
+  paxCount: number;
+  busCount: number;
+
+  // Estimation
+  estimatedDuration?: number; // in minutes
+  estimatedDistance?: string;
+  calculatedEndTime?: string;
+
+  // Notes
+  notes?: string;
+  subject?: string;
+}
+
+export interface CustomerSearchResult {
+  id: number | string;
+  name?: string;
+  email: string;
+  phone1?: string;
+  company?: string;
+}
+

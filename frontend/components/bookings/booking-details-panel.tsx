@@ -331,7 +331,7 @@ export function BookingDetailsPanel({ booking, onClose }: BookingDetailsPanelPro
                                             className="h-10 text-xs font-semibold border-slate-200 bg-slate-50/50 rounded-xl"
                                         />
                                     ) : (
-                                        <p className="text-sm font-semibold text-slate-900 ml-1">{format(new Date(booking.date), "MMM dd, yyyy")}</p>
+                                        <p className="text-sm font-semibold text-slate-900 ml-1">{format(new Date(booking.startTime), "MMM dd, yyyy")}</p>
                                     )}
                                 </div>
                                 <div className="space-y-1">
@@ -344,7 +344,7 @@ export function BookingDetailsPanel({ booking, onClose }: BookingDetailsPanelPro
                                             className="h-10 text-xs font-semibold border-slate-200 bg-slate-50/50 rounded-xl"
                                         />
                                     ) : (
-                                        <p className="text-sm font-semibold text-slate-900 ml-1">{booking.startTime}</p>
+                                        <p className="text-sm font-semibold text-slate-900 ml-1">{format(new Date(booking.startTime), "hh:mm aa")}</p>
                                     )}
                                 </div>
                                 <div className="space-y-1">
@@ -370,7 +370,7 @@ export function BookingDetailsPanel({ booking, onClose }: BookingDetailsPanelPro
                                             className="h-10 text-xs font-semibold border-slate-200 bg-slate-50/50 rounded-xl"
                                         />
                                     ) : (
-                                        <p className="text-sm font-semibold text-slate-900 ml-1">{booking.endTime || "TBD"}</p>
+                                        <p className="text-sm font-semibold text-slate-900 ml-1">{booking.endTime ? format(new Date(booking.endTime), "hh:mm aa") : "TBD"}</p>
                                     )}
                                 </div>
                             </div>

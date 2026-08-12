@@ -9,6 +9,7 @@ import { Visibility, Edit, Badge as BadgeIcon } from "@mui/icons-material";
 import { Button } from "@/components/ui/button";
 import { Pagination } from "@/components/shared/pagination";
 import { DataTable, Column } from "@/components/shared/data-table";
+import { DriverAvailabilityDialog } from "./driver-availability-dialog";
 
 interface DriversTableProps {
     drivers: Driver[];
@@ -123,6 +124,9 @@ export function DriversTable({
             headerClassName: "text-right pr-8 text-xs font-semibold text-slate-500",
             render: (driver) => (
                 <div className="flex items-center justify-end gap-3 text-slate-300">
+                    <div onClick={(e) => e.stopPropagation()}>
+                        <DriverAvailabilityDialog driverId={driver.id as number} driverName={driver.name || "Driver"} />
+                    </div>
                     <Button
                         variant="ghost"
                         size="icon"

@@ -1,5 +1,5 @@
 import { createApi } from "@reduxjs/toolkit/query/react";
-import { Booking } from "@/types";
+import { Booking, CustomerSearchResult } from "@/types";
 import { baseQuery } from "./base-query";
 
 export const bookingsApi = createApi({
@@ -17,7 +17,7 @@ export const bookingsApi = createApi({
             providesTags: (result, error, id) => [{ type: "Booking", id }],
         }),
 
-        createBooking: builder.mutation<Booking, Partial<Booking>>({
+        createBooking: builder.mutation<Booking, Record<string, unknown>>({
             query: (body) => ({
                 url: "bookings",
                 method: "POST",
@@ -45,6 +45,11 @@ export const bookingsApi = createApi({
             }),
             invalidatesTags: ["Booking"],
         }),
+
+        // Customer search for booking form autocomplete
+        searchCustomers: builder.query<CustomerSearchResult[], string>({
+            query: (q) => `customers/search?q=${encodeURIComponent(q)}`,
+        }),
     }),
 });
 
@@ -54,4 +59,5 @@ export const {
     useCreateBookingMutation,
     useUpdateBookingMutation,
     useDeleteBookingMutation,
+    useLazySearchCustomersQuery,
 } = bookingsApi;

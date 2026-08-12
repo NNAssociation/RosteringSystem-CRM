@@ -6,13 +6,20 @@ import { Toaster } from "react-hot-toast";
 
 import { StoreProvider } from "./store-provider";
 
+import { WebSocketProvider } from "./websocket-provider";
+import { GoogleMapsProvider } from "./google-maps-provider";
+
 export function AppProviders({ children }: { children: React.ReactNode }) {
   return (
     <StoreProvider>
       <QueryProvider>
         <TooltipProvider>
-          {children}
-          <Toaster position="top-right" />
+          <GoogleMapsProvider>
+            <WebSocketProvider>
+              {children}
+              <Toaster position="top-right" />
+            </WebSocketProvider>
+          </GoogleMapsProvider>
         </TooltipProvider>
       </QueryProvider>
     </StoreProvider>

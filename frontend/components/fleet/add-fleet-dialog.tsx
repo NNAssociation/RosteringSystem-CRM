@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState } from 'react';
-import { useCreateVehicleMutation } from '@/services/api';
+import { useCreateVehicleMutation, useGetDepotsQuery, useGetUsersQuery } from '@/services/api';
 import { ApiResponseError } from '@/types';
 import { DialogBox } from "@/components/shared/dialog-box";
 import { Button } from "@/components/ui/button";
@@ -12,6 +12,8 @@ import { Tabs, TabContent } from "@/components/ui/tabs";
 
 export function AddFleetDialog() {
     const [createVehicle, { isLoading }] = useCreateVehicleMutation();
+    const { data: depots } = useGetDepotsQuery();
+    const { data: drivers } = useGetUsersQuery();
     const [isOpen, setIsOpen] = useState(false);
     const [activeTab, setActiveTab] = useState("vehicle");
 
@@ -26,6 +28,8 @@ export function AddFleetDialog() {
         maxCargoVolume: '',
         availableFrom: '',
         availableTo: '',
+        homeDepotId: '',
+        assignedDriverId: '',
     });
 
     const resetForm = () => {
@@ -40,6 +44,8 @@ export function AddFleetDialog() {
             maxCargoVolume: '',
             availableFrom: '',
             availableTo: '',
+            homeDepotId: '',
+            assignedDriverId: '',
         });
         setActiveTab("vehicle");
     };
@@ -57,6 +63,8 @@ export function AddFleetDialog() {
                 vin: formData.vin,
                 availableFrom: formData.availableFrom || undefined,
                 availableTo: formData.availableTo || undefined,
+                homeDepotId: formData.homeDepotId ? parseInt(formData.homeDepotId) : undefined,
+                assignedDriverId: formData.assignedDriverId ? parseInt(formData.assignedDriverId) : undefined,
             }).unwrap();
             setIsOpen(false);
             resetForm();
@@ -139,6 +147,32 @@ export function AddFleetDialog() {
                                     onChange={(e) => setFormData({ ...formData, licensePlate: e.target.value })}
                                 />
                             </div>
+                            <div className="col-span-2 space-y-2">
+                                <label className="text-xs font-semibold text-slate-400 ml-1">Home Depot</label>
+                                <select
+                                    className="h-10 w-full text-xs font-semibold border border-slate-200 bg-slate-50/50 rounded-xl px-3 outline-none focus-visible:ring-2 focus-visible:ring-primary/50"
+                                    value={formData.homeDepotId}
+                                    onChange={(e) => setFormData({ ...formData, homeDepotId: e.target.value })}
+                                >
+                                    <option value="">No Depot (Use Default)</option>
+                                    {depots?.map(depot => (
+                                        <option key={depot.id} value={depot.id}>{depot.name}</option>
+                                    ))}
+                                </select>
+                            </div>
+                            <div className="col-span-2 space-y-2">
+                                <label className="text-xs font-semibold text-slate-400 ml-1">Assigned Driver</label>
+                                <select
+                                    className="h-10 w-full text-xs font-semibold border border-slate-200 bg-slate-50/50 rounded-xl px-3 outline-none focus-visible:ring-2 focus-visible:ring-primary/50"
+                                    value={formData.assignedDriverId}
+                                    onChange={(e) => setFormData({ ...formData, assignedDriverId: e.target.value })}
+                                >
+                                    <option value="">No Assigned Driver</option>
+                                    {drivers?.filter(d => d.isActive).map(driver => (
+                                        <option key={driver.id} value={driver.id}>{driver.name || driver.email}</option>
+                                    ))}
+                                </select>
+                            </div>
                         </div>
                     </TabContent>
 
@@ -165,7 +199,7 @@ export function AddFleetDialog() {
                                     />
                                 </div>
                                 <div className="space-y-2">
-                                    <label className="text-xs font-semibold text-slate-400 ml-1">Capacity (Seats)</label>
+                                    <label className="text-xs font-semibold text-slate-400 ml-1">Number of Seats</label>
                                     <Input
                                         type="number"
                                         required

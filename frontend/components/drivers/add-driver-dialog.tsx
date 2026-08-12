@@ -6,7 +6,7 @@ import { ApiResponseError } from '@/types';
 import { DialogBox } from "@/components/shared/dialog-box";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Add, Person, Payments } from "@mui/icons-material";
+import { Add, Person } from "@mui/icons-material";
 import { toast } from "react-hot-toast";
 import { Tabs, TabContent } from "@/components/ui/tabs";
 
@@ -78,7 +78,6 @@ export function AddDriverDialog() {
 
     const tabs = [
         { id: "profile", label: "Profile", icon: <Person style={{ fontSize: '16px' }} /> },
-        { id: "employment", label: "Professional", icon: <Payments style={{ fontSize: '16px' }} /> },
     ];
 
     const currentIndex = tabs.findIndex(t => t.id === activeTab);
@@ -115,6 +114,7 @@ export function AddDriverDialog() {
                                     onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                                 />
                             </div>
+
                             <div className="space-y-2">
                                 <label className="text-xs font-semibold text-slate-400 ml-1">Email Address</label>
                                 <Input
@@ -195,67 +195,7 @@ export function AddDriverDialog() {
                         </div>
                     </TabContent>
 
-                    <TabContent value="employment" className="p-0 pb-4">
-                        <div className="space-y-6">
-                            <div className="grid grid-cols-2 gap-4">
-                                <div className="space-y-2">
-                                    <label className="text-xs font-semibold text-slate-400 ml-1">Occupation</label>
-                                    <Input
-                                        className="h-10 text-xs font-semibold border-slate-200 bg-slate-50/50 rounded-xl"
-                                        value={formData.occupation}
-                                        onChange={(e) => setFormData({ ...formData, occupation: e.target.value })}
-                                    />
-                                </div>
-                                <div className="space-y-2">
-                                    <label className="text-xs font-semibold text-slate-400 ml-1">Max Fatigue (Mins)</label>
-                                    <Input
-                                        type="number"
-                                        className="h-10 text-xs font-semibold border-slate-200 bg-slate-50/50 rounded-xl"
-                                        value={formData.maxfatigueMinutes}
-                                        onChange={(e) => setFormData({ ...formData, maxfatigueMinutes: e.target.value })}
-                                    />
-                                </div>
-                            </div>
 
-                            <div className="space-y-4 pt-4 border-t border-slate-100">
-                                <h4 className="text-xs font-bold text-slate-900 tracking-wider ml-1">Bank Details</h4>
-                                <div className="space-y-2">
-                                    <label className="text-xs font-semibold text-slate-400 ml-1">Bank Name</label>
-                                    <Input
-                                        className="h-10 text-xs font-semibold border-slate-200 bg-slate-50/50 rounded-xl"
-                                        value={formData.bankName}
-                                        onChange={(e) => setFormData({ ...formData, bankName: e.target.value })}
-                                    />
-                                </div>
-                                <div className="grid grid-cols-2 gap-4">
-                                    <div className="space-y-2">
-                                        <label className="text-xs font-semibold text-slate-400 ml-1">BSB</label>
-                                        <Input
-                                            className="h-10 text-xs font-semibold border-slate-200 bg-slate-50/50 rounded-xl"
-                                            value={formData.bankBSB}
-                                            onChange={(e) => setFormData({ ...formData, bankBSB: e.target.value })}
-                                        />
-                                    </div>
-                                    <div className="space-y-2">
-                                        <label className="text-xs font-semibold text-slate-400 ml-1">Account Number</label>
-                                        <Input
-                                            className="h-10 text-xs font-semibold border-slate-200 bg-slate-50/50 rounded-xl"
-                                            value={formData.bankAccount}
-                                            onChange={(e) => setFormData({ ...formData, bankAccount: e.target.value })}
-                                        />
-                                    </div>
-                                </div>
-                                <div className="space-y-2 pt-2">
-                                    <label className="text-xs font-semibold text-slate-400 ml-1">Tax File Number</label>
-                                    <Input
-                                        className="h-10 text-xs font-semibold border-slate-200 bg-slate-50/50 rounded-xl"
-                                        value={formData.taxFileNumber}
-                                        onChange={(e) => setFormData({ ...formData, taxFileNumber: e.target.value })}
-                                    />
-                                </div>
-                            </div>
-                        </div>
-                    </TabContent>
                 </Tabs>
 
                 <div className="flex justify-between items-center p-6 pt-4 border-t border-slate-100 bg-slate-50/30 mt-auto">

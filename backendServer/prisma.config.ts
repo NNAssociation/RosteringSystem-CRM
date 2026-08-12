@@ -13,6 +13,6 @@ export default defineConfig({
     // Using the env() helper solves the "undefined" TypeScript error
     url: env("DATABASE_URL"),
     // DIRECT_URL is used for Migrations and 'db push' to bypass the pooler
-    shadowDatabaseUrl: env("DIRECT_URL"),
+    directUrl: env("DIRECT_URL"),
   },
 });
