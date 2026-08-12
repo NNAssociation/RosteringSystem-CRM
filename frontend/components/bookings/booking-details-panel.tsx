@@ -64,7 +64,7 @@ export function BookingDetailsPanel({ booking, onClose }: BookingDetailsPanelPro
         endTime: '',
     });
 
-    // Sync editForm with booking during render
+    // Sync editForm with booking during renderr 
     const [prevBooking, setPrevBooking] = useState<Booking | null>(null);
     if (booking !== prevBooking) {
         setPrevBooking(booking);
