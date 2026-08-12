@@ -24,7 +24,7 @@ export const WebSocketProvider = ({ children }: { children: React.ReactNode }) =
 
   useEffect(() => {
     // Only connect if dispatch feature is enabled
-    if (process.env.NEXT_PUBLIC_DISPATCH_ENABLED !== "true") {
+    if (process.env.NEXT_PUBLIC_DISPATCH_ENABLED === "false") {
       return;
     }
 
