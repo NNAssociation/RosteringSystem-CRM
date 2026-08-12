@@ -65,6 +65,7 @@ export const WebSocketProvider = ({ children }: { children: React.ReactNode }) =
       dispatch(dispatchApi.util.invalidateTags(["Board"]));
     });
 
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setSocket(socketInstance);
 
     return () => {

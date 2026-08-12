@@ -41,6 +41,7 @@ export default function SettingsPage() {
 
   useEffect(() => {
     if (schedulingSettings) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setSchedulingForm({
         maxContinuousDrivingHours: (parseInt(schedulingSettings.maxContinuousDrivingMinutes || '330') / 60).toString(),
         minBreakDurationMinutes: schedulingSettings.minBreakDurationMinutes || '30',
@@ -126,7 +127,7 @@ export default function SettingsPage() {
     setIsDialogOpen(true);
   };
 
-  const onMapClick = React.useCallback((e: google.maps.MapMouseEvent) => {
+  const onMapClick = (e: google.maps.MapMouseEvent) => {
     if (e.latLng) {
       setFormData(prev => ({
         ...prev,
@@ -134,7 +135,7 @@ export default function SettingsPage() {
         lng: e.latLng!.lng().toString()
       }));
     }
-  }, []);
+  };
 
   const mapCenter = React.useMemo(() => {
     const lat = parseFloat(formData.lat);

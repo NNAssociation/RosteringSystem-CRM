@@ -255,8 +255,10 @@ export function useBookingForm() {
       );
     }
   }, [
+    state.data.pickupLocation,
     state.data.pickupLocation.lat, 
     state.data.pickupLocation.lng, 
+    state.data.dropLocation,
     state.data.dropLocation.lat, 
     state.data.dropLocation.lng,
     state.data.pickupTime
