@@ -1,5 +1,6 @@
 import { configureStore } from "@reduxjs/toolkit";
-import { userApi, fleetApi, customersApi, driversApi, bookingsApi } from "@/services/api";
+import { userApi, fleetApi, customersApi, driversApi, bookingsApi, dispatchApi, depotsApi, settingsApi } from "@/services/api";
+import dispatchUIReducer from "./dispatchUI.slice";
 
 export const store = configureStore({
     reducer: {
@@ -8,6 +9,10 @@ export const store = configureStore({
         [customersApi.reducerPath]: customersApi.reducer,
         [driversApi.reducerPath]: driversApi.reducer,
         [bookingsApi.reducerPath]: bookingsApi.reducer,
+        [dispatchApi.reducerPath]: dispatchApi.reducer,
+        [depotsApi.reducerPath]: depotsApi.reducer,
+        [settingsApi.reducerPath]: settingsApi.reducer,
+        dispatchUI: dispatchUIReducer,
     },
     // Adding the api middleware enables caching, invalidation, polling, and other useful features of rtk-query.
     middleware: (getDefaultMiddleware) =>
@@ -17,6 +22,9 @@ export const store = configureStore({
             customersApi.middleware,
             driversApi.middleware,
             bookingsApi.middleware,
+            dispatchApi.middleware,
+            depotsApi.middleware,
+            settingsApi.middleware,
         ),
 });
 

@@ -4,7 +4,7 @@ import React, { useState, useEffect, useMemo } from "react";
 import { useGetBookingsQuery } from "@/services/api";
 import { useHeader } from "@/providers/header-provider";
 import { BookingsTable } from "@/components/bookings/booking-table";
-import { AddBookingDialog } from "@/components/bookings/add-booking-dialog";
+import { AddBookingDialog } from "@/components/bookings/add-booking";
 import { BookingDetailsPanel } from "@/components/bookings/booking-details-panel";
 import { Booking } from "@/types";
 import { PageHeader } from "@/components/shared/page-header";

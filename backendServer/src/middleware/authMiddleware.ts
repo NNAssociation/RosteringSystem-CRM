@@ -1,34 +1,53 @@
-import jwt from "jsonwebtoken";
+import { clerkMiddleware, requireAuth, getAuth } from "@clerk/express";
 import type { Request, Response, NextFunction } from "express";
 import HttpError from "../models/errorModel.js";
 
-export interface AuthRequest extends Request {
-  user?: any;
-}
+/**
+ * Clerk middleware — initializes Clerk auth on every request.
+ * Must be applied as app-level middleware BEFORE routes.
+ */
+export { clerkMiddleware };
 
-export const authMiddleware = async (
-  req: AuthRequest,
-  res: Response,
-  next: NextFunction,
-) => {
-  const authHeader = req.headers.authorization;
-  if (!authHeader) {
-    return next(new HttpError("Authorization header is missing", 401));
+/**
+ * Auth guard — protects individual routes by requiring a valid Clerk session.
+ * Use: router.get("/", requireClerkAuth, handler)
+ */
+export const requireClerkAuth = requireAuth({
+  signInUrl: "/sign-in",
+});
+
+/**
+ * Optional auth — extracts user info if present, but doesn't block.
+ * Useful for endpoints that behave differently for authed vs anonymous users.
+ */
+export const optionalAuth = (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const auth = getAuth(req);
+    (req as any).clerkAuth = auth;
+  } catch {
+    // No auth present — that's fine
   }
-  if (authHeader && authHeader.startsWith("Bearer ")) {
-    const JWT_SECRET = process.env.JWT_SECRET as string;
-    const token = authHeader.split(" ")[1];
-    try {
-      if (!token) {
-        return next(new HttpError("Token is missing", 401));
-      }
-      const decoded = jwt.verify(token, JWT_SECRET);
-      req.user = decoded; // Attach decoded token to request object
-      next();
-    } catch (error) {
-      return next(new HttpError("Invalid token", 401));
+  next();
+};
+
+/**
+ * Role guard factory — checks if the authenticated user has a specific role.
+ * Relies on Clerk session claims or custom metadata.
+ * Usage: router.post("/", requireClerkAuth, requireRole("ADMIN"), handler)
+ */
+export const requireRole = (...roles: string[]) => {
+  return (req: Request, res: Response, next: NextFunction) => {
+    const auth = getAuth(req);
+    if (!auth?.userId) {
+      return next(new HttpError("Unauthorized", 401));
     }
-  } else {
-    return next(new HttpError("Unauthorized", 401));
-  }
+
+    // Check role from Clerk's publicMetadata (configure in Clerk Dashboard)
+    const userRole = (auth.sessionClaims as any)?.metadata?.role;
+    if (roles.length > 0 && !roles.includes(userRole)) {
+      return next(new HttpError("Forbidden — insufficient permissions", 403));
+    }
+
+    next();
+  };
 };

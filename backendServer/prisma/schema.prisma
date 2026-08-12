@@ -5,14 +5,30 @@
 // Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
 
 generator client {
-  provider = "prisma-client-js"
-  output   = "../generated/prisma"
+  provider   = "prisma-client-js"
+  output     = "../generated/prisma"
   engineType = "library"
 }
 
 datasource db {
   provider = "postgresql"
 }
+
+// ══════════════════════════════════════════════════════════════
+// ENUMS
+// ══════════════════════════════════════════════════════════════
+
+enum AssignmentStatus {
+  PENDING
+  CONFIRMED
+  IN_PROGRESS
+  COMPLETED
+  CANCELLED
+}
+
+// ══════════════════════════════════════════════════════════════
+// EXISTING MODELS (with added indexes and new relations)
+// ══════════════════════════════════════════════════════════════
 
 model User {
   id        Int      @id @default(autoincrement())
@@ -27,8 +43,22 @@ model User {
 
   // One-to-one with UserProfile
   profile  UserProfile?
-  auditLog AuditLog?
+  auditLog AuditLog? // Deprecated — use ActivityLog
   userJobs UserJob[]
+
+  // NEW: Dispatch relations
+  assignments        Assignment[]
+  driverAvailability DriverAvailability[]
+
+  // Deprecated — use Vehicle.homeDepotId instead for scheduling
+  homeDepotId Int?
+  homeDepot   Depot? @relation(fields: [homeDepotId], references: [id])
+
+  // Reverse relation: Vehicle assigned to this driver
+  assignedVehicle FleetVehicle? @relation("VehicleDriver")
+
+  @@index([isActive])
+  @@index([email])
 }
 
 model UserProfile {
@@ -46,7 +76,7 @@ model UserProfile {
   driverLicenseState  String?
   taxFileNumber       String?
   occupation          String?
-  maxfatigueMinutes      Int?      @default(300) // default to 8 hours
+  maxfatigueMinutes   Int?      @default(300) // default to 5 hours
   createdAt           DateTime  @default(now())
   updatedAt           DateTime  @updatedAt
 
@@ -88,22 +118,42 @@ model Customer {
 
   // One-to-many relationship
   bookings Booking[]
+
+  @@index([isActive])
 }
 
 model Booking {
-  id        Int      @id @default(autoincrement())
-  subject   String
+  id               Int       @id @default(autoincrement())
+  subject          String
   inquiryDetails   String?
-  status    String   @default("OPEN")
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  status           String    @default("OPEN")
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
   noOfVehicles     Int?      @default(1)
   passengerCount   Int?      @default(0)
-  tripCount         Int?      @default(1)
-  startDateTime      DateTime
-  startLocation      String
-  endLocation        String
-  endDateTime        DateTime?
+  tripCount        Int?      @default(1)
+  startDateTime    DateTime
+  startLocation    String
+  endLocation      String
+  endDateTime      DateTime?
+
+  // Booking type: one_way | round_trip | repeatable
+  bookingType     String    @default("one_way")
+
+  // Structured location data
+  pickupLat       Float?
+  pickupLng       Float?
+  pickupPlaceId   String?
+  dropoffLat      Float?
+  dropoffLng      Float?
+  dropoffPlaceId  String?
+
+  // Round trip fields
+  returnDateTime  DateTime?
+  waitingDuration Int?      // minutes
+
+  // Repeatable booking recurrence rule (JSON)
+  recurrenceRule  Json?     // { type, days, startDate, endDate }
 
   // Foreign key
   customerId Int
@@ -111,6 +161,11 @@ model Booking {
 
   // One-to-many relationship
   jobs Job[]
+
+  @@index([customerId])
+  @@index([status])
+  @@index([startDateTime])
+  @@index([bookingType])
 }
 
 model Job {
@@ -138,8 +193,16 @@ model Job {
   bookingId Int?
   fleetJobs FleetJob[]
   userJobs  UserJob[]
+
+  // NEW: Dispatch assignments
+  assignments Assignment[]
+
+  @@index([bookingId])
+  @@index([status])
+  @@index([jobStartDateTime])
 }
 
+/// @deprecated Use ActivityLog instead. Kept for backward compatibility.
 model AuditLog {
   id        Int      @id @default(autoincrement())
   action    String
@@ -150,21 +213,33 @@ model AuditLog {
 }
 
 model FleetVehicle {
-  id           Int        @id @default(autoincrement())
-  make         String
-  model        String
-  year         Int
-  licensePlate String     @unique
-  regoState    String?
-  vin          String     @unique
-  status       String     @default("ACTIVE")
-  availableFrom DateTime?
-  availableTo   DateTime?
-  createdAt    DateTime   @default(now())
-  updatedAt    DateTime   @updatedAt
-  maxPassengers Int?
-  maxCargoVolume Decimal?  @db.Decimal(10, 2) // in cubic
-  fleetJobs    FleetJob[]
+  id             Int        @id @default(autoincrement())
+  make           String
+  model          String
+  year           Int
+  licensePlate   String     @unique
+  regoState      String?
+  vin            String     @unique
+  status         String     @default("ACTIVE")
+  availableFrom  DateTime?
+  availableTo    DateTime?
+  createdAt      DateTime   @default(now())
+  updatedAt      DateTime   @updatedAt
+  maxPassengers  Int?
+  maxCargoVolume Decimal?   @db.Decimal(10, 2) // in cubic
+  fleetJobs      FleetJob[]
+
+  // NEW: Dispatch assignments
+  assignments Assignment[]
+
+  homeDepotId Int?
+  homeDepot   Depot?       @relation(fields: [homeDepotId], references: [id])
+
+  // Assigned driver for this vehicle
+  assignedDriverId Int?     @unique
+  assignedDriver   User?    @relation("VehicleDriver", fields: [assignedDriverId], references: [id])
+
+  @@index([status])
 }
 
 // Join table: FleetVehicle <-> Job
@@ -191,4 +266,139 @@ model UserJob {
   assignedAt DateTime @default(now())
 
   @@id([userId, jobId])
+}
+
+// ══════════════════════════════════════════════════════════════
+// NEW MODELS — Dispatch Module
+// ══════════════════════════════════════════════════════════════
+
+/// Dispatch assignment — links a Job to a Driver and/or Vehicle with scheduling.
+/// Replaces raw UserJob/FleetJob for dispatch workflows.
+/// Includes optimistic locking via `version` field.
+model Assignment {
+  id             Int              @id @default(autoincrement())
+  jobId          Int
+  driverId       Int?
+  vehicleId      Int?
+  status         AssignmentStatus @default(PENDING)
+  scheduledStart DateTime
+  scheduledEnd   DateTime?
+  actualStart    DateTime?
+  actualEnd      DateTime?
+  version        Int              @default(1) // Optimistic locking
+  notes          String?
+  createdBy      Int? // Dispatcher user ID
+  createdAt      DateTime         @default(now())
+  updatedAt      DateTime         @updatedAt
+
+  // Travel segment: how the driver gets TO this job
+  travelFromLocation String? // "depot" or "lat,lng" of previous job end
+  travelToMinutes    Int?    // Estimated travel time in minutes
+  travelToKm         Float?  // Estimated travel distance in km
+  bufferMinutes      Int?    // Buffer/rest time added after travel (default 10)
+
+  job     Job           @relation(fields: [jobId], references: [id])
+  driver  User?         @relation(fields: [driverId], references: [id])
+  vehicle FleetVehicle? @relation(fields: [vehicleId], references: [id])
+
+  @@index([jobId])
+  @@index([driverId, scheduledStart])
+  @@index([vehicleId, scheduledStart])
+  @@index([status])
+}
+
+/// Structured activity log — replaces the broken 1:1 AuditLog model.
+/// Supports unlimited entries per user and stores JSON change diffs.
+model ActivityLog {
+  id        Int      @id @default(autoincrement())
+  action    String // ASSIGNMENT_CREATED, BOOKING_STATUS_CHANGED, etc.
+  entity    String // Assignment, Booking, Job
+  entityId  Int
+  changes   Json? // { before: {...}, after: {...} }
+  userId    Int? // Who performed the action
+  timestamp DateTime @default(now())
+
+  @@index([entity, entityId])
+  @@index([userId])
+  @@index([timestamp])
+}
+
+/// Driver availability windows — recurring or one-off.
+/// Used by ConflictService to check if a driver can be assigned.
+model DriverAvailability {
+  id        Int      @id @default(autoincrement())
+  driverId  Int
+  dayOfWeek Int? // 0=Sun, 6=Sat (null = specific date override)
+  startTime DateTime
+  endTime   DateTime
+  isBlocked Boolean  @default(false) // true = driver is unavailable
+  reason    String?
+  createdAt DateTime @default(now())
+
+  driver User @relation(fields: [driverId], references: [id])
+
+  @@index([driverId, startTime])
+}
+
+/// Short-lived pessimistic lock for multi-dispatcher conflict prevention.
+/// Automatically expires after the TTL (checked via expiresAt).
+model DispatchLock {
+  id           Int      @id @default(autoincrement())
+  resourceType String // "DRIVER" | "VEHICLE" | "JOB"
+  resourceId   Int
+  lockedBy     Int // Dispatcher user ID
+  lockedAt     DateTime @default(now())
+  expiresAt    DateTime // Auto-expire after ~10 seconds
+
+  @@unique([resourceType, resourceId])
+  @@index([expiresAt])
+}
+
+model AutoScheduleRun {
+  id        Int      @id @default(autoincrement())
+  runDate   DateTime @default(now())
+  startDate DateTime
+  endDate   DateTime
+  success   Boolean  @default(true)
+  notes     String?
+
+  @@unique([startDate, endDate])
+}
+
+model TravelTimeCache {
+  id             Int      @id @default(autoincrement())
+  origin         String   // E.g., "depot" or "lat,lng"
+  destination    String   // E.g., "lat,lng" or address
+  durationMinutes Int
+  distanceKm     Float?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  @@unique([origin, destination])
+}
+
+/// Depot locations for drivers and vehicles
+model Depot {
+  id        Int      @id @default(autoincrement())
+  name      String   @unique
+  address   String?
+  lat       Float
+  lng       Float
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  users    User[]
+  vehicles FleetVehicle[]
+}
+
+/// Configurable scheduling settings — key-value store.
+/// Used by the scheduling engine to retrieve configurable rules.
+model SchedulingSetting {
+  id          Int      @id @default(autoincrement())
+  key         String   @unique
+  value       String
+  description String?
+  updatedAt   DateTime @updatedAt
+
+  @@index([key])
 }

@@ -1,34 +1,34 @@
-import jwt from "jsonwebtoken";
 import type { Request, Response, NextFunction } from "express";
 import HttpError from "../models/errorModel.js";
 
-export interface AuthRequest extends Request {
-  user?: any;
-}
+/**
+ * 404 handler — catches requests that don't match any route.
+ */
+export const notFound = (req: Request, res: Response, next: NextFunction) => {
+  const error = new HttpError(`Not Found - ${req.originalUrl}`, 404);
+  next(error);
+};
 
-export const authMiddleware = async (
-  req: AuthRequest,
+/**
+ * Global error handler — catches all errors thrown/nexted in the app.
+ * Must have 4 parameters for Express to recognize it as an error handler.
+ */
+export const errorHandler = (
+  err: Error | HttpError,
+  req: Request,
   res: Response,
-  next: NextFunction,
+  _next: NextFunction,
 ) => {
-  const authHeader = req.headers.authorization;
-  if (!authHeader) {
-    return next(new HttpError("Authorization header is missing", 401));
+  const statusCode =
+    "statusCode" in err ? err.statusCode : res.statusCode !== 200 ? res.statusCode : 500;
+
+  console.error(`[ERROR] ${req.method} ${req.originalUrl} — ${err.message}`);
+  if (process.env.NODE_ENV !== "production") {
+    console.error(err.stack);
   }
-  if (authHeader && authHeader.startsWith("Bearer ")) {
-    const JWT_SECRET = process.env.JWT_SECRET as string;
-    const token = authHeader.split(" ")[1];
-    try {
-      if (!token) {
-        return next(new HttpError("Token is missing", 401));
-      }
-      const decoded = jwt.verify(token, JWT_SECRET);
-      req.user = decoded; // Attach decoded token to request object
-      next();
-    } catch (error) {
-      return next(new HttpError("Invalid token", 401));
-    }
-  } else {
-    return next(new HttpError("Unauthorized", 401));
-  }
+
+  res.status(statusCode).json({
+    error: err.message,
+    ...(process.env.NODE_ENV !== "production" && { stack: err.stack }),
+  });
 };

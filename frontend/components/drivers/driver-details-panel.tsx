@@ -14,7 +14,6 @@ import {
     Close,
     DeleteOutline,
     Person,
-    Payments,
     History
 } from "@mui/icons-material";
 import { format } from "date-fns";
@@ -53,12 +52,6 @@ export function DriverDetailsPanel({ driver, onClose }: DriverDetailsPanelProps)
         driverLicense: d?.driverLicense || '',
         driverLicenseExpiry: d?.driverLicenseExpiry || '',
         driverLicenseState: d?.driverLicenseState || '',
-        taxFileNumber: d?.taxFileNumber || '',
-        occupation: d?.occupation || 'Driver',
-        maxfatigueMinutes: (d?.maxfatigueMinutes || 600).toString(),
-        bankName: d?.bankName || '',
-        bankBSB: d?.bankBSB || '',
-        bankAccount: (d?.bankAccount || '').toString(),
         dateOfBirth: d?.dateOfBirth ? (d.dateOfBirth.includes('T') ? d.dateOfBirth.split('T')[0] : d.dateOfBirth) : '',
         status: d?.status || '',
     });
@@ -78,7 +71,6 @@ export function DriverDetailsPanel({ driver, onClose }: DriverDetailsPanelProps)
                 id: driver.id as number,
                 data: {
                     ...editForm,
-                    maxfatigueMinutes: parseInt(editForm.maxfatigueMinutes) || 600,
                     driverLicenseExpiry: editForm.driverLicenseExpiry || undefined
                 }
             }).unwrap();
@@ -179,7 +171,6 @@ export function DriverDetailsPanel({ driver, onClose }: DriverDetailsPanelProps)
 
     const tabs = [
         { id: "profile", label: "Profile", icon: <Person style={{ fontSize: '16px' }} /> },
-        { id: "employment", label: "Professional", icon: <Payments style={{ fontSize: '16px' }} /> },
         { id: "history", label: "Activity", icon: <History style={{ fontSize: '16px' }} /> },
     ];
 
@@ -246,6 +237,7 @@ export function DriverDetailsPanel({ driver, onClose }: DriverDetailsPanelProps)
                                     <p className="text-sm font-semibold text-slate-900 ml-1">{driver.phoneNumber2 || "N/A"}</p>
                                 )}
                             </div>
+
                             <div className="col-span-2 space-y-2">
                                 <label className="text-xs font-semibold text-slate-400 ml-1">Residential Address</label>
                                 {isEditing ? (
@@ -316,91 +308,7 @@ export function DriverDetailsPanel({ driver, onClose }: DriverDetailsPanelProps)
                         </div>
                     </TabContent>
 
-                    <TabContent value="employment">
-                        <div className="space-y-6">
-                            <div className="grid grid-cols-2 gap-4">
-                                <div className="space-y-2">
-                                    <label className="text-xs font-semibold text-slate-400 ml-1">Occupation</label>
-                                    {isEditing ? (
-                                        <Input
-                                            value={editForm.occupation}
-                                            onChange={(e) => setEditForm({ ...editForm, occupation: e.target.value })}
-                                            className="h-10 text-xs font-semibold border-slate-200 bg-slate-50/50 rounded-xl"
-                                        />
-                                    ) : (
-                                        <p className="text-sm font-semibold text-slate-900 ml-1 capitalize">{driver.occupation || "Driver"}</p>
-                                    )}
-                                </div>
-                                <div className="space-y-2">
-                                    <label className="text-xs font-semibold text-slate-400 ml-1">Max Fatigue (Mins)</label>
-                                    {isEditing ? (
-                                        <Input
-                                            type="number"
-                                            value={editForm.maxfatigueMinutes}
-                                            onChange={(e) => setEditForm({ ...editForm, maxfatigueMinutes: e.target.value })}
-                                            className="h-10 text-xs font-semibold border-slate-200 bg-slate-50/50 rounded-xl"
-                                        />
-                                    ) : (
-                                        <p className="text-sm font-semibold text-slate-900 ml-1">{driver.maxfatigueMinutes || 600}</p>
-                                    )}
-                                </div>
-                            </div>
 
-                            <div className="space-y-4 pt-2 border-t border-slate-100">
-                                <h4 className="text-xs font-bold text-slate-900 tracking-wider ml-1">Bank Details</h4>
-                                <div className="space-y-2">
-                                    <label className="text-xs font-semibold text-slate-400 ml-1">Bank Name</label>
-                                    {isEditing ? (
-                                        <Input
-                                            value={editForm.bankName}
-                                            onChange={(e) => setEditForm({ ...editForm, bankName: e.target.value })}
-                                            className="h-10 text-xs font-semibold border-slate-200 bg-slate-50/50 rounded-xl"
-                                        />
-                                    ) : (
-                                        <p className="text-sm font-semibold text-slate-900 ml-1">{driver.bankName || "N/A"}</p>
-                                    )}
-                                </div>
-                                <div className="grid grid-cols-2 gap-4">
-                                    <div className="space-y-2">
-                                        <label className="text-xs font-semibold text-slate-400 ml-1">BSB</label>
-                                        {isEditing ? (
-                                            <Input
-                                                value={editForm.bankBSB}
-                                                onChange={(e) => setEditForm({ ...editForm, bankBSB: e.target.value })}
-                                                className="h-10 text-xs font-semibold border-slate-200 bg-slate-50/50 rounded-xl"
-                                            />
-                                        ) : (
-                                            <p className="text-sm font-semibold text-slate-900 ml-1 font-mono">{driver.bankBSB || "N/A"}</p>
-                                        )}
-                                    </div>
-                                    <div className="space-y-2">
-                                        <label className="text-xs font-semibold text-slate-400 ml-1">Account Number</label>
-                                        {isEditing ? (
-                                            <Input
-                                                value={editForm.bankAccount}
-                                                onChange={(e) => setEditForm({ ...editForm, bankAccount: e.target.value })}
-                                                className="h-10 text-xs font-semibold border-slate-200 bg-slate-50/50 rounded-xl"
-                                            />
-                                        ) : (
-                                            <p className="text-sm font-semibold text-slate-900 ml-1 font-mono">{driver.bankAccount || "N/A"}</p>
-                                        )}
-                                    </div>
-                                </div>
-                                <div className="space-y-2">
-                                    <label className="text-xs font-semibold text-slate-400 ml-1">Tax File Number</label>
-                                    {isEditing ? (
-                                        <Input
-                                            value={editForm.taxFileNumber}
-                                            onChange={(e) => setEditForm({ ...editForm, taxFileNumber: e.target.value })}
-                                            className="h-10 text-xs font-semibold border-slate-200 bg-slate-50/50 rounded-xl"
-                                        />
-                                    ) : (
-                                        <p className="text-sm font-semibold text-slate-900 ml-1 font-mono">{driver.taxFileNumber || "N/A"}</p>
-                                    )}
-                                </div>
-                            </div>
-                        </div>
-                    </TabContent>
 
                     <TabContent value="history">
                         <div className="flex flex-col items-center justify-center h-40 space-y-3 opacity-40">

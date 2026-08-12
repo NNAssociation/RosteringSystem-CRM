@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from 'react';
-import { useUpdateVehicleMutation, useDeleteVehicleMutation } from '@/services/api';
+import { useUpdateVehicleMutation, useDeleteVehicleMutation, useGetDepotsQuery, useGetUsersQuery } from '@/services/api';
 import { Vehicle, ApiResponseError } from '@/types';
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -41,6 +41,8 @@ interface FleetDetailsPanelProps {
 export function FleetDetailsPanel({ vehicle, onClose }: FleetDetailsPanelProps) {
     const [updateVehicle] = useUpdateVehicleMutation();
     const [deleteVehicle, { isLoading: isDeleting }] = useDeleteVehicleMutation();
+    const { data: depots } = useGetDepotsQuery();
+    const { data: drivers } = useGetUsersQuery();
     const [isEditing, setIsEditing] = useState(false);
     const [isUpdating, setIsUpdating] = useState(false);
     const [activeTab, setActiveTab] = useState("vehicle");
@@ -57,6 +59,8 @@ export function FleetDetailsPanel({ vehicle, onClose }: FleetDetailsPanelProps) 
         maxCargoVolume: '',
         availableFrom: '',
         availableTo: '',
+        homeDepotId: '',
+        assignedDriverId: '',
     });
 
     useEffect(() => {
@@ -73,6 +77,8 @@ export function FleetDetailsPanel({ vehicle, onClose }: FleetDetailsPanelProps) 
                 maxCargoVolume: (vehicle.maxCargoVolume || 0).toString(),
                 availableFrom: vehicle.availableFrom ? (vehicle.availableFrom.includes('T') ? vehicle.availableFrom.split('T')[0] : vehicle.availableFrom) : '',
                 availableTo: vehicle.availableTo ? (vehicle.availableTo.includes('T') ? vehicle.availableTo.split('T')[0] : vehicle.availableTo) : '',
+                homeDepotId: vehicle.homeDepotId ? vehicle.homeDepotId.toString() : '',
+                assignedDriverId: vehicle.assignedDriverId ? vehicle.assignedDriverId.toString() : '',
             });
             setIsEditing(false);
         }
@@ -89,7 +95,9 @@ export function FleetDetailsPanel({ vehicle, onClose }: FleetDetailsPanelProps) 
                     ...editForm,
                     year: parseInt(editForm.year) || vehicle.year,
                     maxPassengers: parseInt(editForm.maxPassengers) || vehicle.maxPassengers,
-                    maxCargoVolume: parseFloat(editForm.maxCargoVolume) || 0
+                    maxCargoVolume: parseFloat(editForm.maxCargoVolume) || 0,
+                    homeDepotId: editForm.homeDepotId ? parseInt(editForm.homeDepotId) : undefined,
+                    assignedDriverId: editForm.assignedDriverId ? parseInt(editForm.assignedDriverId) : undefined,
                 }
             }).unwrap();
             toast.success("Vehicle updated successfully");
@@ -300,6 +308,40 @@ export function FleetDetailsPanel({ vehicle, onClose }: FleetDetailsPanelProps) 
                                     </div>
                                 )}
                             </div>
+                            <div className="col-span-2 space-y-2">
+                                <label className="text-xs font-semibold text-slate-400 ml-1">Home Depot</label>
+                                {isEditing ? (
+                                    <select
+                                        className="h-10 w-full text-xs font-semibold border border-slate-200 bg-slate-50/50 rounded-xl px-3 outline-none focus-visible:ring-2 focus-visible:ring-primary/50"
+                                        value={editForm.homeDepotId}
+                                        onChange={(e) => setEditForm({ ...editForm, homeDepotId: e.target.value })}
+                                    >
+                                        <option value="">No Depot</option>
+                                        {depots?.map(depot => (
+                                            <option key={depot.id} value={depot.id}>{depot.name}</option>
+                                        ))}
+                                    </select>
+                                ) : (
+                                    <p className="text-sm font-semibold text-slate-900 ml-1">{vehicle.homeDepot?.name || "No Depot Assigned"}</p>
+                                )}
+                            </div>
+                            <div className="col-span-2 space-y-2">
+                                <label className="text-xs font-semibold text-slate-400 ml-1">Assigned Driver</label>
+                                {isEditing ? (
+                                    <select
+                                        className="h-10 w-full text-xs font-semibold border border-slate-200 bg-slate-50/50 rounded-xl px-3 outline-none focus-visible:ring-2 focus-visible:ring-primary/50"
+                                        value={editForm.assignedDriverId}
+                                        onChange={(e) => setEditForm({ ...editForm, assignedDriverId: e.target.value })}
+                                    >
+                                        <option value="">No Driver Assigned</option>
+                                        {drivers?.filter(d => d.isActive).map(driver => (
+                                            <option key={driver.id} value={driver.id}>{driver.name || driver.email}</option>
+                                        ))}
+                                    </select>
+                                ) : (
+                                    <p className="text-sm font-semibold text-slate-900 ml-1">{vehicle.assignedDriver?.name || vehicle.assignedDriver?.email || "No Driver Assigned"}</p>
+                                )}
+                            </div>
                         </div>
                     </TabContent>
 
@@ -331,7 +373,7 @@ export function FleetDetailsPanel({ vehicle, onClose }: FleetDetailsPanelProps) 
                                     )}
                                 </div>
                                 <div className="space-y-2">
-                                    <label className="text-xs font-semibold text-slate-400 ml-1">Capacity (Seats)</label>
+                                    <label className="text-xs font-semibold text-slate-400 ml-1">Number of Seats</label>
                                     {isEditing ? (
                                         <Input
                                             type="number"

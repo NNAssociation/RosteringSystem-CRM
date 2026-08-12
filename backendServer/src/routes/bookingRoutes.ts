@@ -1,6 +1,6 @@
 import { Router } from "express";
 import { getBookings, getBookingById, createBooking, updateBooking, deleteBooking } from "../controllers/bookingController.js";
-import { authMiddleware } from "../middleware/authMiddleware.js";
+import { requireClerkAuth } from "../middleware/authMiddleware.js";
 
 const router = Router();
 

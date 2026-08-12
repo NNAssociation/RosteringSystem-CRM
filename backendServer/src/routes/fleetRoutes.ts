@@ -1,6 +1,6 @@
 import { Router } from "express";
 import { getVehicles, getVehicleById, createVehicle, updateVehicle, deleteVehicle } from "../controllers/fleetController.js";
-import { authMiddleware } from "../middleware/authMiddleware.js";
+import { requireClerkAuth } from "../middleware/authMiddleware.js";
 
 const router = Router();
 

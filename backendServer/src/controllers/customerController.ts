@@ -1,23 +1,28 @@
 import type { Request, Response, NextFunction } from "express";
-import { prisma } from "../db.js";
 import HttpError from "../models/errorModel.js";
+import * as CustomerService from "../services/customerService.js";
 
-// Helper to format customer for frontend
-const formatCustomer = (customer: any) => {
-    return {
-        ...customer,
-        status: customer.isActive ? "Active" : "Inactive"
-    };
+// GET /customers/search?q=...
+export const searchCustomers = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+    try {
+        const query = (req.query.q as string) || '';
+        if (query.length < 2) {
+            res.json([]);
+            return;
+        }
+        const results = await CustomerService.searchCustomers(query);
+        res.json(results);
+    } catch (error) {
+        console.error("Error searching customers:", error);
+        next(new HttpError("Failed to search customers", 500));
+    }
 };
 
 // GET /customers
 export const getCustomers = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
-        const customers = await prisma.customer.findMany({
-            where: { isActive: true },
-            orderBy: { createdAt: "desc" }
-        });
-        res.json(customers.map(formatCustomer));
+        const customers = await CustomerService.getAllCustomers();
+        res.json(customers);
     } catch (error) {
         console.error("Error fetching customers:", error);
         next(new HttpError("Failed to fetch customers", 500));
@@ -27,17 +32,12 @@ export const getCustomers = async (req: Request, res: Response, next: NextFuncti
 // GET /customers/:id
 export const getCustomerById = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
-        const customer = await prisma.customer.findUnique({
-            where: { id: Number(req.params.id) },
-            include: { bookings: true }
-        });
-
+        const customer = await CustomerService.getCustomerById(Number(req.params.id));
         if (!customer) {
             res.status(404).json({ error: "Customer not found" });
             return;
         }
-
-        res.json(formatCustomer(customer));
+        res.json(customer);
     } catch (error) {
         console.error("Error fetching customer:", error);
         next(new HttpError("Failed to fetch customer", 500));
@@ -47,26 +47,12 @@ export const getCustomerById = async (req: Request, res: Response, next: NextFun
 // POST /customers
 export const createCustomer = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
-        const { email, name, address, company, phone1, phone2 } = req.body;
-
-        if (!email) {
+        if (!req.body.email) {
             res.status(400).json({ error: "Email is required" });
             return;
         }
-
-        const newCustomer = await prisma.customer.create({
-            data: {
-                email,
-                name: name || email,
-                address,
-                company,
-                phone1,
-                phone2,
-                isActive: true
-            },
-        });
-
-        res.status(201).json(formatCustomer(newCustomer));
+        const newCustomer = await CustomerService.createCustomer(req.body);
+        res.status(201).json(newCustomer);
     } catch (error: any) {
         console.error("Error creating customer:", error);
         if (error.code === 'P2002') {
@@ -80,22 +66,8 @@ export const createCustomer = async (req: Request, res: Response, next: NextFunc
 // PATCH /customers/:id
 export const updateCustomer = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
-        const { email, name, address, company, phone1, phone2, isActive } = req.body;
-
-        const updatedCustomer = await prisma.customer.update({
-            where: { id: Number(req.params.id) },
-            data: {
-                email,
-                name,
-                address,
-                company,
-                phone1,
-                phone2,
-                isActive
-            },
-        });
-
-        res.json(formatCustomer(updatedCustomer));
+        const updatedCustomer = await CustomerService.updateCustomer(Number(req.params.id), req.body);
+        res.json(updatedCustomer);
     } catch (error: any) {
         console.error("Error updating customer:", error);
         if (error.code === 'P2025') {
@@ -109,13 +81,8 @@ export const updateCustomer = async (req: Request, res: Response, next: NextFunc
 // DELETE /customers/:id
 export const deleteCustomer = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
-        // Soft delete by setting isActive to false
-        await prisma.customer.update({
-            where: { id: Number(req.params.id) },
-            data: { isActive: false },
-        });
-
-        res.json({ success: true, id: Number(req.params.id) });
+        const result = await CustomerService.softDeleteCustomer(Number(req.params.id));
+        res.json(result);
     } catch (error: any) {
         console.error("Error deleting customer:", error);
         next(new HttpError("Failed to delete customer", 500));
