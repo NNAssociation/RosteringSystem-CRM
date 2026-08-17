@@ -44,29 +44,33 @@ type PresetOption = "3days" | "2weeks" | "custom";
 export function AutoScheduleModal({ isOpen, onClose, date }: AutoScheduleModalProps) {
   const [phase, setPhase] = useState<ModalPhase>("preview");
   const [preset, setPreset] = useState<PresetOption>("3days");
-  const [startDateStr, setStartDateStr] = useState<string>("");
-  const [endDateStr, setEndDateStr] = useState<string>("");
+  const [customStartDate, setCustomStartDate] = useState<string>("");
+  const [customEndDate, setCustomEndDate] = useState<string>("");
   const [forceRun, setForceRun] = useState(false);
   const [runResult, setRunResult] = useState<any>(null);
   const [runError, setRunError] = useState<string | null>(null);
 
-  // Calculate default dates based on selected preset or selected board date
-  useEffect(() => {
-    if (!date) return;
+  // Derive active date range cleanly without setState inside useEffect
+  const { activeStartDate, activeEndDate } = React.useMemo(() => {
+    if (!date) return { activeStartDate: "", activeEndDate: "" };
     const base = parseISO(date);
-
     if (preset === "3days") {
-      setStartDateStr(format(base, "yyyy-MM-dd"));
-      setEndDateStr(format(addDays(base, 2), "yyyy-MM-dd"));
-    } else if (preset === "2weeks") {
-      setStartDateStr(format(base, "yyyy-MM-dd"));
-      setEndDateStr(format(addDays(base, 13), "yyyy-MM-dd"));
+      return {
+        activeStartDate: format(base, "yyyy-MM-dd"),
+        activeEndDate: format(addDays(base, 2), "yyyy-MM-dd"),
+      };
     }
-  }, [date, preset]);
-
-  // Active query dates
-  const activeStartDate = startDateStr || date;
-  const activeEndDate = endDateStr || date;
+    if (preset === "2weeks") {
+      return {
+        activeStartDate: format(base, "yyyy-MM-dd"),
+        activeEndDate: format(addDays(base, 13), "yyyy-MM-dd"),
+      };
+    }
+    return {
+      activeStartDate: customStartDate || date,
+      activeEndDate: customEndDate || date,
+    };
+  }, [date, preset, customStartDate, customEndDate]);
 
   const {
     data: preview,
@@ -196,8 +200,8 @@ export function AutoScheduleModal({ isOpen, onClose, date }: AutoScheduleModalPr
                   <label className="text-[10px] font-bold text-slate-400 uppercase">Start Date</label>
                   <Input
                     type="date"
-                    value={startDateStr}
-                    onChange={(e) => setStartDateStr(e.target.value)}
+                    value={customStartDate || activeStartDate}
+                    onChange={(e) => setCustomStartDate(e.target.value)}
                     className="h-8 text-xs font-semibold bg-white border-slate-200 rounded-lg"
                   />
                 </div>
@@ -206,8 +210,8 @@ export function AutoScheduleModal({ isOpen, onClose, date }: AutoScheduleModalPr
                   <label className="text-[10px] font-bold text-slate-400 uppercase">End Date</label>
                   <Input
                     type="date"
-                    value={endDateStr}
-                    onChange={(e) => setEndDateStr(e.target.value)}
+                    value={customEndDate || activeEndDate}
+                    onChange={(e) => setCustomEndDate(e.target.value)}
                     className="h-8 text-xs font-semibold bg-white border-slate-200 rounded-lg"
                   />
                 </div>
