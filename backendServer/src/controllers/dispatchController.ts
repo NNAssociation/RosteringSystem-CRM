@@ -3,12 +3,13 @@ import * as DispatchService from "../services/dispatchService.js";
 import * as AssignmentService from "../services/assignmentService.js";
 import * as AutoScheduleService from "../services/autoScheduleService.js";
 import HttpError from "../models/errorModel.js";
-import { startOfDay, endOfDay } from "date-fns";
+import { startOfDay, endOfDay, startOfWeek, addDays } from "date-fns";
 
-// GET /dispatch/board?date=2024-05-12
+// GET /dispatch/board?date=2026-08-18&viewMode=daily|weekly
 export const getBoardData = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
   try {
     const dateQuery = req.query.date as string;
+    const viewMode = (req.query.viewMode as string) || "daily";
     const targetDate = dateQuery ? new Date(dateQuery) : new Date();
     
     if (isNaN(targetDate.getTime())) {
@@ -16,8 +17,14 @@ export const getBoardData = async (req: Request, res: Response, next: NextFuncti
        return;
     }
 
-    const start = startOfDay(targetDate);
-    const end = endOfDay(targetDate);
+    let start = startOfDay(targetDate);
+    let end = endOfDay(targetDate);
+
+    if (viewMode === "weekly") {
+      const weekStart = startOfWeek(targetDate, { weekStartsOn: 1 });
+      start = startOfDay(weekStart);
+      end = endOfDay(addDays(weekStart, 6));
+    }
 
     const data = await DispatchService.getBoardData(start, end);
     res.json(data);
@@ -176,20 +183,23 @@ export const setDutySpan = async (req: Request, res: Response, next: NextFunctio
   }
 };
 
-// GET  /dispatch/auto-schedule?date=2024-05-12          → preview (dry run)
-// POST /dispatch/auto-schedule?date=2024-05-12&force=1  → execute
+// GET  /dispatch/auto-schedule?startDate=2026-07-13&endDate=2026-07-26          → preview (dry run)
+// POST /dispatch/auto-schedule?startDate=2026-07-13&endDate=2026-07-26&force=1  → execute
 export const autoSchedule = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
   try {
-    const dateQuery = req.query.date as string;
-    const targetDate = dateQuery ? new Date(dateQuery) : new Date();
+    const startDateParam = (req.query.startDate || req.body?.startDate || req.query.date) as string;
+    const endDateParam = (req.query.endDate || req.body?.endDate || req.query.date) as string;
 
-    if (isNaN(targetDate.getTime())) {
+    const startDateObj = startDateParam ? new Date(startDateParam) : new Date();
+    const endDateObj = endDateParam ? new Date(endDateParam) : startDateObj;
+
+    if (isNaN(startDateObj.getTime()) || isNaN(endDateObj.getTime())) {
       res.status(400).json({ error: "Invalid date format" });
       return;
     }
 
-    const start = startOfDay(targetDate);
-    const end = endOfDay(targetDate);
+    const start = startOfDay(startDateObj);
+    const end = endOfDay(endDateObj);
 
     if (req.method === "GET") {
       // Dry-run preview — no DB writes
@@ -199,7 +209,7 @@ export const autoSchedule = async (req: Request, res: Response, next: NextFuncti
     }
 
     // POST → actual run
-    const force = req.query.force === "true" || req.query.force === "1";
+    const force = req.query.force === "true" || req.query.force === "1" || req.body?.force === true;
     const result = await AutoScheduleService.runAutoScheduling(start, end, force);
 
     if (!result.success) {

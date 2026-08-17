@@ -330,21 +330,26 @@ export function DriverRowTimeline({
                 dutySpan
               );
 
-              // Calculate break block after this assignment if gap before next assignment >= 30 mins
+              // Calculate break block after this assignment if rest gap (before travel to next assignment) >= 30 mins
               let breakElement: React.ReactNode = null;
               if (idx < sorted.length - 1) {
                 const nextAssignment = sorted[idx + 1];
                 const nextStartMin = differenceInMinutes(new Date(nextAssignment.scheduledStart), timelineStart);
-                const gapMins = nextStartMin - endMin;
-                if (gapMins >= 30) {
+                const nextTravelMins = (nextAssignment.travelToMinutes && Number(nextAssignment.travelToMinutes) > 0)
+                  ? Number(nextAssignment.travelToMinutes)
+                  : DEFAULT_TRAVEL_MINS;
+                const nextTravelStartMin = nextStartMin - nextTravelMins;
+                const restGapMins = nextTravelStartMin - endMin;
+
+                if (restGapMins >= 30) {
                   const breakLeftPx = endMin * PIXELS_PER_MINUTE;
-                  const breakWidthPx = Math.min(gapMins, 45) * PIXELS_PER_MINUTE;
+                  const breakWidthPx = Math.min(restGapMins, 45) * PIXELS_PER_MINUTE;
                   breakElement = (
                     <BreakBlock
                       key={`break-${assignment.id}`}
                       leftPx={breakLeftPx}
                       widthPx={breakWidthPx}
-                      durationMins={Math.round(gapMins)}
+                      durationMins={Math.round(restGapMins)}
                     />
                   );
                 }

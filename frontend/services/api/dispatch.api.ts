@@ -7,8 +7,11 @@ export const dispatchApi = createApi({
   }),
   tagTypes: ["Board", "Assignment", "Lock", "AutoSchedule"],
   endpoints: (builder) => ({
-    getBoardData: builder.query<any, string>({
-      query: (date) => `/dispatch/board?date=${date}`,
+    getBoardData: builder.query<any, { date: string; viewMode?: string } | string>({
+      query: (arg) => {
+        if (typeof arg === "string") return `/dispatch/board?date=${arg}`;
+        return `/dispatch/board?date=${arg.date}&viewMode=${arg.viewMode || "daily"}`;
+      },
       providesTags: ["Board"],
     }),
     createAssignment: builder.mutation<any, Partial<any>>({
@@ -66,15 +69,24 @@ export const dispatchApi = createApi({
       }),
       invalidatesTags: ["Board"],
     }),
-    previewAutoSchedule: builder.query<any, string>({
-      query: (date) => `/dispatch/auto-schedule?date=${date}`,
+    previewAutoSchedule: builder.query<any, { startDate: string; endDate: string } | string>({
+      query: (arg) => {
+        if (typeof arg === "string") return `/dispatch/auto-schedule?date=${arg}`;
+        return `/dispatch/auto-schedule?startDate=${arg.startDate}&endDate=${arg.endDate}`;
+      },
       providesTags: ["AutoSchedule"],
     }),
-    runAutoSchedule: builder.mutation<any, { date: string; force?: boolean }>({
-      query: ({ date, force }) => ({
-        url: `/dispatch/auto-schedule?date=${date}${force ? "&force=true" : ""}`,
-        method: "POST",
-      }),
+    runAutoSchedule: builder.mutation<any, { startDate?: string; endDate?: string; date?: string; force?: boolean }>({
+      query: (body) => {
+        const s = body.startDate || body.date;
+        const e = body.endDate || body.date;
+        const forceStr = body.force ? "&force=true" : "";
+        return {
+          url: `/dispatch/auto-schedule?startDate=${s}&endDate=${e}${forceStr}`,
+          method: "POST",
+          body,
+        };
+      },
       invalidatesTags: ["Board", "AutoSchedule"],
     }),
   }),

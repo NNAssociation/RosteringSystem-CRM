@@ -109,20 +109,9 @@ export async function checkDriverShiftRules(
   }
 
   // Find driver's assigned vehicle to get depot location, fallback to driver's depot, then DEPOT_LOCATION
-  const driver = await prisma.user.findUnique({
-    where: { id: driverId },
-    include: { homeDepot: true }
-  });
-  const assignedVehicle = await prisma.fleetVehicle.findFirst({
-    where: { assignedDriverId: driverId },
-    include: { homeDepot: true }
-  });
-  
-  const depotToUse = assignedVehicle?.homeDepot ?? driver?.homeDepot ?? DEPOT_LOCATION;
-  const driverDepotLat = depotToUse.lat;
-  const driverDepotLng = depotToUse.lng;
-  const driverDepotAddress = depotToUse.name || depotToUse.address;
-
+  const driverDepotLat = DEPOT_LOCATION.lat;
+  const driverDepotLng = DEPOT_LOCATION.lng;
+  const driverDepotAddress = DEPOT_LOCATION.address;
 
   // Get all existing assignments for the driver on this day
   const dayStart = startOfDay(date);
@@ -190,7 +179,7 @@ export async function checkDriverShiftRules(
   // Sort by scheduledStart
   list.sort((a, b) => a.scheduledStart.getTime() - b.scheduledStart.getTime());
 
-  // 1. First Assignment: Travel time from Depot
+  // 1. First Assignment: Travel time from Depot (Punchbowl Bus Company SB)
   const first = list[0]!;
   const firstOrigin = (first.jobStartLat && first.jobStartLng)
     ? { lat: first.jobStartLat, lng: first.jobStartLng }
@@ -201,7 +190,7 @@ export async function checkDriverShiftRules(
     firstOrigin
   );
   
-  const travelFromDepotBuffer = depotToFirst.durationMinutes + schedulingRules.depotTravelBuffer;
+  const travelFromDepotBuffer = depotToFirst.durationMinutes + 10;
   const shiftStartTime = new Date(first.scheduledStart.getTime() - travelFromDepotBuffer * 60 * 1000);
 
   // 2. Last Assignment: Travel time back to Depot
@@ -215,7 +204,7 @@ export async function checkDriverShiftRules(
     { lat: driverDepotLat, lng: driverDepotLng }
   );
   
-  const shiftEndTime = new Date(last.scheduledEnd.getTime() + lastToDepot.durationMinutes * 60 * 1000);
+  const shiftEndTime = new Date(last.scheduledEnd.getTime() + (lastToDepot.durationMinutes + 10) * 60 * 1000);
 
   // 3. Shift Duration Rule
   const shiftDurationMinutes = differenceInMinutes(shiftEndTime, shiftStartTime);

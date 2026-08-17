@@ -42,7 +42,16 @@ export async function getBoardData(start: Date, end: Date) {
     },
   });
 
-  // 4. Fetch Unassigned Jobs (jobs with fewer assignments than requested noOfVehicles)
+  // 4. Fetch Duty Spans (driver availability) in this window
+  const dutySpans = await prisma.driverAvailability.findMany({
+    where: {
+      startTime: { lt: end },
+      endTime: { gt: start },
+      isBlocked: false
+    }
+  });
+
+  // 5. Fetch Unassigned Jobs (jobs with fewer assignments than requested noOfVehicles)
   const allCandidateJobs = await prisma.job.findMany({
     where: {
       status: { in: ["UNASSIGNED", "OPEN", "PENDING", "Pending", "pending", "Open"] },
@@ -75,6 +84,7 @@ export async function getBoardData(start: Date, end: Date) {
     drivers,
     vehicles,
     assignments,
+    dutySpans,
     unassignedJobs,
   };
 }
@@ -184,8 +194,8 @@ export async function getDispatchAnalytics(date: Date) {
 export async function getDutySpans(start: Date, end: Date) {
   return await prisma.driverAvailability.findMany({
     where: {
-      startTime: { gte: start },
-      endTime: { lte: end },
+      startTime: { lt: end },
+      endTime: { gt: start },
       isBlocked: false
     }
   });

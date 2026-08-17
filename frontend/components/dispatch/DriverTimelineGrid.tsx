@@ -39,7 +39,7 @@ interface DriverTimelineGridProps {
 
 export function DriverTimelineGrid({ onDriverClick, onAssignmentClick, activeDriverId, viewMode }: DriverTimelineGridProps) {
   const { selectedDate, filters } = useSelector((state: RootState) => state.dispatchUI);
-  const { data, isLoading } = useGetBoardDataQuery(selectedDate);
+  const { data, isLoading } = useGetBoardDataQuery({ date: selectedDate, viewMode });
 
   const [selectedDriverIds, setSelectedDriverIds] = React.useState<number[]>([]);
   const dispatch = useDispatch();
