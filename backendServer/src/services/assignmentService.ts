@@ -4,7 +4,7 @@ import { EventTypes } from "../events/eventTypes.js";
 import type { CreateAssignmentInput, UpdateAssignmentInput } from "../validators/assignmentSchema.js";
 import { checkDriverConflict, checkVehicleConflict, checkDriverFatigue } from "./conflictService.js";
 import { ValidationError } from "./bookingService.js";
-import { getTravelTime } from "./googleMapsService.js";
+import { getTravelTime, DEPOT_LOCATION } from "./googleMapsService.js";
 import { getSchedulingRules } from "./settingsService.js";
 import { startOfDay, endOfDay } from "date-fns";
 
@@ -33,7 +33,8 @@ export async function adjustDriverDutySpan(tx: any, driverId: number, date: Date
     await tx.driverAvailability.deleteMany({
       where: {
         driverId,
-        startTime: { gte: dayStart, lte: dayEnd },
+        startTime: { lt: dayEnd },
+        endTime: { gt: dayStart },
         isBlocked: false
       }
     });
@@ -48,44 +49,38 @@ export async function adjustDriverDutySpan(tx: any, driverId: number, date: Date
   const firstJob = first.job;
   const lastJob = last.job;
 
-  // Find driver's assigned vehicle to get depot location
-  const assignedVehicle = await tx.fleetVehicle.findFirst({
-    where: { assignedDriverId: driverId },
-    include: { homeDepot: true }
-  });
-  const depotLat = assignedVehicle?.homeDepot?.lat ?? -33.9482; // Fallback
-  const depotLng = assignedVehicle?.homeDepot?.lng ?? 151.0506;
-  const depotAddress = assignedVehicle?.homeDepot?.name ?? "99 Belmore Rd, Riverwood NSW 2210, Australia";
+  // Driver start and end location is strictly Punchbowl Bus Company (SB)
+  const depotCoords = { lat: DEPOT_LOCATION.lat, lng: DEPOT_LOCATION.lng };
 
-  const firstOrigin = (firstJob.jobStartLat && firstJob.jobStartLng)
-    ? { lat: firstJob.jobStartLat, lng: firstJob.jobStartLng }
-    : depotAddress;
+  const firstOrigin = (firstJob?.jobStartLat && firstJob?.jobStartLng)
+    ? { lat: Number(firstJob.jobStartLat), lng: Number(firstJob.jobStartLng) }
+    : (firstJob?.booking?.pickupLat && firstJob?.booking?.pickupLng)
+      ? { lat: Number(firstJob.booking.pickupLat), lng: Number(firstJob.booking.pickupLng) }
+      : DEPOT_LOCATION.address;
 
-  const lastDest = (lastJob.jobEndLat && lastJob.jobEndLng)
-    ? { lat: lastJob.jobEndLat, lng: lastJob.jobEndLng }
-    : depotAddress;
+  const lastDest = (lastJob?.jobEndLat && lastJob?.jobEndLng)
+    ? { lat: Number(lastJob.jobEndLat), lng: Number(lastJob.jobEndLng) }
+    : (lastJob?.booking?.dropoffLat && lastJob?.booking?.dropoffLng)
+      ? { lat: Number(lastJob.booking.dropoffLat), lng: Number(lastJob.booking.dropoffLng) }
+      : DEPOT_LOCATION.address;
 
-  // Calculate travel times
-  const depotToFirst = await getTravelTime(
-    { lat: depotLat, lng: depotLng },
-    firstOrigin
-  );
+  // Calculate travel times using Google Maps / Haversine fallback
+  const depotToFirst = await getTravelTime(depotCoords, firstOrigin);
+  const lastToDepot = await getTravelTime(lastDest, depotCoords);
 
-  const lastToDepot = await getTravelTime(
-    lastDest,
-    { lat: depotLat, lng: depotLng }
-  );
+  // Requirement 2: Add an additional 10 minutes to travel time
+  const travelFromDepotBuffer = depotToFirst.durationMinutes + 10;
+  const travelToDepotBuffer = lastToDepot.durationMinutes + 10;
 
-  const rules = await getSchedulingRules();
-  const travelFromDepotBuffer = depotToFirst.durationMinutes + rules.depotTravelBuffer;
   const shiftStart = new Date(new Date(first.scheduledStart).getTime() - travelFromDepotBuffer * 60 * 1000);
-  const shiftEnd = new Date(new Date(last.scheduledEnd).getTime() + lastToDepot.durationMinutes * 60 * 1000);
+  const shiftEnd = new Date(new Date(last.scheduledEnd).getTime() + travelToDepotBuffer * 60 * 1000);
 
   // Find existing duty span
   const existingSpan = await tx.driverAvailability.findFirst({
     where: {
       driverId,
-      startTime: { gte: dayStart, lte: dayEnd },
+      startTime: { lt: dayEnd },
+      endTime: { gt: dayStart },
       isBlocked: false
     }
   });

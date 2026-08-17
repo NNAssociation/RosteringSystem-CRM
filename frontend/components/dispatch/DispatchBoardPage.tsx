@@ -50,8 +50,7 @@ import { AutoScheduleModal } from "./AutoScheduleModal";
 export function DispatchBoardPage() {
   const dispatch = useDispatch();
   const { selectedDate, viewMode, filters } = useSelector((state: RootState) => state.dispatchUI);
-  const { data, isLoading, isError } = useGetBoardDataQuery(selectedDate);
-  const { data: dutySpansData } = useGetDutySpansQuery(selectedDate);
+  const { data, isLoading, isError } = useGetBoardDataQuery({ date: selectedDate, viewMode });
   const [updateAssignment] = useUpdateAssignmentMutation();
   const [createAssignment] = useCreateAssignmentMutation();
 
@@ -76,8 +75,8 @@ export function DispatchBoardPage() {
   }, [selectedDate]);
 
   React.useEffect(() => {
-    if (dutySpansData) {
-      const formattedSpans = dutySpansData.map((ds: any) => ({
+    if (data?.dutySpans) {
+      const formattedSpans = data.dutySpans.map((ds: any) => ({
         driverId: ds.driverId,
         date: format(new Date(ds.startTime), "yyyy-MM-dd"),
         startTime: ds.startTime,
@@ -85,7 +84,7 @@ export function DispatchBoardPage() {
       }));
       dispatch(setBulkDutySpans(formattedSpans));
     }
-  }, [dutySpansData, dispatch]);
+  }, [data?.dutySpans, dispatch]);
 
   if (isLoading) {
     return (
