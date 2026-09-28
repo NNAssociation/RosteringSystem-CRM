@@ -1,4 +1,5 @@
 "use client";
+import { CreatedRecordNotice } from "@/components/shared/created-record-notice";
 
 import React, { useState, useEffect, useMemo } from "react";
 import { useGetVehiclesQuery } from "@/services/api";
@@ -21,7 +22,7 @@ export default function FleetPage() {
   const { setHeaderConfig } = useHeader();
 
   // Fleet State (via RTK Query)
-  const { data: vehicles = [], isLoading: fleetLoading } = useGetVehiclesQuery();
+  const { data: vehicles = [], isLoading: fleetLoading, isError, refetch } = useGetVehiclesQuery();
   const [fleetSearchTerm, setFleetSearchTerm] = useState("");
   const [fleetStatusFilter, setFleetStatusFilter] = useState("All");
   const [selectedVehicle, setSelectedVehicle] = useState<Vehicle | null>(null);
@@ -39,38 +40,30 @@ export default function FleetPage() {
         (v.make || "").toLowerCase().includes(fleetSearchTerm.toLowerCase()) ||
         (v.model || "").toLowerCase().includes(fleetSearchTerm.toLowerCase()) ||
         (v.licensePlate || "").toLowerCase().includes(fleetSearchTerm.toLowerCase());
-      const matchStatus = fleetStatusFilter === "All" || (v.status || "").toUpperCase() === fleetStatusFilter.toUpperCase();
+      const status = (v.status || "").toUpperCase().replaceAll(" ", "_");
+      const matchStatus = fleetStatusFilter === "All" || (fleetStatusFilter === "Available" ? ["ACTIVE", "AVAILABLE"].includes(status) : status === fleetStatusFilter.toUpperCase().replaceAll(" ", "_"));
       return matchSearch && matchStatus;
     });
   }, [vehicles, fleetSearchTerm, fleetStatusFilter]);
 
   const fleetStats = [
     { label: "All", count: vehicles.length },
+    { label: "Inactive", count: vehicles.filter(v => v.status?.toUpperCase() === "INACTIVE").length },
     { label: "Available", count: vehicles.filter((v: Vehicle) => v.status === "Available").length },
     { label: "On Trip", count: vehicles.filter((v: Vehicle) => v.status === "On Trip").length },
     { label: "Maintenance", count: vehicles.filter((v: Vehicle) => v.status === "Maintenance").length },
   ];
 
   return (
-    <div className="flex flex-col min-h-screen bg-slate-50/30">
-      <div className="pb-8 px-8 pt-4 space-y-4">
-
-        <div className={cn(
-          "grid transition-all duration-500 gap-6",
-          selectedVehicle ? "grid-cols-1 lg:grid-cols-3" : "grid-cols-1"
-        )}>
-          <div className={cn(
-            "space-y-6 transition-all duration-500",
-            selectedVehicle ? "lg:col-span-2" : "col-span-1"
-          )}>
-            <PageHeader
-              title="Fleet Management"
-              description="Manage vehicles, maintenance, and fleet availability"
-              breadcrumbs={[
-                { label: "Dashboard", href: "/" },
-                { label: "Fleet" }
-              ]}
-              className="px-0 py-4 border-none"
+    <div className="space-y-6 p-6 lg:p-8">
+      <PageHeader
+        title="Fleet Management"
+        description="Manage vehicles, maintenance, and fleet availability"
+        breadcrumbs={[
+          { label: "Dashboard", href: "/dashboard" },
+          { label: "Fleet" }
+        ]}
+        className="px-0 py-0 border-none"
               actions={
                 <div className="flex items-center gap-3">
                   <Button variant="outline" className="h-10 px-6 gap-2 border-slate-200 text-slate-600 rounded-xl hover:bg-slate-50 font-medium shadow-sm">
@@ -86,7 +79,7 @@ export default function FleetPage() {
               <FilterGroup position="left" className="gap-1">
                 {fleetStats.map((stat) => (
                   <button
-                    key={stat.label}
+                    key={stat.label === "Inactive" ? "Deactivated" : stat.label}
                     onClick={() => setFleetStatusFilter(stat.label)}
                     className={cn(
                       "px-4 py-2 rounded-lg text-xs font-semibold transition-all",
@@ -95,7 +88,7 @@ export default function FleetPage() {
                         : "text-slate-500 hover:text-slate-700 hover:bg-slate-100"
                     )}
                   >
-                    {stat.label}
+                    {stat.label === "Inactive" ? "Deactivated" : stat.label}
                   </button>
                 ))}
               </FilterGroup>
@@ -111,8 +104,11 @@ export default function FleetPage() {
                   />
                 </div>
               </FilterGroup>
-            </FilterBar>
+            </FilterBar><CreatedRecordNotice resource="fleet" records={vehicles} visible={filteredVehicles} clear={() => { setFleetSearchTerm(""); setFleetStatusFilter("All"); }} />
 
+        <div className={cn("grid items-start gap-6", selectedVehicle ? "grid-cols-1 lg:grid-cols-[minmax(0,1fr)_minmax(360px,440px)]" : "grid-cols-1")}>
+          <div className="min-w-0">
+            {isError && <div role="alert" className="mb-4 rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-800">Could not refresh vehicles. {vehicles.length ? "Showing previously loaded records." : ""} <Button variant="outline" onClick={() => refetch()}>Retry</Button></div>}
             <FleetTable
               vehicles={filteredVehicles}
               loading={fleetLoading}
@@ -125,7 +121,7 @@ export default function FleetPage() {
           </div>
 
           {selectedVehicle && (
-            <div className="lg:col-span-1 h-fit sticky top-4 animate-in slide-in-from-right-8 duration-500">
+            <div className="min-w-0 h-fit animate-in slide-in-from-right-8 duration-300">
               <FleetDetailsPanel
                 vehicle={selectedVehicle}
                 onClose={() => setSelectedVehicle(null)}
@@ -133,7 +129,6 @@ export default function FleetPage() {
             </div>
           )}
         </div>
-      </div>
     </div>
   );
 }

@@ -1,8 +1,10 @@
+import { requireStaff } from "../middleware/staffAuth.js";
 import { Router } from "express";
 import { getUsers, getUserById, createUser, updateUser, deleteUser, addAvailability, getAvailability } from "../controllers/userController.js";
 import { requireClerkAuth } from "../middleware/authMiddleware.js";
 
 const router = Router();
+router.use(requireStaff);
 
 router.get("/", getUsers);
 router.get("/:id", getUserById);

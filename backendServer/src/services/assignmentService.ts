@@ -1,328 +1,128 @@
 import { prisma } from "../db.js";
-import { eventBus } from "../events/eventBus.js";
-import { EventTypes } from "../events/eventTypes.js";
-import type { CreateAssignmentInput, UpdateAssignmentInput } from "../validators/assignmentSchema.js";
+import { WorkflowError } from "./workflowError.js";
 import { checkDriverConflict, checkVehicleConflict, checkDriverFatigue } from "./conflictService.js";
-import { ValidationError } from "./bookingService.js";
-import { getTravelTime, DEPOT_LOCATION } from "./googleMapsService.js";
 import { getSchedulingRules } from "./settingsService.js";
-import { startOfDay, endOfDay } from "date-fns";
-
-// ── Service Methods ───────────────────────────────────────
+import { getTravelTime, DEPOT_LOCATION } from "./googleMapsService.js";
+import { dayWindow, localDate, addDateDays } from "./businessTime.js";
+import { availabilityWindows } from "./availabilityWindows.js";
+import type { CreateAssignmentInput, UpdateAssignmentInput } from "../validators/assignmentSchema.js";
 
 export async function adjustDriverDutySpan(tx: any, driverId: number, date: Date) {
-  const dayStart = startOfDay(date);
-  const dayEnd = endOfDay(date);
+  const { start, end } = dayWindow(localDate(date));
+  const rows = await tx.assignment.findMany({ where: { driverId, status: { not: "CANCELLED" }, scheduledStart: { lt: end }, scheduledEnd: { gt: start } }, orderBy: { scheduledStart: "asc" }, include: { job: true, vehicle: { include: { homeDepot: true } } } });
+  await tx.driverAvailability.deleteMany({ where: { driverId, source: "CALCULATED", startTime: { lt: end }, endTime: { gt: start } } });
+  if (!rows.length) return;
+  const first = rows[0], last = [...rows].sort((a: any, b: any) => b.scheduledEnd - a.scheduledEnd)[0];
+  const depot = first.vehicle?.homeDepot || DEPOT_LOCATION;
+  const origin = first.job.jobStartLat != null ? { lat: first.job.jobStartLat, lng: first.job.jobStartLng } : first.job.jobStartLocation || DEPOT_LOCATION.address;
+  const destination = last.job.jobEndLat != null ? { lat: last.job.jobEndLat, lng: last.job.jobEndLng } : last.job.jobEndLocation || DEPOT_LOCATION.address;
+  const inbound = await getTravelTime({ lat: depot.lat, lng: depot.lng }, origin);
+  const outbound = await getTravelTime(destination, { lat: depot.lat, lng: depot.lng });
+  await tx.driverAvailability.create({ data: { driverId, source: "CALCULATED", isBlocked: false, reason: "Calculated duty",
+    startTime: new Date(first.scheduledStart.getTime() - (inbound.durationMinutes + 10) * 60000),
+    endTime: new Date(last.scheduledEnd.getTime() + (outbound.durationMinutes + 10) * 60000) } });
+}
 
-  // Fetch all assignments on this day for the driver
-  const assignments = await tx.assignment.findMany({
-    where: {
-      driverId,
-      status: { in: ["PENDING", "CONFIRMED", "IN_PROGRESS", "COMPLETED"] },
-      scheduledStart: { gte: dayStart, lte: dayEnd }
-    },
-    include: {
-      job: {
-        include: { booking: true }
-      }
-    }
-  });
-
-  if (assignments.length === 0) {
-    // Delete duty span if no assignments left
-    await tx.driverAvailability.deleteMany({
-      where: {
-        driverId,
-        startTime: { lt: dayEnd },
-        endTime: { gt: dayStart },
-        isBlocked: false
-      }
-    });
-    return;
-  }
-
-  // Sort assignments by scheduledStart
-  assignments.sort((a: any, b: any) => new Date(a.scheduledStart).getTime() - new Date(b.scheduledStart).getTime());
-
-  const first = assignments[0];
-  const last = assignments[assignments.length - 1];
-  const firstJob = first.job;
-  const lastJob = last.job;
-
-  // Driver start and end location is strictly Punchbowl Bus Company (SB)
-  const depotCoords = { lat: DEPOT_LOCATION.lat, lng: DEPOT_LOCATION.lng };
-
-  const firstOrigin = (firstJob?.jobStartLat && firstJob?.jobStartLng)
-    ? { lat: Number(firstJob.jobStartLat), lng: Number(firstJob.jobStartLng) }
-    : (firstJob?.booking?.pickupLat && firstJob?.booking?.pickupLng)
-      ? { lat: Number(firstJob.booking.pickupLat), lng: Number(firstJob.booking.pickupLng) }
-      : DEPOT_LOCATION.address;
-
-  const lastDest = (lastJob?.jobEndLat && lastJob?.jobEndLng)
-    ? { lat: Number(lastJob.jobEndLat), lng: Number(lastJob.jobEndLng) }
-    : (lastJob?.booking?.dropoffLat && lastJob?.booking?.dropoffLng)
-      ? { lat: Number(lastJob.booking.dropoffLat), lng: Number(lastJob.booking.dropoffLng) }
-      : DEPOT_LOCATION.address;
-
-  // Calculate travel times using Google Maps / Haversine fallback
-  const depotToFirst = await getTravelTime(depotCoords, firstOrigin);
-  const lastToDepot = await getTravelTime(lastDest, depotCoords);
-
-  // Requirement 2: Add an additional 10 minutes to travel time
-  const travelFromDepotBuffer = depotToFirst.durationMinutes + 10;
-  const travelToDepotBuffer = lastToDepot.durationMinutes + 10;
-
-  const shiftStart = new Date(new Date(first.scheduledStart).getTime() - travelFromDepotBuffer * 60 * 1000);
-  const shiftEnd = new Date(new Date(last.scheduledEnd).getTime() + travelToDepotBuffer * 60 * 1000);
-
-  // Find existing duty span
-  const existingSpan = await tx.driverAvailability.findFirst({
-    where: {
-      driverId,
-      startTime: { lt: dayEnd },
-      endTime: { gt: dayStart },
-      isBlocked: false
-    }
-  });
-
-  if (existingSpan) {
-    await tx.driverAvailability.update({
-      where: { id: existingSpan.id },
-      data: {
-        startTime: shiftStart,
-        endTime: shiftEnd
-      }
-    });
-  } else {
-    await tx.driverAvailability.create({
-      data: {
-        driverId,
-        startTime: shiftStart,
-        endTime: shiftEnd,
-        isBlocked: false,
-        reason: "Duty Span"
-      }
-    });
+export async function cancelBookingAssignments(tx: any, bookingId: number) {
+  const rows = await tx.assignment.findMany({ where: { job: { bookingId }, status: { not: "CANCELLED" } } });
+  await tx.assignment.updateMany({ where: { job: { bookingId }, status: { not: "CANCELLED" } }, data: { status: "CANCELLED", version: { increment: 1 } } });
+  const refreshed = new Set<string>();
+  for (const row of rows) {
+    if (!row.driverId) continue;
+    const key = `${row.driverId}:${localDate(row.scheduledStart)}`;
+    if (refreshed.has(key)) continue;
+    refreshed.add(key);
+    await adjustDriverDutySpan(tx, row.driverId, row.scheduledStart);
   }
 }
 
+export function assertTripTimes(job: any, start: Date, end: Date) {
+  if (!Number.isFinite(start.getTime()) || !Number.isFinite(end.getTime()) || end <= start) throw new WorkflowError("Invalid assignment time window");
+  if (start.getTime() !== new Date(job.jobStartDateTime).getTime() || end.getTime() !== new Date(job.jobEndDateTime).getTime()) throw new WorkflowError("Assignment must preserve the confirmed trip times. Create a booking amendment to reschedule.", 409);
+}
+async function validate(tx: any, jobId: number, driverId: number | null | undefined, vehicleId: number | null | undefined, start: Date, end: Date, excludeId?: number, userId?: number) {
+  const job = await tx.job.findUnique({ where: { id: jobId }, include: { booking: true, assignments: { where: { status: { not: "CANCELLED" }, ...(excludeId ? { id: { not: excludeId } } : {}) }, include: { vehicle: true } } } });
+  if (!job || job.booking?.status !== "CONFIRMED" || ["CANCELLED", "COMPLETED"].includes(job.status)) throw new WorkflowError("Only confirmed, active bookings can be dispatched", 409);
+  if (!driverId || !vehicleId) throw new WorkflowError("Select both a driver and a vehicle");
+  assertTripTimes(job, start, end);
+  const locks = await tx.dispatchLock.findMany({ where: { expiresAt: { gt: new Date() }, OR: [{ resourceType: "JOB", resourceId: jobId }, { resourceType: "DRIVER", resourceId: driverId }, { resourceType: "VEHICLE", resourceId: vehicleId }] } });
+  if (locks.some((l: any) => l.lockedBy !== userId)) throw new WorkflowError("A resource is locked by another dispatcher", 423);
+  const driver = await tx.user.findUnique({ where: { id: driverId } });
+  if (!driver || driver.role !== "DRIVER" || driver.status !== "ACTIVE") throw new WorkflowError("Driver is not available for assignment");
+  const required = job.booking.noOfVehicles || 1;
+  if (job.assignments.length >= required) throw new WorkflowError("All requested vehicles are already assigned", 409);
+  if (job.assignments.some((a: any) => a.driverId === driverId || a.vehicleId === vehicleId)) throw new WorkflowError("This driver or vehicle already covers this job", 409);
+  const vehicle = await tx.fleetVehicle.findUnique({ where: { id: vehicleId } });
+  if (!vehicle) throw new WorkflowError("Selected vehicle does not exist");
+  const vehicleCap = vehicle.maxPassengers && vehicle.maxPassengers > 0 ? vehicle.maxPassengers : 55;
+  const capacity = job.assignments.reduce((n: number, a: any) => n + (a.vehicle?.maxPassengers || 55), vehicleCap);
+  if (job.assignments.length + 1 === required && capacity < job.booking.passengerCount) throw new WorkflowError(`Combined vehicle capacity is ${capacity}, but ${job.booking.passengerCount} seats are required`);
+  const availability = await tx.driverAvailability.findMany({ where: { driverId, source: "MANUAL", isBlocked: false, OR: [{ dayOfWeek: { not: null } }, { startTime: { lt: dayWindow(localDate(end)).end }, endTime: { gt: dayWindow(localDate(start)).start } }] } });
+  const windows = availabilityWindows(availability, start, end).filter(w => w.start < dayWindow(localDate(end)).end && w.end > dayWindow(localDate(start)).start);
+  if (windows.length && !windows.some(w => w.start <= start && w.end >= end)) throw new WorkflowError("Job is outside the driver's planned availability");
+  const rules = await getSchedulingRules();
+  for (const result of [await checkDriverConflict(driverId, start, end, excludeId, jobId, rules, tx), await checkVehicleConflict(vehicleId, start, end, excludeId, tx)]) {
+    if (result.hasConflict) throw new WorkflowError(result.reason || "Scheduling conflict", 409);
+  }
+  for (let day = localDate(start); day <= localDate(new Date(end.getTime() - 1)); day = addDateDays(day, 1)) {
+    const window = dayWindow(day);
+    const hours = (Math.min(end.getTime(), window.end.getTime()) - Math.max(start.getTime(), window.start.getTime())) / 3600000;
+    const fatigue = await checkDriverFatigue(driverId, window.start, hours, excludeId, tx);
+    if (fatigue.hasConflict) throw new WorkflowError(fatigue.reason || "Driver workload exceeded", 409);
+  }
+  return job;
+}
+async function jobStatus(tx: any, jobId: number) {
+  const job = await tx.job.findUnique({ where: { id: jobId }, include: { booking: true, assignments: { where: { status: { not: "CANCELLED" } } } } });
+  if (!job || job.booking?.status !== "CONFIRMED") return;
+  const status = !job.assignments.length ? "UNASSIGNED" : job.assignments.every((a: any) => a.status === "COMPLETED") && job.assignments.length >= (job.booking.noOfVehicles || 1) ? "COMPLETED" : job.assignments.length < (job.booking.noOfVehicles || 1) ? "PARTIALLY_ASSIGNED" : "ASSIGNED";
+  await tx.job.update({ where: { id: jobId }, data: { status } });
+}
 export async function createAssignment(input: CreateAssignmentInput, meta?: { userId?: number | undefined }) {
-  const start = new Date(input.scheduledStart);
-  
-  // Need to calculate an end time if not provided
-  let end: Date;
-  if (input.scheduledEnd) {
-    end = new Date(input.scheduledEnd);
-  } else {
-    // Lookup job to get duration, default to 2 hours if missing
-    const job = await prisma.job.findUnique({ where: { id: input.jobId } });
-    if (!job) throw new ValidationError("Job not found");
-    
-    const hours = job.durationHours ? Number(job.durationHours) : 2;
-    end = new Date(start.getTime() + hours * 60 * 60 * 1000);
-  }
-
-  // 1. Conflict Checks
-  const rules = await getSchedulingRules();
-
-  if (input.vehicleId && input.jobId) {
-    const job = await prisma.job.findUnique({ where: { id: input.jobId }, include: { booking: true } });
-    if (job?.booking?.passengerCount) {
-      const { checkVehicleCapacity } = await import('./conflictService.js');
-      const capacityResult = await checkVehicleCapacity(input.vehicleId, job.booking.passengerCount);
-      if (capacityResult.hasConflict) throw new ValidationError(capacityResult.reason || 'Vehicle capacity exceeded');
-    }
-  }
-
-  if (input.driverId) {
-    const driverConflict = await checkDriverConflict(input.driverId, start, end, undefined, input.jobId, rules);
-    if (driverConflict.hasConflict) throw new ValidationError(driverConflict.reason || "Driver conflict");
-
-    // Lookup job to get duration
-    const job = await prisma.job.findUnique({ where: { id: input.jobId } });
-    const hours = job?.durationHours ? Number(job.durationHours) : 2;
-
-    const fatigueConflict = await checkDriverFatigue(input.driverId, start, hours);
-    if (fatigueConflict.hasConflict) throw new ValidationError(fatigueConflict.reason || "Fatigue conflict");
-  }
-
-  if (input.vehicleId) {
-    const vehicleConflict = await checkVehicleConflict(input.vehicleId, start, end);
-    if (vehicleConflict.hasConflict) throw new ValidationError(vehicleConflict.reason || "Vehicle conflict");
-  }
-
-  // 2. Create Assignment sequentially
-  const newAssignment = await prisma.assignment.create({
-    data: {
-      jobId: input.jobId,
-      driverId: input.driverId,
-      vehicleId: input.vehicleId,
-      scheduledStart: start,
-      scheduledEnd: end,
-      notes: input.notes,
-      createdBy: meta?.userId,
-      status: "CONFIRMED",
-      travelFromLocation: input.travelFromLocation,
-      travelToMinutes: input.travelToMinutes,
-      travelToKm: input.travelToKm,
-      bufferMinutes: input.bufferMinutes,
-    },
-    include: { job: true, driver: true, vehicle: true },
-  });
-
-  // Update Job status to CONFIRMED if it was in an unassigned state
-  const UNASSIGNED_STATUSES = ["UNASSIGNED", "OPEN", "PENDING"];
-  if (UNASSIGNED_STATUSES.includes(newAssignment.job.status)) {
-    await prisma.job.update({
-      where: { id: input.jobId },
-      data: { status: "CONFIRMED" },
-    });
-  }
-
-  if (input.driverId) {
-    await adjustDriverDutySpan(prisma, input.driverId, start);
-  }
-
-  // 3. Emit Events
-  eventBus.publish(EventTypes.ASSIGNMENT_CREATED, newAssignment, meta);
-  
-  if (UNASSIGNED_STATUSES.includes(newAssignment.job.status)) {
-     eventBus.publish(EventTypes.JOB_UPDATED, { jobId: input.jobId, status: "CONFIRMED" }, meta);
-  }
-
-  return newAssignment;
+  return prisma.$transaction(async (tx: any) => {
+    // One database lock covers manual and automatic mutations, including cross-resource races.
+    await tx.$executeRaw`SELECT pg_advisory_xact_lock(74021)`;
+    const source = await tx.job.findUnique({ where: { id: input.jobId } });
+    const start = new Date(input.scheduledStart), end = new Date(input.scheduledEnd || source?.jobEndDateTime);
+    await validate(tx, input.jobId, input.driverId, input.vehicleId, start, end, undefined, meta?.userId);
+    const row = await tx.assignment.create({ data: { ...input, scheduledStart: start, scheduledEnd: end, status: "CONFIRMED", createdBy: meta?.userId }, include: { job: true, driver: true, vehicle: true } });
+    await jobStatus(tx, input.jobId);
+    await adjustDriverDutySpan(tx, input.driverId!, start);
+    await tx.workflowEvent.create({ data: { type: "assignment.created", payload: { assignmentId: row.id, jobId: input.jobId } } });
+    return row;
+  }, { maxWait: 15000, timeout: 60000 });
 }
-
 export async function updateAssignment(id: number, input: UpdateAssignmentInput, meta?: { userId?: number | undefined }) {
-  // 1. Fetch current assignment to verify optimistic locking version
-  const current = await prisma.assignment.findUnique({ where: { id }, include: { job: true } });
-  if (!current) throw new ValidationError("Assignment not found");
-  
-  if (current.version !== input.version) {
-    throw new ValidationError("Assignment has been modified by another user. Please refresh and try again.");
-  }
-
-  // Prepare times for conflict checks
-  const start = input.scheduledStart ? new Date(input.scheduledStart) : current.scheduledStart;
-  let end: Date;
-  if (input.scheduledEnd) {
-    end = new Date(input.scheduledEnd);
-  } else if (current.scheduledEnd) {
-    end = current.scheduledEnd;
-  } else {
-    const hours = current.job.durationHours ? Number(current.job.durationHours) : 2;
-    end = new Date(start.getTime() + hours * 60 * 60 * 1000);
-  }
-
-  // 2. Conflict Checks if Driver or Vehicle is changing, or Times are changing
-  const driverId = input.driverId !== undefined ? input.driverId : current.driverId;
-  const vehicleId = input.vehicleId !== undefined ? input.vehicleId : current.vehicleId;
-  
-  const rules = await getSchedulingRules();
-
-  if (vehicleId && current.jobId) {
-    const job = await prisma.job.findUnique({ where: { id: current.jobId }, include: { booking: true } });
-    if (job?.booking?.passengerCount) {
-      const { checkVehicleCapacity } = await import('./conflictService.js');
-      const capacityResult = await checkVehicleCapacity(vehicleId, job.booking.passengerCount);
-      if (capacityResult.hasConflict) throw new ValidationError(capacityResult.reason || 'Vehicle capacity exceeded');
-    }
-  }
-
-  if (driverId) {
-    const driverConflict = await checkDriverConflict(driverId, start, end, id, current.jobId, rules);
-    if (driverConflict.hasConflict) throw new ValidationError(driverConflict.reason || "Driver conflict");
-
-    const hours = current.job.durationHours ? Number(current.job.durationHours) : 2;
-    const fatigueConflict = await checkDriverFatigue(driverId, start, hours, id);
-    if (fatigueConflict.hasConflict) throw new ValidationError(fatigueConflict.reason || "Fatigue conflict");
-  }
-
-  if (vehicleId) {
-    const vehicleConflict = await checkVehicleConflict(vehicleId, start, end, id);
-    if (vehicleConflict.hasConflict) throw new ValidationError(vehicleConflict.reason || "Vehicle conflict");
-  }
-
-  // 3. Update Assignment (Optimistic lock enforced by the WHERE clause)
-  const updateData: any = {
-    version: { increment: 1 } // Auto-increment version
-  };
-  
-  if (input.driverId !== undefined) updateData.driverId = input.driverId;
-  if (input.vehicleId !== undefined) updateData.vehicleId = input.vehicleId;
-  if (input.scheduledStart) updateData.scheduledStart = start;
-  if (input.scheduledEnd) updateData.scheduledEnd = end;
-  if (input.actualStart) updateData.actualStart = new Date(input.actualStart);
-  if (input.actualEnd) updateData.actualEnd = new Date(input.actualEnd);
-  if (input.status) updateData.status = input.status;
-  if (input.notes) updateData.notes = input.notes;
-
-  try {
-    const updatedAssignment = await prisma.$transaction(async (tx: any) => {
-      const assignment = await tx.assignment.update({
-        where: { 
-          id, 
-          version: input.version // THIS ENFORCES OPTIMISTIC LOCKING
-        },
-        data: updateData,
-        include: { job: true, driver: true, vehicle: true },
-      });
-
-      // Adjust old driver's duty span if changed
-      if (input.driverId !== undefined && current.driverId && current.driverId !== input.driverId) {
-        await adjustDriverDutySpan(tx, current.driverId, start);
-      }
-
-      // Adjust new/current driver's duty span
-      const finalDriverId = input.driverId !== undefined ? input.driverId : current.driverId;
-      if (finalDriverId) {
-        await adjustDriverDutySpan(tx, finalDriverId, start);
-      }
-
-      return assignment;
-    });
-
-    eventBus.publish(EventTypes.ASSIGNMENT_UPDATED, updatedAssignment, meta);
-    return updatedAssignment;
-
-  } catch (error: any) {
-    if (error.code === 'P2025') {
-       throw new ValidationError("Assignment has been modified by another user. Please refresh and try again.");
-    }
-    throw error;
-  }
+  return prisma.$transaction(async (tx: any) => {
+    await tx.$executeRaw`SELECT pg_advisory_xact_lock(74021)`;
+    const current = await tx.assignment.findUnique({ where: { id } });
+    if (!current || current.version !== input.version) throw new WorkflowError("Assignment changed. Refresh and try again.", 409);
+    if (["CANCELLED", "COMPLETED"].includes(current.status)) throw new WorkflowError("This assignment can no longer be changed", 409);
+    const driverId = input.driverId === undefined ? current.driverId : input.driverId;
+    const vehicleId = input.vehicleId === undefined ? current.vehicleId : input.vehicleId;
+    if (current.status === "IN_PROGRESS" && (driverId !== current.driverId || vehicleId !== current.vehicleId || input.status === "CANCELLED")) throw new WorkflowError("An in-progress assignment cannot be reassigned or cancelled", 409);
+    const start = new Date(input.scheduledStart || current.scheduledStart), end = new Date(input.scheduledEnd || current.scheduledEnd);
+    if (input.status !== "CANCELLED") await validate(tx, current.jobId, driverId, vehicleId, start, end, id, meta?.userId);
+    if (input.status === "COMPLETED" && current.status !== "IN_PROGRESS") throw new WorkflowError("Start the assignment before completing it", 409);
+    const { version, actualStart, actualEnd, ...rest } = input;
+    const row = await tx.assignment.update({ where: { id, version }, data: { ...rest, scheduledStart: start, scheduledEnd: end, version: { increment: 1 }, ...(input.status === "IN_PROGRESS" ? { actualStart: new Date() } : {}), ...(input.status === "COMPLETED" ? { actualEnd: new Date() } : {}) }, include: { job: true, driver: true, vehicle: true } });
+    await jobStatus(tx, current.jobId);
+    for (const d of new Set<number>([current.driverId, driverId].filter(Boolean))) await adjustDriverDutySpan(tx, d, start);
+    await tx.workflowEvent.create({ data: { type: "assignment.updated", payload: { assignmentId: id } } });
+    return row;
+  }, { maxWait: 15000, timeout: 60000 });
 }
-
-export async function deleteAssignment(id: number, meta?: { userId?: number | undefined }) {
-  const assignment = await prisma.assignment.findUnique({ where: { id } });
-  if (!assignment) return { success: true, id };
-
-  await prisma.$transaction(async (tx: any) => {
-    // Delete assignment
-    await tx.assignment.delete({ where: { id } });
-
-    // Adjust driver's duty span
-    if (assignment.driverId) {
-      await adjustDriverDutySpan(tx, assignment.driverId, new Date(assignment.scheduledStart));
-    }
-
-    // Check if the Job has any other active assignments. If not, revert Job to UNASSIGNED.
-    const otherAssignments = await tx.assignment.count({
-      where: { 
-        jobId: assignment.jobId,
-        id: { not: id },
-        status: { notIn: ["CANCELLED"] }
-      }
-    });
-
-    if (otherAssignments === 0) {
-      await tx.job.update({
-        where: { id: assignment.jobId },
-        data: { status: "UNASSIGNED" }
-      });
-    }
-  });
-
-  eventBus.publish(EventTypes.ASSIGNMENT_CANCELLED, { assignmentId: id, jobId: assignment.jobId }, meta);
-  return { success: true, id };
+export async function deleteAssignment(id: number, meta?: { userId?: number | undefined }, version?: number) {
+  return prisma.$transaction(async (tx: any) => {
+    await tx.$executeRaw`SELECT pg_advisory_xact_lock(74021)`;
+    const row = await tx.assignment.findUnique({ where: { id } });
+    if (!row || row.status === "CANCELLED") return { success: true, id };
+    if (version === undefined || version !== row.version) throw new WorkflowError("Assignment changed. Refresh before unassigning.", 409);
+    if (["IN_PROGRESS", "COMPLETED"].includes(row.status)) throw new WorkflowError("Started assignments cannot be unassigned", 409);
+    await tx.assignment.update({ where: { id, version }, data: { status: "CANCELLED", version: { increment: 1 } } });
+    await jobStatus(tx, row.jobId);
+    if (row.driverId) await adjustDriverDutySpan(tx, row.driverId, row.scheduledStart);
+    await tx.workflowEvent.create({ data: { type: "assignment.cancelled", payload: { assignmentId: id, jobId: row.jobId } } });
+    return { success: true, id };
+  }, { maxWait: 15000, timeout: 60000 });
 }

@@ -1,8 +1,10 @@
+import { requireStaff } from "../middleware/staffAuth.js";
 import { Router } from "express";
 import { getCustomers, getCustomerById, createCustomer, updateCustomer, deleteCustomer, searchCustomers } from "../controllers/customerController.js";
 import { requireClerkAuth } from "../middleware/authMiddleware.js";
 
 const router = Router();
+router.use(requireStaff);
 
 router.get("/search", searchCustomers);  // Must be before /:id
 router.get("/", getCustomers);

@@ -1,6 +1,7 @@
 import type { Request, Response, NextFunction } from "express";
 import HttpError from "../models/errorModel.js";
 import * as UserService from "../services/userService.js";
+import { createUserSchema, updateUserSchema } from "../validators/userSchema.js";
 
 // GET /users - fetch all users
 export const getUsers = async (
@@ -12,7 +13,8 @@ export const getUsers = async (
     const { roles } = req.query;
     const users = await UserService.getAllUsers(roles as string | undefined);
     res.json(users);
-  } catch (error) {
+  } catch (error: any) {
+    if (error.status) { res.status(error.status).json({ error: error.message }); return; }
     console.error("Error fetching users:", error);
     return next(new HttpError("Error fetching users", 500));
   }
@@ -31,7 +33,8 @@ export const getUserById = async (
     } else {
       res.status(404).json({ error: "User not found" });
     }
-  } catch (error) {
+  } catch (error: any) {
+    if (error.status) { res.status(error.status).json({ error: error.message }); return; }
     console.error("Error fetching user:", error);
     res.status(500).json({ error: "Error fetching user" });
   }
@@ -44,13 +47,16 @@ export const createUser = async (
   next: NextFunction,
 ): Promise<void> => {
   try {
-    if (!req.body.email) {
-      res.status(400).json({ error: "Email is required" });
+    const parseResult = createUserSchema.safeParse(req.body);
+    if (!parseResult.success) {
+      const msg = parseResult.error.issues.map((i) => i.message).join(", ");
+      res.status(400).json({ error: msg });
       return;
     }
-    const newUser = await UserService.createUser(req.body);
+    const newUser = await UserService.createUser(parseResult.data);
     res.status(201).json(newUser);
   } catch (error: any) {
+    if (error.status) { res.status(error.status).json({ error: error.message }); return; }
     console.error("Error creating user:", error);
     if (error.code === 'P2002') {
       res.status(400).json({ error: "A user with this email already exists." });
@@ -67,9 +73,16 @@ export const updateUser = async (
   next: NextFunction,
 ): Promise<void> => {
   try {
-    const updatedUser = await UserService.updateUser(Number(req.params.id), req.body);
+    const parseResult = updateUserSchema.safeParse(req.body);
+    if (!parseResult.success) {
+      const msg = parseResult.error.issues.map((i) => i.message).join(", ");
+      res.status(400).json({ error: msg });
+      return;
+    }
+    const updatedUser = await UserService.updateUser(Number(req.params.id), parseResult.data);
     res.json(updatedUser);
   } catch (error: any) {
+    if (error.status) { res.status(error.status).json({ error: error.message }); return; }
     console.error("Error updating user:", error);
     if (error.code === 'P2025') {
       res.status(404).json({ error: "User not found" });
@@ -88,7 +101,8 @@ export const deleteUser = async (
   try {
     const result = await UserService.softDeleteUser(Number(req.params.id));
     res.json(result);
-  } catch (error) {
+  } catch (error: any) {
+    if (error.status) { res.status(error.status).json({ error: error.message }); return; }
     console.error("Error deleting user:", error);
     return next(new HttpError("Error deleting user", 500));
   }
@@ -103,7 +117,8 @@ export const addAvailability = async (
   try {
     const block = await UserService.addDriverAvailability(Number(req.params.id), req.body);
     res.status(201).json(block);
-  } catch (error) {
+  } catch (error: any) {
+    if (error.status) { res.status(error.status).json({ error: error.message }); return; }
     console.error("Error adding availability:", error);
     return next(new HttpError("Error adding availability", 500));
   }
@@ -118,7 +133,8 @@ export const getAvailability = async (
   try {
     const blocks = await UserService.getDriverAvailability(Number(req.params.id));
     res.json(blocks);
-  } catch (error) {
+  } catch (error: any) {
+    if (error.status) { res.status(error.status).json({ error: error.message }); return; }
     console.error("Error fetching availability:", error);
     return next(new HttpError("Error fetching availability", 500));
   }

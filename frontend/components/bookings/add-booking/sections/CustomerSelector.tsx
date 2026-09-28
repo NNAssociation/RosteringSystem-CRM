@@ -21,6 +21,7 @@ interface CustomerSelectorProps {
 
 export function CustomerSelector({
   customerName,
+  customerEmail,
   customerId,
   error,
   onSelect,
@@ -48,7 +49,7 @@ export function CustomerSelector({
   };
 
   // If a customer is already selected, show selected state
-  if (customerId && customerName) {
+  if (customerId) {
     return (
       <div className="space-y-2">
         <label className="text-[11px] font-bold text-slate-400 uppercase tracking-wider ml-1">
@@ -59,8 +60,11 @@ export function CustomerSelector({
             <Person style={{ fontSize: "18px" }} />
           </div>
           <div className="flex-1 min-w-0">
-            <p className="text-sm font-bold text-slate-800 truncate">{customerName}</p>
-            <p className="text-xs text-slate-500 truncate">{customerId}</p>
+            <p className="text-sm font-bold text-slate-800 truncate">{customerName || "Unnamed customer"}</p>
+            <p className="flex items-center gap-1 text-xs text-slate-500 truncate">
+              <Email style={{ fontSize: "11px" }} />
+              {customerEmail || <span className="text-amber-600 font-medium">No email — required before sending</span>}
+            </p>
           </div>
           <Button
             type="button"

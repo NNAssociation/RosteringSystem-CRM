@@ -48,6 +48,7 @@
 }
 
 :root {
+  color-scheme: light;
   --radius: 0.625rem;
   --background: oklch(1 0 0);
   --foreground: oklch(0.141 0.005 285.823);
@@ -129,4 +130,31 @@
 .pac-container {
   z-index: 9999 !important;
   pointer-events: auto !important;
+}
+
+/* Google Maps Places Autocomplete Element (New API) */
+gmp-place-autocomplete,
+place-autocomplete-element,
+.place-search-container,
+.place-search-host {
+  color-scheme: light !important;
+  --gmpx-color-surface: #ffffff !important;
+  --gmpx-color-on-surface: #0f172a !important;
+  --gmpx-color-on-surface-variant: #64748b !important;
+  --gmpx-color-primary: #0f172a !important;
+  --gmpx-color-outline: #e2e8f0 !important;
+  --gmpx-font-family: inherit !important;
+  background-color: #ffffff !important;
+  color: #0f172a !important;
+  border-radius: 0.75rem !important;
+  display: block !important;
+  width: 100% !important;
+}
+
+gmp-place-autocomplete::part(input),
+place-autocomplete-element::part(input) {
+  background-color: #ffffff !important;
+  color: #0f172a !important;
+  border-color: #e2e8f0 !important;
+  font-family: inherit !important;
 }

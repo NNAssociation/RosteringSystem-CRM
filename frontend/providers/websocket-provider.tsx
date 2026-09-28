@@ -4,6 +4,8 @@ import React, { createContext, useContext, useEffect, useState } from "react";
 import { io, Socket } from "socket.io-client";
 import { useDispatch } from "react-redux";
 import { dispatchApi } from "@/services/api";
+import { useAuth } from "@clerk/nextjs";
+import { usePathname } from "next/navigation";
 
 interface WebSocketContextType {
   socket: Socket | null;
@@ -21,15 +23,18 @@ export const WebSocketProvider = ({ children }: { children: React.ReactNode }) =
   const [socket, setSocket] = useState<Socket | null>(null);
   const [isConnected, setIsConnected] = useState(false);
   const dispatch = useDispatch();
+  const { isSignedIn, getToken } = useAuth();
+  const pathname = usePathname();
 
   useEffect(() => {
     // Only connect if dispatch feature is enabled
-    if (process.env.NEXT_PUBLIC_DISPATCH_ENABLED === "false") {
+    if (!isSignedIn || !pathname.startsWith("/dashboard") || process.env.NEXT_PUBLIC_DISPATCH_ENABLED === "false") {
       return;
     }
 
     const socketUrl = process.env.NEXT_PUBLIC_WS_URL || "http://localhost:8000/dispatch";
     const socketInstance = io(socketUrl, {
+      auth: async (callback) => callback({ token: await getToken() }),
       withCredentials: true,
       transports: ["websocket", "polling"],
     });
@@ -39,9 +44,10 @@ export const WebSocketProvider = ({ children }: { children: React.ReactNode }) =
       setIsConnected(true);
     });
 
-    socketInstance.on("disconnect", () => {
+    socketInstance.on("disconnect", (reason) => {
 
       setIsConnected(false);
+      if (reason === "io server disconnect") socketInstance.connect();
     });
 
     // Real-time events to invalidate RTK Query cache
@@ -71,7 +77,7 @@ export const WebSocketProvider = ({ children }: { children: React.ReactNode }) =
     return () => {
       socketInstance.disconnect();
     };
-  }, [dispatch]);
+  }, [dispatch, getToken, isSignedIn, pathname]);
 
   return (
     <WebSocketContext.Provider value={{ socket, isConnected }}>

@@ -5,12 +5,14 @@ import { Button } from "@/components/ui/button";
 
 interface BookingModalFooterProps {
   isSubmitting: boolean;
+  canSubmit?: boolean;
   onCancel: () => void;
   onSubmit: () => void;
 }
 
 export function BookingModalFooter({
   isSubmitting,
+  canSubmit = true,
   onCancel,
   onSubmit,
 }: BookingModalFooterProps) {
@@ -26,9 +28,9 @@ export function BookingModalFooter({
       </Button>
       <Button
         type="button"
-        disabled={isSubmitting}
+        disabled={isSubmitting || !canSubmit}
         onClick={onSubmit}
-        className="bg-primary hover:bg-primary/90 text-white rounded-xl h-11 px-8 font-bold shadow-xl shadow-primary/20 transition-all hover:scale-[1.02] active:scale-[0.98] gap-2"
+        className="bg-primary hover:bg-primary/90 disabled:opacity-40 disabled:cursor-not-allowed text-white rounded-xl h-11 px-8 font-bold shadow-xl shadow-primary/20 transition-all hover:scale-[1.02] active:scale-[0.98] gap-2"
       >
         {isSubmitting ? (
           <>

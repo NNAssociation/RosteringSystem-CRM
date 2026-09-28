@@ -1,3 +1,6 @@
+import { businessTimeZone, dayWindow, localDate } from "./businessTime.js";
+import { WorkflowError } from "./workflowError.js";
+import { availabilityWindows } from "./availabilityWindows.js";
 import { prisma } from "../db.js";
 import { getDriversForDispatch } from "./userService.js";
 import { getAvailableVehicles } from "./fleetService.js";
@@ -10,17 +13,15 @@ export async function getBoardData(start: Date, end: Date) {
   const drivers = await getDriversForDispatch();
 
   // 2. Fetch Vehicles available in this window
-  const vehicles = await getAvailableVehicles(start, end);
+  const vehicles = await prisma.fleetVehicle.findMany({ where: { status: { in: ["ACTIVE", "AVAILABLE"] } }, include: { assignedDriver: true } });
 
   // 3. Fetch Assignments falling in this window
   const assignments = await prisma.assignment.findMany({
     where: {
       status: { not: "CANCELLED" },
-      OR: [
-        { scheduledStart: { gte: start, lte: end } },
-        { scheduledEnd: { gte: start, lte: end } },
-        { scheduledStart: { lte: start }, scheduledEnd: { gte: end } },
-      ],
+      job: { booking: { status: "CONFIRMED" } },
+      scheduledStart: { lt: end },
+      scheduledEnd: { gt: start },
     },
     include: {
       job: {
@@ -43,22 +44,23 @@ export async function getBoardData(start: Date, end: Date) {
   });
 
   // 4. Fetch Duty Spans (driver availability) in this window
-  const dutySpans = await prisma.driverAvailability.findMany({
+  const availability = await prisma.driverAvailability.findMany({
     where: {
-      startTime: { lt: end },
-      endTime: { gt: start },
+      OR: [{ dayOfWeek: { not: null } }, { startTime: { lt: end }, endTime: { gt: start } }],
       isBlocked: false
     }
   });
+  const dutySpans = availabilityWindows(availability, start, end).filter(w => w.start < end && w.end > start).map(w => ({ ...w.block, id: `${w.block.id}-${w.start.toISOString()}`, startTime: w.start, endTime: w.end }));
 
   // 5. Fetch Unassigned Jobs (jobs with fewer assignments than requested noOfVehicles)
   const allCandidateJobs = await prisma.job.findMany({
     where: {
-      status: { in: ["UNASSIGNED", "OPEN", "PENDING", "Pending", "pending", "Open"] },
-      jobStartDateTime: { gte: start, lte: end }
+      status: { notIn: ["CANCELLED", "COMPLETED"] },
+      booking: { status: "CONFIRMED" },
+      jobStartDateTime: { lt: end }, jobEndDateTime: { gt: start }
     },
     include: {
-      assignments: true,
+      assignments: { where: { status: { not: "CANCELLED" } } },
       booking: { 
         select: { 
           customer: { select: { name: true, phone1: true } }, 
@@ -81,6 +83,7 @@ export async function getBoardData(start: Date, end: Date) {
   });
 
   return {
+    timeZone: businessTimeZone(), windowStart: start, windowEnd: end,
     drivers,
     vehicles,
     assignments,
@@ -96,13 +99,17 @@ export async function getBoardData(start: Date, end: Date) {
 export async function acquireLock(resourceType: "DRIVER" | "VEHICLE" | "JOB", resourceId: number, userId: number) {
   const expiresAt = new Date(Date.now() + 15000); // Lock expires in 15 seconds
 
+  return prisma.$transaction(async (tx: any) => {
+  await tx.$executeRaw`SELECT pg_advisory_xact_lock(74021)`;
+  const existing = await tx.dispatchLock.findUnique({ where: { resourceType_resourceId: { resourceType, resourceId } } });
+  if (existing && existing.expiresAt > new Date() && existing.lockedBy !== userId) return { success: false, reason: "Resource is locked by another dispatcher." };
   // Clean up expired locks first
-  await prisma.dispatchLock.deleteMany({
+  await tx.dispatchLock.deleteMany({
     where: { expiresAt: { lt: new Date() } }
   });
 
   try {
-    const lock = await prisma.dispatchLock.upsert({
+    const lock = await tx.dispatchLock.upsert({
       where: {
         resourceType_resourceId: { resourceType, resourceId },
       },
@@ -125,6 +132,7 @@ export async function acquireLock(resourceType: "DRIVER" | "VEHICLE" | "JOB", re
     // though Prisma upsert handles this well. If it fails, resource is locked.
     return { success: false, reason: "Resource is currently locked by another dispatcher." };
   }
+  });
 }
 
 /**
@@ -146,25 +154,10 @@ export async function releaseLock(resourceType: "DRIVER" | "VEHICLE" | "JOB", re
  * Fetch analytics data for the dispatch board
  */
 export async function getDispatchAnalytics(date: Date) {
-  const startOfDay = new Date(date);
-  startOfDay.setHours(0, 0, 0, 0);
-  const endOfDay = new Date(date);
-  endOfDay.setHours(23, 59, 59, 999);
-
-  const assignments = await prisma.assignment.findMany({
-    where: {
-      scheduledStart: { gte: startOfDay, lte: endOfDay },
-      status: { not: "CANCELLED" }
-    }
-  });
-
-  const unassignedJobs = await prisma.job.count({
-    where: {
-      status: "UNASSIGNED",
-      jobStartDateTime: { gte: startOfDay, lte: endOfDay }
-    }
-  });
-
+  const { start, end } = dayWindow(localDate(date));
+  const board = await getBoardData(start, end);
+  const assignments = board.assignments;
+  const unassignedJobs = board.unassignedJobs.length;
   const totalAssignments = assignments.length;
   const completedAssignments = assignments.filter((a: any) => a.status === "COMPLETED").length;
   
@@ -173,7 +166,7 @@ export async function getDispatchAnalytics(date: Date) {
   
   // Active drivers count
   const activeDrivers = await prisma.user.count({
-    where: { isActive: true, roles: { some: { role: { roleName: "DRIVER" } } } }
+    where: { status: "ACTIVE", role: "DRIVER" }
   });
 
   const utilizationRate = activeDrivers > 0 ? (uniqueDrivers.size / activeDrivers) * 100 : 0;
@@ -206,30 +199,19 @@ export async function getDutySpans(start: Date, end: Date) {
  * Overwrites any existing availability for that driver on that day.
  */
 export async function setDutySpan(driverIds: number[], date: Date, startTime: Date, endTime: Date) {
-  const dayStart = new Date(date);
-  dayStart.setHours(0, 0, 0, 0);
-  const dayEnd = new Date(date);
-  dayEnd.setHours(23, 59, 59, 999);
-
-  const operations = driverIds.map(driverId => [
-    // Delete existing spans for this driver on this day
-    prisma.driverAvailability.deleteMany({
-      where: {
-        driverId,
-        startTime: { gte: dayStart, lte: dayEnd }
-      }
-    }),
-    // Create new span
-    prisma.driverAvailability.create({
-      data: {
-        driverId,
-        startTime,
-        endTime,
-        isBlocked: false,
-        reason: "Duty Span"
-      }
-    })
-  ]).flat();
-
-  return await prisma.$transaction(operations);
+  if (!Number.isFinite(startTime.getTime()) || !Number.isFinite(endTime.getTime()) || endTime <= startTime) throw new WorkflowError("Invalid duty window");
+  if (!driverIds.length || driverIds.length > 500 || driverIds.some(id => !Number.isSafeInteger(id) || id <= 0)) throw new WorkflowError("Invalid driver selection");
+  const { start: dayStart, end: dayEnd } = dayWindow(localDate(date));
+  return prisma.$transaction(async (tx: any) => {
+    await tx.$executeRaw`SELECT pg_advisory_xact_lock(74021)`;
+    const assignments = await tx.assignment.findMany({ where: { driverId: { in: driverIds }, status: { not: "CANCELLED" }, scheduledStart: { gte: dayStart, lt: dayEnd } } });
+    if (assignments.some((a: any) => a.scheduledStart < startTime || a.scheduledEnd > endTime)) throw new WorkflowError("Existing assignments fall outside this availability. Reassign them first.", 409);
+    const result = [];
+    for (const driverId of new Set(driverIds)) {
+      await tx.driverAvailability.deleteMany({ where: { driverId, startTime: { gte: dayStart, lt: dayEnd }, dayOfWeek: null, source: "MANUAL", isBlocked: false } });
+      result.push(await tx.driverAvailability.create({ data: { driverId, startTime, endTime, isBlocked: false, reason: "Planned availability", source: "MANUAL" } }));
+    }
+    await tx.workflowEvent.create({ data: { type: "job.updated", payload: { availabilityChanged: true } } });
+    return result;
+  });
 }

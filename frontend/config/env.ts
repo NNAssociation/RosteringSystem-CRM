@@ -1,5 +1,6 @@
+import { API_BASE_URL } from "./api";
 export const ENV = {
-    API_BASE_URL: process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/",
+    API_BASE_URL,
     NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY,
     CLERK_SECRET_KEY: process.env.CLERK_SECRET_KEY,
 } as const;
@@ -11,7 +12,8 @@ export const validateEnv = () => {
         if (!ENV.CLERK_SECRET_KEY) console.warn("Missing CLERK_SECRET_KEY in environment variables");
     }
 
+
     if (!ENV.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY) {
-        console.warn("Missing NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY in environment variables");
+        console.warn("Missing NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY in environment variables.");
     }
 };

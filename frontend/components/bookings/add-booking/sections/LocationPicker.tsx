@@ -1,12 +1,21 @@
 "use client";
 
-import React from "react";
+import { useId, useState } from "react";
 import { Input } from "@/components/ui/input";
-import { LocationOn, MyLocation } from "@mui/icons-material";
+import { Button } from "@/components/ui/button";
 import type { StructuredLocation } from "@/types";
-import { cn } from "@/lib/utils";
 import { MapPickerModal } from "@/components/shared/MapPickerModal";
+import { PlaceSearch } from "@/components/shared/PlaceSearch";
 import { useGoogleMaps } from "@/providers/google-maps-provider";
+import {
+  Place,
+  Navigation,
+  Edit,
+  Close,
+  CheckCircle,
+  Map as MapIcon,
+  Search,
+} from "@mui/icons-material";
 
 declare global {
   interface Window {
@@ -14,105 +23,200 @@ declare global {
   }
 }
 
-interface LocationPickerProps {
-  label: string;
-  value: StructuredLocation;
-  onChange: (location: StructuredLocation) => void;
-  error?: string;
-  placeholder?: string;
-}
-
 export function LocationPicker({
   label,
   value,
   onChange,
   error,
-  placeholder = "Enter address...",
-}: LocationPickerProps) {
-  const [isMapModalOpen, setIsMapModalOpen] = React.useState(false);
-  const autocompleteRef = React.useRef<HTMLInputElement>(null);
-  const [autocomplete, setAutocomplete] = React.useState<any>(null);
+  placeholder = "Search address, airport or venue",
+  includedRegionCodes,
+}: {
+  label: string;
+  value: StructuredLocation;
+  onChange: (location: StructuredLocation) => void;
+  error?: string;
+  placeholder?: string;
+  includedRegionCodes?: string[];
+}) {
+  const [openMap, setOpenMap] = useState(false);
+  const [isEditing, setIsEditing] = useState(!value?.address);
+  const [isManual, setIsManual] = useState(false);
   const { isLoaded } = useGoogleMaps();
+  const id = useId();
 
-  React.useEffect(() => {
-    const initAutocomplete = () => {
-      if (isLoaded && typeof window !== "undefined" && window.google && autocompleteRef.current && !autocomplete) {
-        const autocomp = new window.google.maps.places.Autocomplete(autocompleteRef.current, {
-          types: ["address"],
-          componentRestrictions: { country: "AU" },
-        });
+  const isPickup = label.toLowerCase().includes("pickup");
+  const isDestination = label.toLowerCase().includes("destination");
+  const mapped = Number.isFinite(value?.lat) && Number.isFinite(value?.lng);
 
-        autocomp.addListener("place_changed", () => {
-          const place = autocomp.getPlace();
-          if (place.geometry && place.geometry.location) {
-            onChange({
-              address: place.formatted_address || place.name || "",
-              lat: place.geometry.location.lat(),
-              lng: place.geometry.location.lng(),
-              placeId: place.place_id,
-            });
-          }
-        });
+  const handleSelect = (loc: StructuredLocation) => {
+    onChange(loc);
+    setIsEditing(false);
+    setIsManual(false);
+  };
 
-        setAutocomplete(autocomp);
-        return true;
-      }
-      return false;
-    };
-
-    if (!initAutocomplete()) {
-      const interval = setInterval(() => {
-        if (initAutocomplete()) clearInterval(interval);
-      }, 500);
-      return () => clearInterval(interval);
-    }
-  }, [autocomplete, onChange, isLoaded]);
-
-  const handleAddressChange = (address: string) => {
-    onChange({ ...value, address });
+  const handleClear = () => {
+    onChange({ address: "", lat: undefined, lng: undefined, placeId: undefined });
+    setIsEditing(true);
+    setIsManual(false);
   };
 
   return (
-    <div className="space-y-2">
-      <label className="text-[11px] font-bold text-slate-400 uppercase tracking-wider ml-1">
-        {label} <span className="text-red-500">*</span>
-      </label>
-      <div className="relative group">
-        <div className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-300 group-focus-within:text-primary transition-colors">
-          <LocationOn style={{ fontSize: "18px" }} />
+    <div className="rounded-2xl border border-slate-200/90 bg-white shadow-sm p-4 sm:p-5 space-y-3 transition-all hover:border-slate-300">
+      {/* Header Row */}
+      <div className="flex items-center justify-between gap-3">
+        <div className="flex items-center gap-2">
+          <span
+            className={`flex items-center justify-center w-7 h-7 rounded-full text-xs font-bold ${
+              isPickup
+                ? "bg-emerald-100 text-emerald-700"
+                : isDestination
+                ? "bg-rose-100 text-rose-700"
+                : "bg-sky-100 text-sky-700"
+            }`}
+          >
+            {isPickup ? (
+              <Navigation style={{ fontSize: "14px" }} />
+            ) : (
+              <Place style={{ fontSize: "15px" }} />
+            )}
+          </span>
+          <label htmlFor={id} className="text-sm font-semibold text-slate-800">
+            {label}
+          </label>
         </div>
-        <Input
-          ref={autocompleteRef}
-          value={value.address}
-          onChange={(e) => handleAddressChange(e.target.value)}
-          placeholder={placeholder}
-          className={cn(
-            "pl-10 pr-12 h-11 text-sm font-medium border-slate-200 bg-slate-50/50 rounded-xl",
-            "transition-all focus:ring-2 focus:ring-primary/10 focus:border-primary/30",
-            error && "border-red-300 focus:ring-red-100 focus:border-red-300"
+
+        <div className="flex items-center gap-2">
+          {mapped && (
+            <span className="hidden sm:inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-medium bg-emerald-50 text-emerald-700 border border-emerald-200/60">
+              <CheckCircle style={{ fontSize: "12px" }} /> Mapped
+            </span>
           )}
-        />
-        {/* Map Picker Trigger */}
-        <button
-          type="button"
-          className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-300 hover:text-primary transition-colors"
-          title="Select on map"
-          onClick={() => setIsMapModalOpen(true)}
-        >
-          <MyLocation style={{ fontSize: "16px" }} />
-        </button>
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            className="h-8 gap-1.5 text-xs font-medium border-slate-200 hover:bg-slate-50 text-slate-700"
+            disabled={!isLoaded}
+            onClick={() => setOpenMap(true)}
+          >
+            <MapIcon style={{ fontSize: "14px" }} /> Choose on map
+          </Button>
+        </div>
       </div>
 
+      {/* Main Content Area */}
+      {value?.address && !isEditing ? (
+        /* Selected State Card */
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-slate-50 border border-slate-200/80 rounded-xl px-4 py-3">
+          <div className="space-y-1 min-w-0">
+            <p className="text-sm font-semibold text-slate-900 truncate">
+              {value.address}
+            </p>
+            {mapped ? (
+              <p className="text-[11px] text-slate-500 font-mono">
+                {value.lat?.toFixed(5)}, {value.lng?.toFixed(5)}
+              </p>
+            ) : (
+              <p className="text-[11px] text-amber-700 font-medium">
+                Manual entry (no coordinates)
+              </p>
+            )}
+          </div>
+
+          <div className="flex items-center gap-1.5 shrink-0 self-end sm:self-center">
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              className="h-7 text-xs px-2.5 text-slate-700 border-slate-200 hover:bg-white"
+              onClick={() => setIsEditing(true)}
+            >
+              <Edit style={{ fontSize: "12px" }} className="mr-1" /> Change
+            </Button>
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              className="h-7 w-7 p-0 text-slate-400 hover:text-slate-700"
+              onClick={handleClear}
+              title="Clear location"
+            >
+              <Close style={{ fontSize: "16px" }} />
+            </Button>
+          </div>
+        </div>
+      ) : (
+        /* Search / Input State */
+        <div className="space-y-2">
+          {isManual ? (
+            <div className="space-y-2">
+              <Input
+                id={id}
+                autoFocus
+                aria-label={`${label} address`}
+                value={value?.address || ""}
+                placeholder="Type full address, venue or landmark..."
+                onChange={(e) => onChange({ address: e.target.value })}
+                className="bg-white border-slate-200 focus-visible:ring-slate-900"
+              />
+              <div className="flex items-center justify-between text-xs text-slate-500 px-1">
+                <span>Manual address will be saved as draft without GPS pin.</span>
+                <button
+                  type="button"
+                  onClick={() => setIsManual(false)}
+                  className="text-blue-600 hover:underline font-medium"
+                >
+                  Use Google Places search
+                </button>
+              </div>
+            </div>
+          ) : (
+            <div className="space-y-2">
+              <div className="rounded-xl border border-slate-200 bg-white p-1 focus-within:ring-2 focus-within:ring-slate-900 focus-within:border-transparent transition-all shadow-sm">
+                <PlaceSearch
+                  label={placeholder}
+                  onSelect={handleSelect}
+                  includedRegionCodes={includedRegionCodes}
+                />
+              </div>
+              <div className="flex items-center justify-between text-xs text-slate-500 px-1">
+                <span>Search addresses, airports, stations or hotels</span>
+                <button
+                  type="button"
+                  onClick={() => setIsManual(true)}
+                  className="text-slate-600 hover:text-slate-900 hover:underline font-medium"
+                >
+                  Enter manually
+                </button>
+              </div>
+            </div>
+          )}
+
+          {value?.address && (
+            <div className="flex justify-end">
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                className="h-7 text-xs text-slate-500 hover:text-slate-800"
+                onClick={() => setIsEditing(false)}
+              >
+                Cancel change
+              </Button>
+            </div>
+          )}
+        </div>
+      )}
+
+      {error && <p role="alert" className="text-xs text-red-600 font-medium">{error}</p>}
+
       <MapPickerModal
-        isOpen={isMapModalOpen}
-        onClose={() => setIsMapModalOpen(false)}
-        initialLocation={value.lat && value.lng ? { lat: value.lat, lng: value.lng } : undefined}
-        onSelect={(loc) => onChange(loc)}
+        isOpen={openMap}
+        onClose={() => setOpenMap(false)}
+        initialLocation={mapped ? { lat: value.lat!, lng: value.lng! } : undefined}
+        onSelect={handleSelect}
+        includedRegionCodes={includedRegionCodes}
       />
-
-
-
-      {error && <p className="text-xs text-red-500 font-medium ml-1">{error}</p>}
     </div>
   );
 }

@@ -1,6 +1,6 @@
 "use client";
 
-import { useReducer, useCallback, useEffect } from "react";
+import { useReducer, useCallback, useEffect, useMemo } from "react";
 import type { BookingCategory, BookingFormData, StructuredLocation } from "@/types";
 import { DEFAULT_FORM_DATA } from "../config/booking.config";
 import { getSchemaForType, type FieldErrors } from "../validation/booking.validation";
@@ -264,12 +264,18 @@ export function useBookingForm() {
     state.data.pickupTime
   ]);
 
+  const isFormValid = useMemo(() => {
+    const schema = getSchemaForType(state.data.bookingType);
+    return schema.safeParse(state.data).success;
+  }, [state.data]);
+
   return {
     formData: state.data,
     errors: state.errors,
     touched: state.touched,
     isSubmitting: state.isSubmitting,
     isEstimating: state.isEstimating,
+    isFormValid,
     setField,
     setLocation,
     setCustomer,

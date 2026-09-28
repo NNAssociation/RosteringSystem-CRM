@@ -24,7 +24,7 @@ interface DispatchUIState {
 }
 
 const initialState: DispatchUIState = {
-  selectedDate: format(new Date(), 'yyyy-MM-dd'),
+  selectedDate: new Intl.DateTimeFormat('en-CA', { timeZone: 'Australia/Sydney', year: 'numeric', month: '2-digit', day: '2-digit' }).format(new Date()),
   viewMode: 'daily',
   filters: {
     driver: '',

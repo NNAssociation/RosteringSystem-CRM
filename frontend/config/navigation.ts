@@ -12,11 +12,11 @@ import { FEATURES } from "@/config/features";
 export const mainNavItems: NavItem[] = [
   { name: "Dashboard", icon: DashboardOutlinedIcon, href: "/dashboard" },
   {
-    name: "Drivers",
-    icon: DriveEtaIcon,
-    href: "/dashboard/drivers",
+    name: "Employees",
+    icon: PersonIcon,
+    href: "/dashboard/employees",
   },
-  { name: "Customers", icon: PersonIcon, href: "/dashboard/customers" },
+  { name: "Customers", icon: WorkOutlineIcon, href: "/dashboard/customers" },
   {
     name: "Fleet Ops",
     icon: DirectionsBusOutlinedIcon,

@@ -66,3 +66,7 @@ next-env.d.ts
 # Prisma
 node_modules/.prisma
 backendServer/generated
+!backendServer/.env.quotation.example
+
+# Local database backups contain private application data.
+.local-backups/

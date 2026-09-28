@@ -1,5 +1,8 @@
 "use client";
+import { CreatedRecordNotice } from "@/components/shared/created-record-notice";
 
+import Link from "next/link";
+import { useRouter } from "next/navigation";
 import React, { useState, useEffect, useMemo } from "react";
 import { useGetBookingsQuery } from "@/services/api";
 import { useHeader } from "@/providers/header-provider";
@@ -19,8 +22,9 @@ import {
 import { cn } from "@/lib/utils";
 
 export default function BookingsPage() {
+  const router = useRouter();
   const { setHeaderConfig } = useHeader();
-  const { data: bookings = [], isLoading: loading } = useGetBookingsQuery();
+  const { data: bookings = [], isLoading: loading, isError, refetch } = useGetBookingsQuery(undefined, { pollingInterval: 15000, refetchOnMountOrArgChange: true });
 
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("ALL");
@@ -32,7 +36,7 @@ export default function BookingsPage() {
       const searchStr = searchTerm.toLowerCase();
       const matchesSearch =
         (booking.subject || "").toLowerCase().includes(searchStr) ||
-        booking.customerName.toLowerCase().includes(searchStr) ||
+        (booking.customerName || "").toLowerCase().includes(searchStr) ||
         booking.id.toString().toLowerCase().includes(searchStr);
 
       const matchesStatus =
@@ -50,42 +54,36 @@ export default function BookingsPage() {
     });
   }, [setHeaderConfig]);
 
-  const stats = [
-    { label: "ALL", count: bookings.length },
-    { label: "CONFIRMED", count: bookings.filter((b: Booking) => b.status === "Confirmed").length },
-    { label: "PENDING", count: bookings.filter((b: Booking) => b.status === "Pending").length },
-    { label: "CANCELLED", count: bookings.filter((b: Booking) => b.status === "Cancelled").length },
-  ];
+  const stats = [{ label: "ALL", count: bookings.length }, ...["DRAFT", "AWAITING_RESPONSE", "CONFIRMED", "DECLINED", "CANCELLED"].map(label => ({ label, count: bookings.filter(b => b.status.toUpperCase() === label).length }))];
 
   return (
-    <div className="flex flex-col min-h-screen bg-slate-50/30">
-      <div className="pb-8 pt-4 px-8">
-        {/* Main Content Grid - Wrapped to include the Header */}
+    <div className="space-y-6 p-6 lg:p-8">
+      {/* Main Content Grid - Wrapped to include the Header */}
+      <div className={cn(
+        "grid transition-all duration-500 gap-6",
+        selectedBooking ? "grid-cols-1 lg:grid-cols-3" : "grid-cols-1"
+      )}>
+        {/* Left Side: Header + FilterBar + Table */}
         <div className={cn(
-          "grid transition-all duration-500 gap-6",
-          selectedBooking ? "grid-cols-1 lg:grid-cols-3" : "grid-cols-1"
+          "space-y-6 transition-all duration-500",
+          selectedBooking ? "lg:col-span-2" : "col-span-1"
         )}>
-          {/* Left Side: Header + FilterBar + Table */}
-          <div className={cn(
-            "space-y-6 transition-all duration-500",
-            selectedBooking ? "lg:col-span-2" : "col-span-1"
-          )}>
-            {/* Page Header within the narrowed column */}
-            <PageHeader
-              title="Bookings"
-              description="Review and manage incoming trip requests and leads from clients."
-              breadcrumbs={[
-                { label: "Dashboard", href: "/" },
-                { label: "Bookings" }
-              ]}
-              className="px-0 py-4 border-none"
+          {/* Page Header within the narrowed column */}
+          <PageHeader
+            title="Bookings"
+            description="Review and manage incoming trip requests and leads from clients."
+            breadcrumbs={[
+              { label: "Dashboard", href: "/dashboard" },
+              { label: "Bookings" }
+            ]}
+            className="px-0 py-0 border-none"
               actions={
                 <div className="flex items-center gap-3">
                   <Button variant="outline" className="h-11 px-6 gap-2 border-slate-200 text-slate-600 rounded-xl hover:bg-white font-semibold shadow-sm transition-all hover:shadow-md">
                     <FileDownload style={{ fontSize: '18px' }} />
                     <span>Export Data</span>
                   </Button>
-                  <AddBookingDialog />
+                  <Button asChild><Link href="/dashboard/bookings/new">New booking</Link></Button>
                 </div>
               }
             />
@@ -131,8 +129,9 @@ export default function BookingsPage() {
                   <KeyboardArrowDown style={{ fontSize: '20px' }} />
                 </Button>
               </FilterGroup>
-            </FilterBar>
+            </FilterBar><CreatedRecordNotice resource="bookings" records={bookings} visible={filteredBookings} clear={() => { setSearchTerm(""); setStatusFilter("ALL"); }} />
 
+            {isError && <div role="alert" className="flex items-center justify-between rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-800">Could not load bookings. <Button variant="outline" onClick={() => refetch()}>Retry</Button></div>}
             <BookingsTable
               bookings={filteredBookings}
               loading={loading}
@@ -140,7 +139,7 @@ export default function BookingsPage() {
               statusFilter={statusFilter}
               onFilterChange={setSearchTerm}
               selectedBookingId={selectedBooking ? selectedBooking.id : null}
-              onSelectBooking={setSelectedBooking}
+              onSelectBooking={booking => { if (booking) router.push(`/dashboard/bookings/${booking.id}`); }}
             />
           </div>
 
@@ -155,6 +154,5 @@ export default function BookingsPage() {
           )}
         </div>
       </div>
-    </div>
   );
 }

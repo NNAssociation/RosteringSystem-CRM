@@ -1,3 +1,5 @@
+import dashboardRoutes from "./routes/dashboardRoutes.js";
+import { recordLifecycleRouter } from "./routes/recordLifecycleRoutes.js";
 import express from "express";
 import dotenv from "dotenv";
 import cors from "cors";
@@ -14,6 +16,8 @@ import dispatchRoutes from "./routes/dispatchRoutes.js";
 import depotRoutes from "./routes/depotRoutes.js";
 import settingsRoutes from "./routes/settingsRoutes.js";
 import reportRoutes from "./routes/reportRoutes.js";
+import { quotationRouter } from "./routes/quotationRoutes.js";
+import { startWorkflowWorker } from "./services/emailService.js";
 import { createServer } from "http";
 import { initializeSocket } from "./websocket/socketServer.js";
 import { setupRecurringJobs, registerJobProcessor } from "./services/queueService.js";
@@ -45,7 +49,8 @@ app.use(
     crossOriginOpenerPolicy: { policy: "unsafe-none" },
   }),
 );
-app.use(morgan("common"));
+// Public quotation URLs carry bearer capabilities; do not persist them in request logs.
+app.use(morgan("common", { skip: req => req.url.startsWith("/quotations/public/") }));
 
 // Clerk auth middleware — initializes auth context on every request
 app.use(clerkMiddleware());
@@ -57,10 +62,12 @@ app.get("/", (req, res) => {
   res.send("---RosteringSystem API---");
 });
 
-app.use("/users", userRoutes);
-app.use("/customers", customerRoutes);
-app.use("/fleet", fleetRoutes);
-app.use("/bookings", bookingRoutes);
+app.use("/dashboard", dashboardRoutes);
+app.use("/users", recordLifecycleRouter("users"), userRoutes);
+app.use("/customers", recordLifecycleRouter("customers"), customerRoutes);
+app.use("/fleet", recordLifecycleRouter("fleet"), fleetRoutes);
+app.use("/bookings", recordLifecycleRouter("bookings"), bookingRoutes);
+app.use("/quotations", quotationRouter);
 app.use("/dispatch", dispatchRoutes);
 app.use("/depots", depotRoutes);
 app.use("/settings", settingsRoutes);
@@ -73,6 +80,7 @@ app.use(errorHandler);
 // ── Server ────────────────────────────────────────────────
 const httpServer = createServer(app);
 initializeSocket(httpServer);
+startWorkflowWorker();
 
 // Initialize Background Jobs
 registerJobProcessor("sla-warning", processSLAWarnings);

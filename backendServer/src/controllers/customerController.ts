@@ -1,6 +1,7 @@
 import type { Request, Response, NextFunction } from "express";
 import HttpError from "../models/errorModel.js";
 import * as CustomerService from "../services/customerService.js";
+import { createCustomerSchema, updateCustomerSchema } from "../validators/customerSchema.js";
 
 // GET /customers/search?q=...
 export const searchCustomers = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
@@ -47,11 +48,13 @@ export const getCustomerById = async (req: Request, res: Response, next: NextFun
 // POST /customers
 export const createCustomer = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
-        if (!req.body.email) {
-            res.status(400).json({ error: "Email is required" });
+        const parseResult = createCustomerSchema.safeParse(req.body);
+        if (!parseResult.success) {
+            const msg = parseResult.error.issues.map((i) => i.message).join(", ");
+            res.status(400).json({ error: msg });
             return;
         }
-        const newCustomer = await CustomerService.createCustomer(req.body);
+        const newCustomer = await CustomerService.createCustomer(parseResult.data);
         res.status(201).json(newCustomer);
     } catch (error: any) {
         console.error("Error creating customer:", error);
@@ -66,7 +69,13 @@ export const createCustomer = async (req: Request, res: Response, next: NextFunc
 // PATCH /customers/:id
 export const updateCustomer = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
-        const updatedCustomer = await CustomerService.updateCustomer(Number(req.params.id), req.body);
+        const parseResult = updateCustomerSchema.safeParse(req.body);
+        if (!parseResult.success) {
+            const msg = parseResult.error.issues.map((i) => i.message).join(", ");
+            res.status(400).json({ error: msg });
+            return;
+        }
+        const updatedCustomer = await CustomerService.updateCustomer(Number(req.params.id), parseResult.data);
         res.json(updatedCustomer);
     } catch (error: any) {
         console.error("Error updating customer:", error);

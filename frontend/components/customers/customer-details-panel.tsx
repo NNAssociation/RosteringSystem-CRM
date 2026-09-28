@@ -1,5 +1,7 @@
+import { RecordLifecycleActions } from "@/components/shared/record-lifecycle-actions";
+import { RecordStatusBadge, InactiveRecordNotice } from "@/components/shared/record-status";
 import React, { useState, useEffect } from 'react';
-import { useUpdateCustomerMutation, useDeleteCustomerMutation } from '@/services/api';
+import { useUpdateCustomerMutation, useDeleteCustomerMutation, useGetCustomerByIdQuery } from '@/services/api';
 import { Customer, ApiResponseError } from '@/types';
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -12,7 +14,8 @@ import {
     History,
     DeleteOutline,
     Person,
-    LocationOn
+    LocationOn,
+    Receipt
 } from "@mui/icons-material";
 import { cn } from "@/lib/utils";
 import { SidePanel } from "@/components/shared/side-panel";
@@ -34,7 +37,9 @@ interface CustomerDetailsPanelProps {
     onClose: () => void;
 }
 
-export function CustomerDetailsPanel({ customer, onClose }: CustomerDetailsPanelProps) {
+export function CustomerDetailsPanel({ customer: suppliedCustomer, onClose }: CustomerDetailsPanelProps) {
+    const { currentData: freshCustomer } = useGetCustomerByIdQuery(suppliedCustomer?.id ?? 0, { skip: !suppliedCustomer });
+    const customer = freshCustomer ?? suppliedCustomer;
     const [updateCustomer] = useUpdateCustomerMutation();
     const [deleteCustomer, { isLoading: isDeleting }] = useDeleteCustomerMutation();
     const [isEditing, setIsEditing] = useState(false);
@@ -48,10 +53,22 @@ export function CustomerDetailsPanel({ customer, onClose }: CustomerDetailsPanel
         phone2: '',
         company: '',
         address: '',
-        status: '',
+        customerType: 'INDIVIDUAL',
+        contactName: '',
+        contactRole: '',
+        taxId: '',
+        preferredPaymentMethod: 'CREDIT_CARD',
+        paymentTerms: 'DUE_ON_RECEIPT',
+        internalNotes: '',
+        isVip: false,
+        accountStanding: 'GOOD',
+        isActive: true,
     });
 
+    const hydratedId = React.useRef(customer?.id);
     useEffect(() => {
+        if (isEditing && hydratedId.current === customer?.id) return;
+        hydratedId.current = customer?.id;
         if (customer) {
             setEditForm({
                 name: customer.name || '',
@@ -60,11 +77,20 @@ export function CustomerDetailsPanel({ customer, onClose }: CustomerDetailsPanel
                 phone2: customer.phone2 || '',
                 company: customer.company || '',
                 address: customer.address || '',
-                status: customer.status || '',
+                customerType: customer.customerType || 'INDIVIDUAL',
+                contactName: customer.contactName || '',
+                contactRole: customer.contactRole || '',
+                taxId: customer.taxId || '',
+                preferredPaymentMethod: customer.preferredPaymentMethod || 'CREDIT_CARD',
+                paymentTerms: customer.paymentTerms || 'DUE_ON_RECEIPT',
+                internalNotes: customer.internalNotes || '',
+                isVip: customer.isVip || false,
+                accountStanding: customer.accountStanding || 'GOOD',
+                isActive: customer.isActive !== undefined ? customer.isActive : true,
             });
             setIsEditing(false);
         }
-    }, [customer]);
+    }, [customer, isEditing]);
 
     if (!customer) return null;
 
@@ -86,23 +112,13 @@ export function CustomerDetailsPanel({ customer, onClose }: CustomerDetailsPanel
         }
     };
 
-    const handleDelete = async () => {
-        try {
-            await deleteCustomer(customer.id).unwrap();
-            toast.success("Customer deleted successfully");
-            onClose();
-        } catch (error: unknown) {
-            console.error("Failed to delete customer:", error);
-            toast.error((error as ApiResponseError)?.data?.error || "Failed to delete customer.");
-        }
-    };
 
-    const statusConfig = {
-        'Active': { class: "bg-green-100 text-green-700", dot: "bg-green-600" },
-        'Inactive': { class: "bg-slate-100 text-slate-700", dot: "bg-slate-600" },
-    };
-
-    const config = statusConfig[customer.status as keyof typeof statusConfig] || statusConfig.Inactive;
+    const isEditEmailValid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(editForm.email.trim());
+    const isEditValid = Boolean(
+        editForm.name.trim().length >= 2 &&
+        isEditEmailValid &&
+        editForm.phone1.trim().length >= 6
+    );
 
     const footer = (
         <div className="flex flex-col gap-4 p-6 border-t border-slate-100 bg-white">
@@ -110,8 +126,8 @@ export function CustomerDetailsPanel({ customer, onClose }: CustomerDetailsPanel
                 <div className="grid grid-cols-2 gap-3">
                     <Button
                         onClick={handleSave}
-                        disabled={isUpdating}
-                        className="rounded-xl h-12 gap-2 bg-slate-900 hover:bg-black text-white font-semibold border-none transition-all active:scale-95 shadow-lg shadow-slate-200"
+                        disabled={isUpdating || !isEditValid}
+                        className="rounded-xl h-12 gap-2 bg-slate-900 hover:bg-black disabled:opacity-40 disabled:cursor-not-allowed text-white font-semibold border-none transition-all active:scale-95 shadow-lg shadow-slate-200"
                     >
                         <Save style={{ fontSize: '18px' }} /> Save Changes
                     </Button>
@@ -137,35 +153,7 @@ export function CustomerDetailsPanel({ customer, onClose }: CustomerDetailsPanel
                             <History style={{ fontSize: '18px' }} /> View Activity
                         </Button>
                     </div>
-                    <AlertDialog>
-                        <AlertDialogTrigger asChild>
-                            <Button
-                                disabled={isDeleting}
-                                variant="ghost"
-                                className="rounded-xl h-12 gap-2 text-rose-500 hover:text-rose-600 hover:bg-rose-50 font-semibold transition-all active:scale-95"
-                            >
-                                <DeleteOutline style={{ fontSize: '18px' }} /> Delete Customer
-                            </Button>
-                        </AlertDialogTrigger>
-                        <AlertDialogContent>
-                            <AlertDialogHeader>
-                                <AlertDialogTitle>Delete Customer Profile?</AlertDialogTitle>
-                                <AlertDialogDescription>
-                                    Are you sure you want to delete {customer.name}?
-                                    All associated booking history and contact information will be permanently removed.
-                                </AlertDialogDescription>
-                            </AlertDialogHeader>
-                            <AlertDialogFooter>
-                                <AlertDialogCancel className="rounded-xl">Keep Customer</AlertDialogCancel>
-                                <AlertDialogAction
-                                    onClick={handleDelete}
-                                    className="bg-rose-600 hover:bg-rose-700 text-white rounded-xl"
-                                >
-                                    Confirm Delete
-                                </AlertDialogAction>
-                            </AlertDialogFooter>
-                        </AlertDialogContent>
-                    </AlertDialog>
+                    <RecordLifecycleActions resource="customers" id={customer.id} inactive={!customer.isActive} onDeleted={onClose} />
                 </div>
             )}
         </div>
@@ -174,7 +162,10 @@ export function CustomerDetailsPanel({ customer, onClose }: CustomerDetailsPanel
     const tabs = [
         { id: "general", label: "General", icon: <Person style={{ fontSize: '16px' }} /> },
         { id: "contact", label: "Contact", icon: <LocationOn style={{ fontSize: '16px' }} /> },
+        { id: "billing", label: "Billing & Notes", icon: <Receipt style={{ fontSize: '16px' }} /> },
     ];
+
+    const selectClassName = "flex h-10 w-full items-center justify-between rounded-xl border border-slate-200 bg-slate-50/50 px-3 py-2 text-xs font-semibold ring-offset-white placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-slate-950 focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50";
 
     return (
         <SidePanel
@@ -182,15 +173,20 @@ export function CustomerDetailsPanel({ customer, onClose }: CustomerDetailsPanel
             onClose={onClose}
             title={`Customer Profile`}
             badge={
-                <Badge className={cn("px-3 py-1 rounded-lg border-none text-xs font-semibold shadow-none", config.class)}>
-                    {customer.status}
-                </Badge>
+                <div className="flex gap-2">
+                    <RecordStatusBadge status={customer.isActive ? "ACTIVE" : "INACTIVE"} />
+                    {customer.isVip && (
+                        <Badge className="bg-amber-100 text-amber-700 font-semibold px-2 py-1 rounded-lg text-xs border-none shadow-none">
+                            VIP
+                        </Badge>
+                    )}
+                </div>
             }
             footer={footer}
             contentClassName="p-0 flex flex-col h-full overflow-hidden"
             className="w-full max-w-none"
         >
-            <div className="flex flex-col h-full overflow-hidden">
+            <div className="flex flex-col h-full overflow-hidden">{!customer.isActive && <InactiveRecordNotice />}
                 {/* Visual Header (Always Visible) */}
                 <div className="p-6 pb-2">
                     <div className="flex flex-col gap-1">
@@ -200,11 +196,13 @@ export function CustomerDetailsPanel({ customer, onClose }: CustomerDetailsPanel
                 </div>
 
                 <Tabs tabs={tabs} activeTab={activeTab} onChange={setActiveTab} className="flex-1 overflow-hidden">
-                    <TabContent value="general">
+                    
+                    {/* GENERAL TAB */}
+                    <TabContent value="general" className="p-4 overflow-y-auto">
                         <div className="space-y-6">
                             <div className="grid grid-cols-2 gap-4">
                                 <div className="col-span-2 space-y-2">
-                                    <label className="text-xs font-bold text-slate-400 ml-1">Full Name</label>
+                                    <label className="text-xs font-bold text-slate-400 ml-1">Full Name (or Org Name)</label>
                                     {isEditing ? (
                                         <Input
                                             value={editForm.name}
@@ -224,24 +222,85 @@ export function CustomerDetailsPanel({ customer, onClose }: CustomerDetailsPanel
                                             className="h-10 text-xs font-semibold border-slate-200 bg-slate-50/50 rounded-xl"
                                         />
                                     ) : (
-                                        <p className="text-sm font-semibold text-slate-900 ml-1">{customer.company || "Individual Customer"}</p>
+                                        <p className="text-sm font-semibold text-slate-900 ml-1">{customer.company || "N/A"}</p>
                                     )}
                                 </div>
-                                <div className="space-y-2 text-right">
-                                    <label className="text-xs font-bold text-slate-400 mr-1">Status</label>
-                                    <div className="flex items-center justify-end gap-2 mt-1 px-1">
-                                        <div className={cn("w-2 h-2 rounded-full", config.dot)} />
-                                        <span className="text-xs font-bold text-slate-900">{customer.status}</span>
-                                    </div>
+                                <div className="space-y-2">
+                                    <label className="text-xs font-bold text-slate-400 ml-1">Customer Type</label>
+                                    {isEditing ? (
+                                        <select 
+                                            className={selectClassName}
+                                            value={editForm.customerType}
+                                            onChange={(e) => setEditForm({ ...editForm, customerType: e.target.value })}
+                                        >
+                                            <option value="INDIVIDUAL">Individual</option>
+                                            <option value="ORGANIZATION">Organization</option>
+                                            <option value="CORPORATE">Corporate</option>
+                                            <option value="TRAVEL_AGENT">Travel Agent</option>
+                                            <option value="SCHOOL">School</option>
+                                            <option value="COMMUNITY_GROUP">Community Group</option>
+                                            <option value="OTHER">Other</option>
+                                        </select>
+                                    ) : (
+                                        <p className="text-sm font-semibold text-slate-900 ml-1 capitalize">{customer.customerType?.toLowerCase().replace('_', ' ') || "Individual"}</p>
+                                    )}
+                                </div>
+                                <div className="space-y-2">
+                                    <label className="text-xs font-bold text-slate-400 ml-1">Account Standing</label>
+                                    {isEditing ? (
+                                        <select 
+                                            className={selectClassName}
+                                            value={editForm.accountStanding}
+                                            onChange={(e) => setEditForm({ ...editForm, accountStanding: e.target.value })}
+                                        >
+                                            <option value="GOOD">Good</option>
+                                            <option value="WARNING">Warning</option>
+                                            <option value="SUSPENDED">Suspended</option>
+                                        </select>
+                                    ) : (
+                                        <p className="text-sm font-semibold text-slate-900 ml-1 capitalize">{customer.accountStanding?.toLowerCase() || "Good"}</p>
+                                    )}
+                                </div>
+                                <div className="space-y-2">
+                                    <label className="text-xs font-bold text-slate-400 ml-1">Status</label>
+                                    {isEditing ? (
+                                        <div className="flex items-center gap-2 mt-2 ml-1">
+                                            <input 
+                                                type="checkbox" 
+                                                checked={editForm.isActive}
+                                                onChange={(e) => setEditForm({ ...editForm, isActive: e.target.checked })}
+                                                className="w-4 h-4"
+                                            />
+                                            <span className="text-sm font-semibold text-slate-900">Active</span>
+                                        </div>
+                                    ) : (
+                                        <p className="text-sm font-semibold text-slate-900 ml-1">{customer.isActive ? "Active" : "Deactivated"}</p>
+                                    )}
+                                </div>
+                                <div className="space-y-2">
+                                    <label className="text-xs font-bold text-slate-400 ml-1">VIP Status</label>
+                                    {isEditing ? (
+                                        <div className="flex items-center gap-2 mt-2 ml-1">
+                                            <input 
+                                                type="checkbox" 
+                                                checked={editForm.isVip}
+                                                onChange={(e) => setEditForm({ ...editForm, isVip: e.target.checked })}
+                                                className="w-4 h-4"
+                                            />
+                                            <span className="text-sm font-semibold text-slate-900">VIP Customer</span>
+                                        </div>
+                                    ) : (
+                                        <p className="text-sm font-semibold text-slate-900 ml-1">{customer.isVip ? "Yes" : "No"}</p>
+                                    )}
                                 </div>
                             </div>
-
                         </div>
                     </TabContent>
 
-                    <TabContent value="contact">
+                    {/* CONTACT TAB */}
+                    <TabContent value="contact" className="p-4 overflow-y-auto">
                         <div className="space-y-6">
-                            <div className="space-y-4">
+                            <div className="grid grid-cols-2 gap-4">
                                 <div className="space-y-1">
                                     <label className="text-xs font-bold text-slate-400 ml-1">Primary Phone</label>
                                     {isEditing ? (
@@ -266,7 +325,36 @@ export function CustomerDetailsPanel({ customer, onClose }: CustomerDetailsPanel
                                         <p className="text-sm font-semibold text-slate-900 ml-1">{customer.phone2 || "N/A"}</p>
                                     )}
                                 </div>
-                                <div className="col-span-2 space-y-1 pt-2 border-t border-slate-100">
+                                
+                                <div className="col-span-2 pt-2 border-t border-slate-100">
+                                    <h4 className="text-sm font-semibold text-slate-700">Primary Contact Person</h4>
+                                </div>
+                                <div className="space-y-1">
+                                    <label className="text-xs font-bold text-slate-400 ml-1">Contact Name</label>
+                                    {isEditing ? (
+                                        <Input
+                                            value={editForm.contactName}
+                                            onChange={(e) => setEditForm({ ...editForm, contactName: e.target.value })}
+                                            className="h-10 text-xs font-semibold border-slate-200 bg-slate-50/50 rounded-xl"
+                                        />
+                                    ) : (
+                                        <p className="text-sm font-semibold text-slate-900 ml-1">{customer.contactName || "N/A"}</p>
+                                    )}
+                                </div>
+                                <div className="space-y-1">
+                                    <label className="text-xs font-bold text-slate-400 ml-1">Contact Role</label>
+                                    {isEditing ? (
+                                        <Input
+                                            value={editForm.contactRole}
+                                            onChange={(e) => setEditForm({ ...editForm, contactRole: e.target.value })}
+                                            className="h-10 text-xs font-semibold border-slate-200 bg-slate-50/50 rounded-xl"
+                                        />
+                                    ) : (
+                                        <p className="text-sm font-semibold text-slate-900 ml-1">{customer.contactRole || "N/A"}</p>
+                                    )}
+                                </div>
+
+                                <div className="col-span-2 space-y-1 pt-2 border-t border-slate-100 mt-2">
                                     <label className="text-xs font-bold text-slate-400 ml-1">Mailing Address</label>
                                     {isEditing ? (
                                         <textarea
@@ -284,10 +372,72 @@ export function CustomerDetailsPanel({ customer, onClose }: CustomerDetailsPanel
                                     )}
                                 </div>
                             </div>
+                        </div>
+                    </TabContent>
+                    
+                    {/* BILLING & NOTES TAB */}
+                    <TabContent value="billing" className="p-4 overflow-y-auto">
+                        <div className="grid grid-cols-2 gap-4">
+                            <div className="space-y-2 col-span-2">
+                                <label className="text-xs font-bold text-slate-400 ml-1">Tax ID / ABN</label>
+                                {isEditing ? (
+                                    <Input
+                                        value={editForm.taxId}
+                                        onChange={(e) => setEditForm({ ...editForm, taxId: e.target.value })}
+                                        className="h-10 text-xs font-semibold border-slate-200 bg-slate-50/50 rounded-xl"
+                                    />
+                                ) : (
+                                    <p className="text-sm font-semibold text-slate-900 ml-1">{customer.taxId || "N/A"}</p>
+                                )}
+                            </div>
+                            <div className="space-y-2">
+                                <label className="text-xs font-bold text-slate-400 ml-1">Payment Method</label>
+                                {isEditing ? (
+                                    <select 
+                                        className={selectClassName}
+                                        value={editForm.preferredPaymentMethod}
+                                        onChange={(e) => setEditForm({ ...editForm, preferredPaymentMethod: e.target.value })}
+                                    >
+                                        <option value="CREDIT_CARD">Credit Card</option>
+                                        <option value="INVOICE">Invoice</option>
+                                        <option value="BANK_TRANSFER">Bank Transfer</option>
+                                        <option value="CASH">Cash</option>
+                                    </select>
+                                ) : (
+                                    <p className="text-sm font-semibold text-slate-900 ml-1 capitalize">{customer.preferredPaymentMethod?.toLowerCase().replace('_', ' ') || "N/A"}</p>
+                                )}
+                            </div>
+                            <div className="space-y-2">
+                                <label className="text-xs font-bold text-slate-400 ml-1">Payment Terms</label>
+                                {isEditing ? (
+                                    <select 
+                                        className={selectClassName}
+                                        value={editForm.paymentTerms}
+                                        onChange={(e) => setEditForm({ ...editForm, paymentTerms: e.target.value })}
+                                    >
+                                        <option value="DUE_ON_RECEIPT">Due on Receipt</option>
+                                        <option value="NET_15">Net 15</option>
+                                        <option value="NET_30">Net 30</option>
+                                        <option value="NET_60">Net 60</option>
+                                    </select>
+                                ) : (
+                                    <p className="text-sm font-semibold text-slate-900 ml-1 capitalize">{customer.paymentTerms?.toLowerCase().replace('_', ' ') || "N/A"}</p>
+                                )}
+                            </div>
 
-                            <div className="flex flex-col items-center justify-center h-32 opacity-30 space-y-2 border-t border-slate-100 pt-6">
-                                <History style={{ fontSize: '24px' }} />
-                                <p className="text-xs font-bold tracking-widest">No recent support tickets</p>
+                            <div className="col-span-2 border-b border-slate-100 pb-2 mt-4">
+                                <h4 className="text-sm font-semibold text-slate-700">Internal Notes</h4>
+                            </div>
+                            <div className="col-span-2 space-y-2">
+                                {isEditing ? (
+                                    <textarea
+                                        value={editForm.internalNotes}
+                                        onChange={(e) => setEditForm({ ...editForm, internalNotes: e.target.value })}
+                                        className="flex w-full rounded-xl border border-slate-200 bg-slate-50/50 px-3 py-2 text-sm placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-slate-950 min-h-[80px]"
+                                    />
+                                ) : (
+                                    <p className="text-sm font-semibold text-slate-900 ml-1 whitespace-pre-wrap">{customer.internalNotes || "No internal notes."}</p>
+                                )}
                             </div>
                         </div>
                     </TabContent>

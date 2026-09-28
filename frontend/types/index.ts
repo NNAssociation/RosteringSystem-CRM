@@ -14,21 +14,46 @@ export interface NavItem {
 export interface User {
   id: number;
   email: string;
-  name?: string;
+  firstName?: string;
+  lastName?: string;
+  employeeNumber?: string;
+  department?: string;
+  role?: string;
+  employmentType?: string;
+  status: 'ACTIVE' | 'INACTIVE' | 'ON_LEAVE' | string;
+  emergencyContactName?: string;
+  emergencyContactPhone?: string;
+  emergencyContactRelation?: string;
+  hireDate?: string;
+  terminationDate?: string;
+  hourlyRate?: number | null;
+  skills?: string[];
+  hrNotes?: string;
   createdAt: string;
   updatedAt: string;
-  isActive: boolean;
   profile?: UserProfile;
-  roles?: UserRole[];
 }
 
 export interface CreateUserRequest {
   email: string;
-  name?: string;
+  firstName?: string;
+  lastName?: string;
   phone?: string;
   phoneNumber1?: string;
   phoneNumber2?: string;
   address?: string;
+  department?: string;
+  role?: string;
+  employmentType?: string;
+  status?: string;
+  emergencyContactName?: string;
+  emergencyContactPhone?: string;
+  emergencyContactRelation?: string;
+  hireDate?: string;
+  terminationDate?: string;
+  hourlyRate?: number | null;
+  skills?: string[];
+  hrNotes?: string;
   licenseNumber?: string;
   driverLicense?: string;
   driverLicenseExpiry?: string;
@@ -36,8 +61,6 @@ export interface CreateUserRequest {
   dateOfBirth?: string;
   maxfatigueMinutes?: number;
   avatarUrl?: string;
-  roleName?: string;
-  status?: string;
 }
 
 export interface ApiResponseError {
@@ -66,18 +89,11 @@ export interface UserProfile {
   userId: number;
 }
 
-export interface UserRole {
-  userId: number;
-  roleId: number;
-  role?: Role;
-}
-
-export interface Role {
-  id: number;
-  roleName: string;
-}
-
 export interface Booking {
+  quotationStatus?: string;
+  dispatchStatus?: string;
+  emailStatus?: string;
+  timeZone?: string;
   id: number | string;
   customerName: string;
   customerEmail: string;
@@ -97,13 +113,19 @@ export interface Booking {
   updatedAt: string;
 }
 
-export interface Driver {
+export interface Employee {
   id: number | string;
+  employeeNumber?: string;
+  firstName?: string;
+  lastName?: string;
   name?: string;
   email: string;
+  department?: string;
+  role?: string;
+  employmentType?: string;
+  status?: 'ACTIVE' | 'INACTIVE' | 'ON_LEAVE' | string;
   phoneNumber1?: string;
   phoneNumber2?: string;
-  status?: 'Active' | 'Inactive' | 'On Trip' | string;
   driverLicense?: string;
   driverLicenseExpiry?: string;
   driverLicenseState?: string;
@@ -116,10 +138,22 @@ export interface Driver {
   avatarUrl?: string;
   occupation?: string;
   maxfatigueMinutes?: number;
+  emergencyContactName?: string;
+  emergencyContactPhone?: string;
+  emergencyContactRelation?: string;
+  hireDate?: string;
+  terminationDate?: string;
+  hourlyRate?: number | null;
+  skills?: string[];
+  hrNotes?: string;
   joinedDate?: string;
   createdAt?: string;
   updatedAt?: string;
 }
+
+/** @deprecated Use Employee instead — kept for backward compatibility in dispatch module */
+export type Driver = Employee;
+
 
 export interface Vehicle {
   id: number | string;
@@ -129,14 +163,14 @@ export interface Vehicle {
   licensePlate: string;
   regoState: string;
   vin?: string;
-  maxPassengers: number;
-  maxCargoVolume?: number;
+  maxPassengers: number | null;
+  maxCargoVolume?: number | null;
   status: 'Available' | 'Maintenance' | 'On Trip' | string;
   availableFrom?: string;
   availableTo?: string;
-  homeDepotId?: number;
-  assignedDriverId?: number;
-  assignedDriver?: { id: number; name?: string; email: string };
+  homeDepotId?: number | null;
+  assignedDriverId?: number | null;
+  assignedDriver?: { id: number; name?: string; firstName?: string; lastName?: string; email: string };
   homeDepot?: { id: number; name: string; address?: string };
   fleetJobs?: Array<{
     jobId: number | string;
@@ -154,14 +188,21 @@ export interface Vehicle {
 export interface Customer {
   id: number | string;
   name?: string;
-  firstName: string;
-  lastName: string;
   email: string;
   phone1?: string;
   phone2?: string;
   address?: string;
   company?: string;
-  status?: 'Active' | 'Inactive' | string;
+  customerType?: string;
+  contactName?: string;
+  contactRole?: string;
+  taxId?: string;
+  preferredPaymentMethod?: string;
+  paymentTerms?: string;
+  internalNotes?: string;
+  isVip?: boolean;
+  accountStanding?: string;
+  isActive?: boolean;
   createdAt?: string;
   updatedAt?: string;
 }

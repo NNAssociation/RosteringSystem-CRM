@@ -21,7 +21,7 @@ export default function RootLayout({
 }) {
   return (
     <ClerkProvider publishableKey={process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY}>
-      <html lang="en">
+      <html lang="en" className="light" style={{ colorScheme: "light" }}>
         <body className={`${inter.className} ${inter.variable} antialiased`}>
           <AppProviders>
             <div className="flex min-h-screen">

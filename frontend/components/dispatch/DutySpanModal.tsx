@@ -44,8 +44,8 @@ export function DutySpanModal() {
       return date.toISOString();
     };
 
-    const isoStart = createIsoString(startTime);
-    const isoEnd = createIsoString(endTime);
+    const isoStart = startTime;
+    const isoEnd = endTime;
 
     try {
       await setDutySpanApi({
@@ -78,10 +78,10 @@ export function DutySpanModal() {
     <Dialog open={isOpen} onOpenChange={(open) => !open && dispatch(closeDutySpanModal())}>
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
-          <DialogTitle>Set Duty Span</DialogTitle>
+          <DialogTitle>Set Planned Availability</DialogTitle>
           <DialogDescription>
             Define the working hours for the selected driver(s) on {format(new Date(selectedDate), "MMM do, yyyy")}.
-            Job assignments are restricted to this window.
+            Times use the business timezone. An end time before the start means the following day.
           </DialogDescription>
         </DialogHeader>
         <div className="grid gap-4 py-4">

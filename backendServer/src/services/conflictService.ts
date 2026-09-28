@@ -1,3 +1,5 @@
+import { dayWindow, localDate } from "./businessTime.js";
+import { availabilityWindows } from "./availabilityWindows.js";
 import { prisma } from "../db.js";
 import { endOfDay, startOfDay, subHours, differenceInMinutes } from "date-fns";
 import { getTravelTime, DEPOT_LOCATION } from "./googleMapsService.js";
@@ -18,21 +20,22 @@ export async function checkDriverConflict(
   end: Date,
   excludeAssignmentId?: number,
   jobId?: number,
-  rules?: SchedulingRules
+  rules?: SchedulingRules,
+  db: any = prisma
 ): Promise<ConflictResult> {
   const schedulingRules = rules ?? await getSchedulingRules();
   // Check driver availability (blocked blocks)
-  const dayOfWeek = start.getDay();
-  const availabilityBlock = await prisma.driverAvailability.findFirst({
+  const blocks = await db.driverAvailability.findMany({
     where: {
       driverId,
       isBlocked: true,
       OR: [
-        { dayOfWeek }, // Recurring weekly block
-        { dayOfWeek: null, startTime: { lte: end }, endTime: { gte: start } }, // Specific date override
+        { dayOfWeek: { not: null } },
+        { dayOfWeek: null, startTime: { lt: end }, endTime: { gt: start } },
       ],
     },
   });
+  const availabilityBlock = availabilityWindows(blocks, start, end).find(w => w.start < end && w.end > start)?.block;
 
   if (availabilityBlock) {
     return {
@@ -45,7 +48,7 @@ export async function checkDriverConflict(
   // Check overlapping assignments
   const overlapWhere: any = {
     driverId,
-    status: { in: ["PENDING", "CONFIRMED", "IN_PROGRESS"] },
+    status: { in: ["PENDING", "CONFIRMED", "IN_PROGRESS", "COMPLETED"] },
     scheduledStart: { lt: end },
     scheduledEnd: { gt: start },
   };
@@ -54,7 +57,7 @@ export async function checkDriverConflict(
     overlapWhere.id = { not: excludeAssignmentId };
   }
 
-  const conflictingAssignment = await prisma.assignment.findFirst({
+  const conflictingAssignment = await db.assignment.findFirst({
     where: overlapWhere,
     include: { job: true },
   });
@@ -75,7 +78,7 @@ export async function checkDriverConflict(
     end,
     excludeAssignmentId,
     jobId,
-    schedulingRules
+    schedulingRules, db
   );
   if (shiftRulesResult.hasConflict) {
     return shiftRulesResult;
@@ -95,14 +98,15 @@ export async function checkDriverShiftRules(
   end: Date,
   excludeAssignmentId?: number,
   jobId?: number,
-  rules?: SchedulingRules
+  rules?: SchedulingRules,
+  db: any = prisma
 ): Promise<ConflictResult> {
   const schedulingRules = rules ?? await getSchedulingRules();
 
   // Fetch the job being assigned if jobId is provided
   let newJob: any = null;
   if (jobId) {
-    newJob = await prisma.job.findUnique({
+    newJob = await db.job.findUnique({
       where: { id: jobId },
       include: { booking: true },
     });
@@ -114,14 +118,13 @@ export async function checkDriverShiftRules(
   const driverDepotAddress = DEPOT_LOCATION.address;
 
   // Get all existing assignments for the driver on this day
-  const dayStart = startOfDay(date);
-  const dayEnd = endOfDay(date);
+  const { start: dayStart, end: dayEnd } = dayWindow(localDate(date));
 
-  const existingAssignments = await prisma.assignment.findMany({
+  const existingAssignments = await db.assignment.findMany({
     where: {
       driverId,
       status: { in: ["PENDING", "CONFIRMED", "IN_PROGRESS", "COMPLETED"] },
-      scheduledStart: { gte: dayStart, lte: dayEnd },
+      scheduledStart: { lt: dayEnd }, scheduledEnd: { gt: dayStart },
       id: excludeAssignmentId ? { not: excludeAssignmentId } : undefined,
     },
     include: {
@@ -277,10 +280,11 @@ export async function checkVehicleConflict(
   vehicleId: number,
   start: Date,
   end: Date,
-  excludeAssignmentId?: number
+  excludeAssignmentId?: number,
+  db: any = prisma
 ): Promise<ConflictResult> {
   // Check vehicle status (e.g. MAINTENANCE)
-  const vehicle = await prisma.fleetVehicle.findUnique({ where: { id: vehicleId } });
+  const vehicle = await db.fleetVehicle.findUnique({ where: { id: vehicleId } });
   if (!vehicle) return { hasConflict: true, reason: "Vehicle not found" };
 
   if (vehicle.status !== "ACTIVE" && vehicle.status !== "AVAILABLE") {
@@ -298,7 +302,7 @@ export async function checkVehicleConflict(
   // Check overlapping assignments
   const overlapWhere: any = {
     vehicleId,
-    status: { in: ["PENDING", "CONFIRMED", "IN_PROGRESS"] },
+    status: { in: ["PENDING", "CONFIRMED", "IN_PROGRESS", "COMPLETED"] },
     scheduledStart: { lt: end },
     scheduledEnd: { gt: start },
   };
@@ -307,7 +311,7 @@ export async function checkVehicleConflict(
     overlapWhere.id = { not: excludeAssignmentId };
   }
 
-  const conflictingAssignment = await prisma.assignment.findFirst({
+  const conflictingAssignment = await db.assignment.findFirst({
     where: overlapWhere,
     include: { job: true },
   });
@@ -331,10 +335,11 @@ export async function checkDriverFatigue(
   driverId: number,
   date: Date,
   newJobDurationHours: number,
-  excludeAssignmentId?: number
+  excludeAssignmentId?: number,
+  db: any = prisma
 ): Promise<ConflictResult> {
   // Get driver's fatigue limit from their profile
-  const profile = await prisma.userProfile.findUnique({
+  const profile = await db.userProfile.findUnique({
     where: { userId: driverId },
     select: { maxfatigueMinutes: true },
   });
@@ -343,20 +348,19 @@ export async function checkDriverFatigue(
   const maxHours = maxMinutes / 60;
 
   // Calculate total hours already assigned on this day
-  const dayStart = startOfDay(date);
-  const dayEnd = endOfDay(date);
+  const { start: dayStart, end: dayEnd } = dayWindow(localDate(date));
 
   const assignmentsWhere: any = {
     driverId,
     status: { in: ["PENDING", "CONFIRMED", "IN_PROGRESS", "COMPLETED"] },
-    scheduledStart: { gte: dayStart, lte: dayEnd },
+    scheduledStart: { lt: dayEnd }, scheduledEnd: { gt: dayStart },
   };
 
   if (excludeAssignmentId) {
     assignmentsWhere.id = { not: excludeAssignmentId };
   }
 
-  const dailyAssignments = await prisma.assignment.findMany({
+  const dailyAssignments = await db.assignment.findMany({
     where: assignmentsWhere,
     include: { job: { select: { durationHours: true } } },
   });
@@ -364,7 +368,7 @@ export async function checkDriverFatigue(
   // Calculate duration of existing assignments. If no duration provided on job, assume 2 hours default.
   let currentHours = 0;
   for (const assignment of dailyAssignments) {
-    const hours = assignment.job?.durationHours ? Number(assignment.job.durationHours) : 2;
+    const hours = Math.max(0, Math.min(new Date(assignment.scheduledEnd).getTime(), dayEnd.getTime()) - Math.max(new Date(assignment.scheduledStart).getTime(), dayStart.getTime())) / 3600000;
     currentHours += hours;
   }
 
@@ -380,9 +384,10 @@ export async function checkDriverFatigue(
 
 export async function checkVehicleCapacity(
   vehicleId: number,
-  passengerCount: number
+  passengerCount: number,
+  db: any = prisma
 ): Promise<ConflictResult> {
-  const vehicle = await prisma.fleetVehicle.findUnique({ where: { id: vehicleId } });
+  const vehicle = await db.fleetVehicle.findUnique({ where: { id: vehicleId } });
   if (!vehicle) return { hasConflict: true, reason: "Vehicle not found" };
   
   if (vehicle.maxPassengers !== null && vehicle.maxPassengers !== undefined && passengerCount > vehicle.maxPassengers) {

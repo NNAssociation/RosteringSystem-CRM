@@ -1,5 +1,6 @@
 "use client";
 
+import { useRouter } from "next/navigation";
 import React, { useState } from 'react';
 import { useUpdateBookingMutation, useDeleteBookingMutation } from '@/services/api';
 import { Badge } from "@/components/ui/badge";
@@ -42,6 +43,7 @@ interface BookingDetailsPanelProps {
 }
 
 export function BookingDetailsPanel({ booking, onClose }: BookingDetailsPanelProps) {
+    const router = useRouter();
     const [updateBooking] = useUpdateBookingMutation();
     const [deleteBooking, { isLoading: isDeleting }] = useDeleteBookingMutation();
     const [isEditing, setIsEditing] = useState(false);
@@ -147,14 +149,23 @@ export function BookingDetailsPanel({ booking, onClose }: BookingDetailsPanelPro
 
     const config = statusConfig[booking.status as keyof typeof statusConfig] || statusConfig.Pending;
 
+    const isEditValid = Boolean(
+        editForm.customerEmail.trim() &&
+        editForm.pickupLocation.trim() &&
+        editForm.dropoffLocation.trim() &&
+        editForm.date.trim() &&
+        parseInt(editForm.noOfVehicles) >= 1 &&
+        parseInt(editForm.passengerCount) >= 1
+    );
+
     const footer = (
         <div className="flex flex-col gap-4 p-6 border-t border-slate-100 bg-white">
             {isEditing ? (
                 <div className="grid grid-cols-2 gap-3">
                     <Button
                         onClick={handleSave}
-                        disabled={isUpdating}
-                        className="rounded-xl h-12 gap-2 bg-slate-900 hover:bg-black text-white font-semibold border-none transition-all active:scale-95 shadow-lg shadow-slate-200"
+                        disabled={isUpdating || !isEditValid}
+                        className="rounded-xl h-12 gap-2 bg-slate-900 hover:bg-black disabled:opacity-40 disabled:cursor-not-allowed text-white font-semibold border-none transition-all active:scale-95 shadow-lg shadow-slate-200"
                     >
                         <Save style={{ fontSize: '18px' }} /> Save Changes
                     </Button>
@@ -171,7 +182,7 @@ export function BookingDetailsPanel({ booking, onClose }: BookingDetailsPanelPro
                     <div className="flex flex-col gap-3">
                         <div className="grid grid-cols-2 gap-3">
                             <Button
-                                onClick={() => setIsEditing(true)}
+                                onClick={() => router.push(`/dashboard/bookings/${booking.id}`)}
                                 variant="outline"
                                 className="rounded-xl h-12 gap-2 border-slate-200 text-slate-900 font-semibold hover:bg-slate-50 transition-all active:scale-95 shadow-sm"
                             >
