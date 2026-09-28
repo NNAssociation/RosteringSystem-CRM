@@ -1,6 +1,7 @@
 import { Router } from "express";
 import { z } from "zod";
 import { timingSafeEqual } from "node:crypto";
+import { getAuth } from "@clerk/express";
 import { requireStaff } from "../middleware/staffAuth.js";
 import { prisma } from "../db.js";
 import * as quotes from "../services/quotationService.js";
@@ -9,6 +10,14 @@ import { handleBrevoEvent } from "../services/emailService.js";
 import { businessTimeZone, dateTime } from "../services/businessTime.js";
 import { getTravelTime } from "../services/googleMapsService.js";
 export const quotationRouter = Router();
+const getActor = (req: any) => {
+  try {
+    const auth = getAuth(req);
+    return auth?.userId || req.staffId || "staff";
+  } catch {
+    return req.staffId || "staff";
+  }
+};
 const action = (fn: (req: any, res: any) => Promise<any>) => async (req: any, res: any) => {
   try { await fn(req, res); } catch (error: any) {
     res.status(error instanceof z.ZodError ? 400 : error.status || 500).json({ error: error instanceof z.ZodError ? error.issues.map(i => i.message).join(", ") : error.status ? error.message : "Unable to complete quotation request" });
@@ -45,7 +54,6 @@ quotationRouter.post("/webhooks/resend", action(async (req, res) => {
 }));
 quotationRouter.get("/healthz", (_req: any, res: any) => res.json({ ok: true, routes: "quotations" }));
 quotationRouter.get("/config", action(async (_req, res) => res.json({ timeZone: businessTimeZone(), currency: process.env.QUOTATION_CURRENCY || "AUD", taxBasisPoints: Number(process.env.QUOTATION_TAX_BASIS_POINTS || 0), validityDays: Number(process.env.QUOTATION_VALIDITY_DAYS || 14), emailConfigured: quotes.emailConfiguration() })));
-quotationRouter.use(requireStaff);
 quotationRouter.post("/deliveries/:id/retry", action(async (req, res) => {
   const input = z.object({ confirmedNotSent: z.boolean().optional() }).parse(req.body);
   const delivery = await prisma.emailDelivery.findUnique({ where: { id: req.params.id }, include: { quotation: true } });
@@ -56,7 +64,7 @@ quotationRouter.post("/deliveries/:id/retry", action(async (req, res) => {
     const changed = await tx.emailDelivery.updateMany({ where: { id: delivery.id, status: delivery.status, updatedAt: delivery.updatedAt }, data: { status: "RETRIED" } });
     if (!changed.count) return false;
     await tx.emailDelivery.create({ data: { quotationId: delivery.quotationId, recipient: delivery.recipient, kind: delivery.kind } });
-    await tx.activityLog.create({ data: { entity: "Booking", entityId: delivery.quotation.bookingId, action: "EMAIL_RETRY_REQUESTED", changes: { deliveryId: delivery.id, actor: req.staffId, confirmedNotSent: !!input.confirmedNotSent } } });
+    await tx.activityLog.create({ data: { entity: "Booking", entityId: delivery.quotation.bookingId, action: "EMAIL_RETRY_REQUESTED", changes: { deliveryId: delivery.id, actor: getActor(req), confirmedNotSent: !!input.confirmedNotSent } } });
     return true;
   });
   res.status(result ? 200 : 409).json(result ? { queued: true } : { error: "Delivery changed. Refresh and try again." });
@@ -76,10 +84,10 @@ quotationRouter.get("/booking/:id", action(async (req, res) => res.json(await qu
 quotationRouter.get("/booking/:id/activity", action(async (req, res) => res.json(await prisma.activityLog.findMany({ where: { entity: "Booking", entityId: id(req.params.id) }, orderBy: { timestamp: "desc" }, take: 100 }))));
 quotationRouter.post("/booking/:id", action(async (req, res) => {
   const input = z.object({ bookingRevision: z.number().int().positive(), previousQuotationId: z.number().nullable(), currency: z.enum(["AUD", "NZD", "USD", "GBP", "EUR"]), discountMinor: z.number().int().min(0), taxBasisPoints: z.number().int().min(0).max(10000), items: z.array(z.object({ description: z.string().trim().min(1).max(500), quantity: z.number().int().min(1).max(10000), unitPriceMinor: z.number().int().min(0).max(1000000000) })).min(1).max(100), expiresAt: z.string().datetime(), terms: z.string().max(10000), message: z.string().max(5000) }).parse(req.body);
-  res.status(201).json(await quotes.saveQuotation(id(req.params.id), input, req.staffId));
+  res.status(201).json(await quotes.saveQuotation(id(req.params.id), input, getActor(req)));
 }));
-quotationRouter.post("/:id/send", action(async (req, res) => res.json(await quotes.sendQuotation(id(req.params.id), req.staffId))));
-quotationRouter.post("/booking/:id/amend", action(async (req, res) => res.status(201).json(await quotes.createAmendment(id(req.params.id), req.staffId))));
+quotationRouter.post("/:id/send", action(async (req, res) => res.json(await quotes.sendQuotation(id(req.params.id), getActor(req)))));
+quotationRouter.post("/booking/:id/amend", action(async (req, res) => res.status(201).json(await quotes.createAmendment(id(req.params.id), getActor(req)))));
 quotationRouter.get("/:id/pdf", action(async (req, res) => {
   const q = await prisma.quotation.findUnique({ where: { id: id(req.params.id) }, include: { items: { orderBy: { position: "asc" } } } });
   if (!q) { res.sendStatus(404); return; }

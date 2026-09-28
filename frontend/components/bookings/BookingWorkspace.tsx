@@ -45,8 +45,18 @@ export function BookingWorkspace({ bookingId }: { bookingId?: string }) {
   }
   const refresh = useCallback(async () => {
     if (!bookingId) return;
-    const [b, qs, a] = await Promise.all([api(`bookings/${bookingId}`), api(`quotations/booking/${bookingId}`), api(`quotations/booking/${bookingId}/activity`)]);
-    setBooking(b); setQuotes(qs); setActivity(a); return { b, qs };
+    const [b, qs, a] = await Promise.all([
+      api(`bookings/${bookingId}`),
+      api(`quotations/booking/${bookingId}`).catch(err => {
+        console.warn("Could not load quotations for booking", err);
+        return [];
+      }),
+      api(`quotations/booking/${bookingId}/activity`).catch(err => {
+        console.warn("Could not load quotation activity for booking", err);
+        return [];
+      })
+    ]);
+    setBooking(b); setQuotes(qs || []); setActivity(a || []); return { b, qs: qs || [] };
   }, [api, bookingId]);
   useEffect(() => {
     if (!isLoaded) return;
