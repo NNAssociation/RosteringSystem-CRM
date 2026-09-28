@@ -15,6 +15,7 @@ import {
   CheckCircle,
   Map as MapIcon,
   Search,
+  InfoOutlined,
 } from "@mui/icons-material";
 
 declare global {
@@ -41,8 +42,11 @@ export function LocationPicker({
   const [openMap, setOpenMap] = useState(false);
   const [isEditing, setIsEditing] = useState(!value?.address);
   const [isManual, setIsManual] = useState(false);
-  const { isLoaded } = useGoogleMaps();
+  const { isLoaded, error: mapsError } = useGoogleMaps();
   const id = useId();
+
+  // If Google Maps is not configured or errored, seamlessly fallback to manual address input
+  const effectiveIsManual = isManual || !!mapsError;
 
   const isPickup = label.toLowerCase().includes("pickup");
   const isDestination = label.toLowerCase().includes("destination");
@@ -97,6 +101,7 @@ export function LocationPicker({
             size="sm"
             className="h-8 gap-1.5 text-xs font-medium border-slate-200 hover:bg-slate-50 text-slate-700"
             disabled={!isLoaded}
+            title={mapsError ? "Google Maps is not configured in this environment" : undefined}
             onClick={() => setOpenMap(true)}
           >
             <MapIcon style={{ fontSize: "14px" }} /> Choose on map
@@ -148,26 +153,35 @@ export function LocationPicker({
       ) : (
         /* Search / Input State */
         <div className="space-y-2">
-          {isManual ? (
+          {effectiveIsManual ? (
             <div className="space-y-2">
               <Input
                 id={id}
-                autoFocus
+                autoFocus={isEditing && !value?.address}
                 aria-label={`${label} address`}
                 value={value?.address || ""}
                 placeholder="Type full address, venue or landmark..."
                 onChange={(e) => onChange({ address: e.target.value })}
                 className="bg-white border-slate-200 focus-visible:ring-slate-900"
               />
-              <div className="flex items-center justify-between text-xs text-slate-500 px-1">
-                <span>Manual address will be saved as draft without GPS pin.</span>
-                <button
-                  type="button"
-                  onClick={() => setIsManual(false)}
-                  className="text-blue-600 hover:underline font-medium"
-                >
-                  Use Google Places search
-                </button>
+              <div className="flex flex-wrap items-center justify-between text-xs text-slate-500 px-1 gap-2">
+                {mapsError ? (
+                  <span className="text-amber-700 flex items-center gap-1 font-medium">
+                    <InfoOutlined style={{ fontSize: "14px" }} />
+                    Google Maps not configured in environment. Manual address entry is active.
+                  </span>
+                ) : (
+                  <>
+                    <span>Manual address will be saved as draft without GPS pin.</span>
+                    <button
+                      type="button"
+                      onClick={() => setIsManual(false)}
+                      className="text-blue-600 hover:underline font-medium"
+                    >
+                      Use Google Places search
+                    </button>
+                  </>
+                )}
               </div>
             </div>
           ) : (
