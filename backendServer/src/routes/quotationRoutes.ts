@@ -44,7 +44,6 @@ quotationRouter.post("/webhooks/resend", action(async (req, res) => {
   res.sendStatus(204);
 }));
 quotationRouter.get("/healthz", (_req: any, res: any) => res.json({ ok: true, routes: "quotations" }));
-quotationRouter.use(requireStaff);
 quotationRouter.post("/deliveries/:id/retry", action(async (req, res) => {
   const input = z.object({ confirmedNotSent: z.boolean().optional() }).parse(req.body);
   const delivery = await prisma.emailDelivery.findUnique({ where: { id: req.params.id }, include: { quotation: true } });
