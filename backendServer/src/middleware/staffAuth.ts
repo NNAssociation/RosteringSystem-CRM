@@ -11,18 +11,9 @@ export async function staffIdentity(userId: string) {
 export async function requireStaff(req: Request, res: Response, next: NextFunction) {
   try {
     const auth = getAuth(req);
-    if (!auth?.userId) {
-      (req as any).staffId = "system";
-      (req as any).staffDbId = null;
-      return next();
-    }
+    if (!auth.userId) { res.status(401).json({ error: "Sign in to continue" }); return; }
     const staff = await staffIdentity(auth.userId);
-    (req as any).staffId = auth.userId;
-    (req as any).staffDbId = staff.employeeId;
-    next();
-  } catch {
-    (req as any).staffId = "system";
-    (req as any).staffDbId = null;
-    next();
-  }
+    if (!staff.allowed) { res.status(403).json({ error: "A staff role (ADMIN, MANAGER or DISPATCHER) is required" }); return; }
+    (req as any).staffId = auth.userId; (req as any).staffDbId = staff.employeeId; next();
+  } catch { res.status(503).json({ error: "Unable to verify staff access. Try again." }); }
 }
