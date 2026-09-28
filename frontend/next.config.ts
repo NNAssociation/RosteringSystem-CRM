@@ -9,6 +9,15 @@ const nextConfig: NextConfig = {
       },
     ],
   },
+  async redirects() {
+    return [
+      {
+        source: "/dashboard/drivers",
+        destination: "/dashboard/employees",
+        permanent: true,
+      },
+    ];
+  },
 };
 
 export default nextConfig;

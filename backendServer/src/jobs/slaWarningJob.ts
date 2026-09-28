@@ -13,7 +13,8 @@ export async function processSLAWarnings(job: any) {
   // Find all unassigned jobs that start before the SLA threshold but are still in the future
   const upcomingUnassignedJobs = await prisma.job.findMany({
     where: {
-      status: "UNASSIGNED",
+      status: { in: ["UNASSIGNED", "PARTIALLY_ASSIGNED"] },
+      booking: { status: "CONFIRMED" },
       jobStartDateTime: {
         lte: slaThreshold,
         gte: now, // Don't alert for jobs that have already passed (or handle them differently)

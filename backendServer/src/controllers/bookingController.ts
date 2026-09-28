@@ -1,6 +1,7 @@
 import type { Request, Response, NextFunction } from "express";
 import * as BookingService from "../services/bookingService.js";
 import HttpError from "../models/errorModel.js";
+import { createBookingSchema, updateBookingSchema } from "../validators/bookingSchema.js";
 
 // GET /bookings
 export const getBookings = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
@@ -31,9 +32,16 @@ export const getBookingById = async (req: Request, res: Response, next: NextFunc
 // POST /bookings
 export const createBooking = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
-        const result = await BookingService.createBooking(req.body);
+        const parseResult = createBookingSchema.safeParse(req.body);
+        if (!parseResult.success) {
+            const msg = parseResult.error.issues.map((i) => i.message).join(", ");
+            res.status(400).json({ error: msg });
+            return;
+        }
+        const result = await BookingService.createBooking(parseResult.data);
         res.status(201).json(result);
     } catch (error: any) {
+        if (error.status) { res.status(error.status).json({ error: error.message }); return; }
         console.error("Error creating booking:", error);
         if (error.name === "ValidationError") {
             res.status(400).json({ error: error.message });
@@ -46,9 +54,16 @@ export const createBooking = async (req: Request, res: Response, next: NextFunct
 // PATCH /bookings/:id
 export const updateBooking = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
-        const result = await BookingService.updateBooking(Number(req.params.id), req.body);
+        const parseResult = updateBookingSchema.safeParse(req.body);
+        if (!parseResult.success) {
+            const msg = parseResult.error.issues.map((i) => i.message).join(", ");
+            res.status(400).json({ error: msg });
+            return;
+        }
+        const result = await BookingService.updateBooking(Number(req.params.id), parseResult.data);
         res.json(result);
     } catch (error: any) {
+        if (error.status) { res.status(error.status).json({ error: error.message }); return; }
         console.error("Error updating booking:", error);
         if (error.code === 'P2025') {
             res.status(404).json({ error: "Booking not found" });
@@ -64,6 +79,7 @@ export const deleteBooking = async (req: Request, res: Response, next: NextFunct
         const result = await BookingService.cancelBooking(Number(req.params.id));
         res.json(result);
     } catch (error: any) {
+        if (error.status) { res.status(error.status).json({ error: error.message }); return; }
         console.error("Error deleting booking:", error);
         next(new HttpError("Failed to delete booking", 500));
     }

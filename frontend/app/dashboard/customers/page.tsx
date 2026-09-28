@@ -1,4 +1,5 @@
 "use client";
+import { CreatedRecordNotice } from "@/components/shared/created-record-notice";
 
 import React, { useState, useEffect, useMemo } from "react";
 import { useGetCustomersQuery } from "@/services/api";
@@ -19,7 +20,7 @@ import { cn } from "@/lib/utils";
 
 export default function CustomersPage() {
   const { setHeaderConfig } = useHeader();
-  const { data: customers = [], isLoading: loading } = useGetCustomersQuery();
+  const { data: customers = [], isLoading: loading, isError, refetch } = useGetCustomersQuery();
 
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("ALL");
@@ -34,7 +35,7 @@ export default function CustomersPage() {
 
       const matchesStatus =
         statusFilter === "ALL" ||
-        (customer.status || "").toUpperCase() === statusFilter;
+        (customer.isActive ? "ACTIVE" : "INACTIVE") === statusFilter;
 
       return matchesSearch && matchesStatus;
     });
@@ -48,29 +49,20 @@ export default function CustomersPage() {
 
   const stats = [
     { label: "ALL", count: customers.length },
-    { label: "ACTIVE", count: customers.filter((c: Customer) => c.status === "Active").length },
-    { label: "INACTIVE", count: customers.filter((c: Customer) => c.status === "Inactive").length },
+    { label: "ACTIVE", count: customers.filter((c: Customer) => c.isActive).length },
+    { label: "INACTIVE", count: customers.filter((c: Customer) => !c.isActive).length },
   ];
 
   return (
-    <div className="flex flex-col min-h-screen bg-slate-50/30">
-      <div className="pb-8 px-8 pt-4 space-y-4">
-        <div className={cn(
-          "grid transition-all duration-500 gap-6",
-          selectedCustomer ? "grid-cols-1 lg:grid-cols-3" : "grid-cols-1"
-        )}>
-          <div className={cn(
-            "space-y-6 transition-all duration-500",
-            selectedCustomer ? "lg:col-span-2" : "col-span-1"
-          )}>
-            <PageHeader
-              title="Customers"
-              description="Manage your customer relationships and booking history"
-              breadcrumbs={[
-                { label: "Dashboard", href: "/" },
-                { label: "Customers" }
-              ]}
-              className="px-0 py-4 border-none"
+    <div className="space-y-6 p-6 lg:p-8">
+      <PageHeader
+        title="Customers"
+        description="Manage your customer relationships and booking history"
+        breadcrumbs={[
+          { label: "Dashboard", href: "/dashboard" },
+          { label: "Customers" }
+        ]}
+        className="px-0 py-0 border-none"
               actions={
                 <div className="flex items-center gap-3">
                   <Button variant="outline" className="h-10 px-6 gap-2 border-slate-200 text-slate-600 rounded-xl hover:bg-slate-50 font-medium shadow-sm">
@@ -95,7 +87,7 @@ export default function CustomersPage() {
                         : "text-slate-400 hover:text-slate-600 hover:bg-slate-100"
                     )}
                   >
-                    {stat.label.charAt(0) + stat.label.slice(1).toLowerCase()}
+                    {stat.label === "INACTIVE" ? "Deactivated" : stat.label.charAt(0) + stat.label.slice(1).toLowerCase()}
                   </button>
                 ))}
               </FilterGroup>
@@ -116,8 +108,11 @@ export default function CustomersPage() {
 
 
               </FilterGroup>
-            </FilterBar>
+            </FilterBar><CreatedRecordNotice resource="customers" records={customers} visible={filteredCustomers} clear={() => { setSearchTerm(""); setStatusFilter("ALL"); }} />
 
+        <div className={cn("grid items-start gap-6", selectedCustomer ? "grid-cols-1 lg:grid-cols-[minmax(0,1fr)_minmax(360px,440px)]" : "grid-cols-1")}>
+          <div className="min-w-0">
+            {isError && <div role="alert" className="mb-4 rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-800">Could not refresh customers. {customers.length ? "Showing previously loaded records." : ""} <Button variant="outline" onClick={() => refetch()}>Retry</Button></div>}
             <CustomersTable
               customers={filteredCustomers}
               loading={loading}
@@ -130,7 +125,7 @@ export default function CustomersPage() {
           </div>
 
           {selectedCustomer && (
-            <div className="lg:col-span-1 h-fit sticky top-4 animate-in slide-in-from-right-8 duration-500">
+            <div className="min-w-0 h-fit animate-in slide-in-from-right-8 duration-300">
               <CustomerDetailsPanel
                 customer={selectedCustomer}
                 onClose={() => setSelectedCustomer(null)}
@@ -138,7 +133,6 @@ export default function CustomersPage() {
             </div>
           )}
         </div>
-      </div>
     </div>
   );
 }

@@ -1,0 +1,27 @@
+.booking-workspace [data-slot="button"][data-variant="default"] {
+  background-color: #2563eb;
+  color: #fff;
+  border-radius: 0.65rem;
+  box-shadow: 0 1px 2px rgb(15 23 42 / 8%);
+}
+.booking-workspace [data-slot="button"][data-variant="default"]:hover:not(:disabled) {
+  background-color: #1d4ed8;
+}
+.booking-workspace input:focus-visible,
+.booking-workspace select:focus-visible,
+.booking-workspace textarea:focus-visible {
+  outline: 2px solid #93c5fd;
+  outline-offset: 2px;
+}
+.booking-workspace textarea {
+  min-height: 6rem;
+  resize: vertical;
+}
+.booking-workspace dd,
+.booking-workspace td,
+.booking-workspace strong {
+  overflow-wrap: anywhere;
+}
+@media (prefers-reduced-motion: reduce) {
+  .booking-workspace * { transition: none !important; }
+}

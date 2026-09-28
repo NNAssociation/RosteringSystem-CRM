@@ -1,179 +1,66 @@
 "use client";
-
-import React, { useEffect, useRef, useState } from "react";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
+import { useEffect, useRef, useState } from "react";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { Map as MapIcon, Check, Close, Search } from "@mui/icons-material";
-import { Input } from "@/components/ui/input";
+import { PlaceSearch } from "./PlaceSearch";
 import { useGoogleMaps } from "@/providers/google-maps-provider";
+import type { StructuredLocation } from "@/types";
 
-declare global {
-  interface Window {
-    google: any;
-  }
-}
-
-interface MapPickerModalProps {
+type Point = { lat: number; lng: number };
+type Props = {
   isOpen: boolean;
   onClose: () => void;
-  initialLocation?: { lat: number; lng: number };
+  initialLocation?: Point;
   onSelect: (location: { address: string; lat: number; lng: number; placeId?: string }) => void;
+  includedRegionCodes?: string[];
+};
+export function MapPickerModal(props: Props) {
+  return <Dialog open={props.isOpen} onOpenChange={open => { if (!open) props.onClose(); }}><DialogContent className="sm:max-w-2xl"><DialogHeader><DialogTitle>Choose location</DialogTitle></DialogHeader>{props.isOpen && <MapSelection {...props} />}</DialogContent></Dialog>;
 }
-
-export function MapPickerModal({
-  isOpen,
-  onClose,
-  initialLocation,
-  onSelect,
-}: MapPickerModalProps) {
-  const mapRef = useRef<HTMLDivElement>(null);
-  const [map, setMap] = useState<any>(null);
-  const [marker, setMarker] = useState<any>(null);
-  const [selectedPos, setSelectedPos] = useState<{ lat: number; lng: number } | null>(
-    initialLocation || null
-  );
-  const searchInputRef = useRef<HTMLInputElement>(null);
-  const [autocomplete, setAutocomplete] = useState<any>(null);
-  const { isLoaded } = useGoogleMaps();
-
+function MapSelection({ initialLocation, onSelect, onClose, includedRegionCodes }: Props) {
+  const [element, setElement] = useState<HTMLDivElement | null>(null);
+  const initial = useRef(initialLocation);
+  const [selected, setSelected] = useState<StructuredLocation | null>(initialLocation ? { ...initialLocation, address: "" } : null);
+  const map = useRef<any>(null), marker = useRef<any>(null);
+  const [error, setError] = useState(""), [busy, setBusy] = useState(false);
+  const alive = useRef(true);
+  const { isLoaded, error: loaderError } = useGoogleMaps();
   useEffect(() => {
-    const initMap = () => {
-      if (isOpen && isLoaded && mapRef.current && !map && typeof window !== "undefined" && window.google) {
-        const defaultPos = initialLocation || { lat: -33.8688, lng: 151.2093 };
-        const newMap = new window.google.maps.Map(mapRef.current, {
-          center: defaultPos,
-          zoom: 15,
-          mapTypeControl: false,
-          streetViewControl: false,
-          fullscreenControl: false,
-        });
-
-        const newMarker = new window.google.maps.Marker({
-          position: defaultPos,
-          map: newMap,
-          draggable: true,
-        });
-
-        newMap.addListener("click", (e: any) => {
-          if (e.latLng) {
-            const pos = { lat: e.latLng.lat(), lng: e.latLng.lng() };
-            newMarker.setPosition(pos);
-            setSelectedPos(pos);
-          }
-        });
-
-        newMarker.addListener("dragend", () => {
-          const pos = newMarker.getPosition();
-          if (pos) {
-            setSelectedPos({ lat: pos.lat(), lng: pos.lng() });
-          }
-        });
-
-        // Initialize Search Autocomplete
-        if (searchInputRef.current) {
-          const autocomp = new window.google.maps.places.Autocomplete(searchInputRef.current, {
-            types: ["address"],
-            componentRestrictions: { country: "AU" },
-          });
-
-          autocomp.addListener("place_changed", () => {
-            const place = autocomp.getPlace();
-            if (place.geometry && place.geometry.location) {
-              const pos = {
-                lat: place.geometry.location.lat(),
-                lng: place.geometry.location.lng(),
-              };
-              newMap.setCenter(pos);
-              newMap.setZoom(17);
-              newMarker.setPosition(pos);
-              setSelectedPos(pos);
-            }
-          });
-          setAutocomplete(autocomp);
-        }
-
-        setMap(newMap);
-        setMarker(newMarker);
-        return true;
+    alive.current = true;
+    return () => { alive.current = false; };
+  }, []);
+  useEffect(() => {
+    if (!element || !isLoaded) return;
+    let disposed = false;
+    const listeners: any[] = [];
+    void window.google.maps.importLibrary("marker").then(({ AdvancedMarkerElement }: any) => {
+      if (disposed) return;
+      const center = initial.current || { lat: -33.8688, lng: 151.2093 };
+      map.current = new window.google.maps.Map(element, { center, zoom: 14, mapId: process.env.NEXT_PUBLIC_GOOGLE_MAPS_MAP_ID || "DEMO_MAP_ID", mapTypeControl: false, streetViewControl: false, fullscreenControl: false });
+      marker.current = new AdvancedMarkerElement({ map: map.current, position: initial.current, gmpDraggable: true, title: "Selected location" });
+      listeners.push(map.current.addListener("click", (event: any) => { if (event.latLng) { const point = event.latLng.toJSON(); marker.current.position = point; setSelected({ ...point, address: "" }); setError(""); } }));
+      listeners.push(marker.current.addListener("dragend", () => { const pos = marker.current.position; setSelected({ lat: typeof pos.lat === "function" ? pos.lat() : pos.lat, lng: typeof pos.lng === "function" ? pos.lng() : pos.lng, address: "" }); setError(""); }));
+    }).catch(() => { if (!disposed) setError("The map could not load. Check Google Maps configuration."); });
+    return () => { disposed = true; listeners.forEach(l => l.remove()); if (marker.current) marker.current.map = null; map.current = null; marker.current = null; };
+  }, [element, isLoaded]);
+  function choose(location: StructuredLocation) {
+    setSelected(location); setError("");
+    if (Number.isFinite(location.lat) && Number.isFinite(location.lng)) { const point = { lat: location.lat, lng: location.lng }; map.current?.panTo(point); map.current?.setZoom(17); if (marker.current) marker.current.position = point; }
+  }
+  async function confirm() {
+    if (!selected || !Number.isFinite(selected.lat) || !Number.isFinite(selected.lng) || busy) return;
+    setBusy(true); setError("");
+    try {
+      let location = selected;
+      if (!location.address) {
+        const result = await new window.google.maps.Geocoder().geocode({ location: { lat: location.lat, lng: location.lng } });
+        if (!result.results?.[0]) throw new Error("No address");
+        location = { ...location, address: result.results[0].formatted_address, placeId: result.results[0].place_id };
       }
-      return false;
-    };
-
-    if (isOpen && !map && !initMap()) {
-      const interval = setInterval(() => {
-        if (initMap()) clearInterval(interval);
-      }, 500);
-      return () => clearInterval(interval);
-    }
-  }, [isOpen, map, initialLocation, isLoaded]);
-
-  const handleConfirm = async () => {
-    if (selectedPos && window.google) {
-      const geocoder = new window.google.maps.Geocoder();
-      try {
-        const response = await geocoder.geocode({ location: selectedPos });
-        if (response.results[0]) {
-          const result = response.results[0];
-          onSelect({
-            address: result.formatted_address,
-            lat: selectedPos.lat,
-            lng: selectedPos.lng,
-            placeId: result.place_id,
-          });
-          onClose();
-        }
-      } catch (error) {
-        console.error("Geocoding failed:", error);
-      }
-    }
-  };
-
-  return (
-    <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-[600px] p-0 overflow-hidden rounded-3xl border-none">
-        <DialogHeader className="p-6 pb-2">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-2xl bg-primary/10 flex items-center justify-center">
-              <MapIcon className="text-primary" />
-            </div>
-            <div>
-              <DialogTitle className="text-xl font-bold">Select Location</DialogTitle>
-              <p className="text-xs text-slate-400">Click on the map or drag the pin to select a location</p>
-            </div>
-          </div>
-        </DialogHeader>
-
-        <div className="h-[400px] w-full relative">
-          <div className="absolute top-4 left-1/2 -translate-x-1/2 z-10 w-[90%] max-w-[400px] group">
-            <div className="relative">
-              <div className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-primary transition-colors">
-                <Search style={{ fontSize: "20px" }} />
-              </div>
-              <Input
-                ref={searchInputRef}
-                placeholder="Search location..."
-                className="pl-10 pr-4 h-12 text-sm font-medium border-none bg-white/95 backdrop-blur-md rounded-2xl shadow-xl ring-1 ring-slate-200/50 focus:ring-2 focus:ring-primary/20 transition-all placeholder:text-slate-400"
-              />
-            </div>
-          </div>
-          <div ref={mapRef} className="w-full h-full" />
-        </div>
-
-        <div className="p-4 bg-slate-50 flex justify-end gap-3 border-t">
-          <Button variant="outline" onClick={onClose} className="rounded-xl">
-            Cancel
-          </Button>
-          <Button onClick={handleConfirm} disabled={!selectedPos} className="rounded-xl gap-2">
-            <Check style={{ fontSize: "18px" }} />
-            Confirm Selection
-          </Button>
-        </div>
-      </DialogContent>
-    </Dialog>
-  );
+      if (!alive.current) return;
+      onSelect({ ...location, lat: location.lat!, lng: location.lng! }); onClose();
+    } catch { if (alive.current) setError("Could not find an address for that point. Move the pin or choose a search result, then retry."); }
+    finally { if (alive.current) setBusy(false); }
+  }
+  return <div className="space-y-3"><p className="text-sm text-slate-500">Search a place, click the map, or drag the pin. Confirm to update the booking.</p><fieldset disabled={busy}><PlaceSearch onSelect={choose} includedRegionCodes={includedRegionCodes} /></fieldset><div className={`h-[360px] rounded-lg border bg-slate-50 ${busy ? "pointer-events-none" : ""}`} ref={setElement} />{selected && <p className="text-sm text-slate-600">{selected.address || `Selected point: ${selected.lat?.toFixed(5)}, ${selected.lng?.toFixed(5)}`}</p>}{(error || loaderError) && <p role="alert" className="text-sm text-red-600">{error || loaderError}</p>}<div className="flex justify-end gap-2"><Button variant="outline" onClick={onClose}>Cancel</Button><Button onClick={confirm} disabled={!selected || busy || !isLoaded}>{busy ? "Finding address…" : "Use this location"}</Button></div></div>;
 }

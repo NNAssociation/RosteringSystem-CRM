@@ -1,10 +1,9 @@
+import { baseQuery } from "./base-query";
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
 
 export const dispatchApi = createApi({
   reducerPath: "dispatchApi",
-  baseQuery: fetchBaseQuery({
-    baseUrl: process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000",
-  }),
+  baseQuery,
   tagTypes: ["Board", "Assignment", "Lock", "AutoSchedule"],
   endpoints: (builder) => ({
     getBoardData: builder.query<any, { date: string; viewMode?: string } | string>({

@@ -1,5 +1,7 @@
 "use client";
 
+import { useCreationVersion } from "@/components/shared/created-record-notice";
+import { RecordStatusBadge } from "@/components/shared/record-status";
 import React from 'react';
 import { Badge } from "@/components/ui/badge";
 import { Customer } from "@/types";
@@ -27,6 +29,7 @@ export function CustomersTable({
     selectedCustomerId,
     onSelectCustomer
 }: CustomersTableProps) {
+    const creationVersion = useCreationVersion("customers");
     const [currentPage, setCurrentPage] = React.useState(1);
     const itemsPerPage = 8;
 
@@ -35,12 +38,13 @@ export function CustomersTable({
     };
 
     const totalPages = Math.ceil(customers.length / itemsPerPage);
+    React.useEffect(() => { setCurrentPage(page => Math.min(page, Math.max(1, totalPages))); }, [totalPages]);
     const startIndex = (currentPage - 1) * itemsPerPage;
     const paginatedCustomers = customers.slice(startIndex, startIndex + itemsPerPage);
 
     React.useEffect(() => {
         setCurrentPage(1);
-    }, [filter, statusFilter]);
+    }, [filter, statusFilter, creationVersion]);
 
     const columns: Column<Customer>[] = [
         {
@@ -88,19 +92,28 @@ export function CustomersTable({
             )
         },
         {
+            key: "type",
+            header: "Type",
+            headerClassName: "text-xs font-semibold text-slate-500",
+            render: (customer) => (
+                <span className="text-sm font-medium text-slate-600 tracking-tight capitalize">
+                    {customer.customerType?.toLowerCase().replace('_', ' ') || "N/A"}
+                </span>
+            )
+        },
+        {
             key: "status",
             header: "Status",
             headerClassName: "text-xs font-semibold text-slate-500",
             render: (customer) => (
-                <Badge
-                    className={cn(
-                        "font-semibold px-3 py-1 rounded-lg text-xs border-none shadow-none",
-                        customer.status === "Active" ? "bg-green-100 text-green-700" :
-                            "bg-slate-100 text-slate-700"
+                <div className="flex gap-2 items-center">
+                    <RecordStatusBadge status={customer.isActive ? "ACTIVE" : "INACTIVE"} />
+                    {customer.isVip && (
+                        <Badge className="bg-amber-100 text-amber-700 font-semibold px-2 py-1 rounded-lg text-[10px] border-none shadow-none">
+                            VIP
+                        </Badge>
                     )}
-                >
-                    {customer.status}
-                </Badge>
+                </div>
             )
         },
         {
@@ -125,7 +138,7 @@ export function CustomersTable({
                         variant="ghost"
                         size="icon"
                         className="h-8 w-8 rounded-lg hover:bg-slate-100 hover:text-slate-600 transition-all active:scale-90"
-                        onClick={(e) => e.stopPropagation()}
+                        aria-label="Open record to edit" onClick={(e) => { e.stopPropagation(); handleViewCustomer(customer); }}
                     >
                         <Edit style={{ fontSize: '18px' }} />
                     </Button>
@@ -154,6 +167,7 @@ export function CustomersTable({
                     emptyMessage={emptyMessage}
                     onRowClick={handleViewCustomer}
                     rowClassName={(customer) => cn(
+                        !customer.isActive && "bg-slate-50/80 [&_td]:text-slate-500",
                         "group transition-all duration-300 hover:bg-slate-50/80 border-b border-slate-50 last:border-none",
                         selectedCustomerId === customer.id && "bg-slate-50/100 border-l-4 border-l-primary"
                     )}

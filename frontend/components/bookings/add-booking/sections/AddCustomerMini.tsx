@@ -32,7 +32,7 @@ export function AddCustomerMini({ isOpen, onClose, onCreated }: AddCustomerMiniP
         name,
         phone1: phone,
         email: email || `${name.toLowerCase().replace(/\s+/g, '.')}@temp.placeholder`,
-        status: "Active",
+        isActive: true,
       }).unwrap();
 
       toast.success("Customer created!");

@@ -1,5 +1,7 @@
 "use client";
 
+import { useCreationVersion } from "@/components/shared/created-record-notice";
+import { RecordStatusBadge } from "@/components/shared/record-status";
 import React from 'react';
 import { Badge } from "@/components/ui/badge";
 import { Vehicle } from "@/types";
@@ -27,6 +29,7 @@ export function FleetTable({
     selectedVehicleId,
     onSelectVehicle
 }: FleetTableProps) {
+    const creationVersion = useCreationVersion("fleet");
     const [currentPage, setCurrentPage] = React.useState(1);
     const itemsPerPage = 8;
 
@@ -35,12 +38,13 @@ export function FleetTable({
     };
 
     const totalPages = Math.ceil(vehicles.length / itemsPerPage);
+    React.useEffect(() => { setCurrentPage(page => Math.min(page, Math.max(1, totalPages))); }, [totalPages]);
     const startIndex = (currentPage - 1) * itemsPerPage;
     const paginatedVehicles = vehicles.slice(startIndex, startIndex + itemsPerPage);
 
     React.useEffect(() => {
         setCurrentPage(1);
-    }, [filter, statusFilter]);
+    }, [filter, statusFilter, creationVersion]);
 
     const columns: Column<Vehicle>[] = [
         {
@@ -61,7 +65,7 @@ export function FleetTable({
             render: (vehicle) => (
                 <div className="flex flex-col py-1">
                     <span className="text-sm font-semibold text-slate-900 leading-none mb-1">{vehicle.make} {vehicle.model}</span>
-                    <span className="text-[11px] font-medium text-slate-400 tracking-tight">{vehicle.year} • {vehicle.maxPassengers} Seats</span>
+                    <span className="text-[11px] font-medium text-slate-400 tracking-tight">{vehicle.year} • {vehicle.maxPassengers ?? "—"} Seats</span>
                 </div>
             )
         },
@@ -83,16 +87,7 @@ export function FleetTable({
             header: "Status",
             headerClassName: "text-xs font-semibold text-slate-500",
             render: (vehicle) => (
-                <Badge
-                    className={cn(
-                        "font-semibold px-3 py-1 rounded-lg text-xs border-none shadow-none",
-                        vehicle.status === "Available" ? "bg-green-100 text-green-700" :
-                            vehicle.status === "On Trip" ? "bg-blue-100 text-blue-700" :
-                                "bg-amber-100 text-amber-700"
-                    )}
-                >
-                    {vehicle.status}
-                </Badge>
+                <RecordStatusBadge status={vehicle.status} />
             )
         },
         {
@@ -117,7 +112,7 @@ export function FleetTable({
                         variant="ghost"
                         size="icon"
                         className="h-8 w-8 rounded-lg hover:bg-slate-100 hover:text-slate-600 transition-all active:scale-90"
-                        onClick={(e) => e.stopPropagation()}
+                        aria-label="Open record to edit" onClick={(e) => { e.stopPropagation(); handleViewVehicle(vehicle); }}
                     >
                         <Edit style={{ fontSize: '18px' }} />
                     </Button>
@@ -146,6 +141,7 @@ export function FleetTable({
                     emptyMessage={emptyMessage}
                     onRowClick={handleViewVehicle}
                     rowClassName={(vehicle) => cn(
+                        vehicle.status?.toUpperCase() === "INACTIVE" && "bg-slate-50/80 [&_td]:text-slate-500",
                         "group transition-all duration-300 hover:bg-slate-50/80 border-b border-slate-50 last:border-none",
                         selectedVehicleId === vehicle.id && "bg-slate-50/100 border-l-4 border-l-primary"
                     )}

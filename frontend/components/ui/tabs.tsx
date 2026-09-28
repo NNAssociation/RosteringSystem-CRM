@@ -8,6 +8,7 @@ interface Tab {
     id: string;
     label: string;
     icon?: React.ReactNode;
+    disabled?: boolean;
 }
 
 interface TabsProps {
@@ -28,10 +29,20 @@ export function Tabs({ tabs, activeTab, onChange, className, contentClassName, c
                     return (
                         <button
                             key={tab.id}
-                            onClick={() => onChange(tab.id)}
+                            type="button"
+                            disabled={tab.disabled}
+                            onClick={() => {
+                                if (!tab.disabled) {
+                                    onChange(tab.id);
+                                }
+                            }}
                             className={cn(
-                                "relative px-4 py-4 text-xs font-bold transition-colors outline-none",
-                                isActive ? "text-primary" : "text-slate-400 hover:text-slate-600"
+                                "relative px-4 py-4 text-xs font-bold transition-all outline-none",
+                                tab.disabled
+                                    ? "opacity-40 cursor-not-allowed text-slate-300"
+                                    : isActive
+                                    ? "text-primary"
+                                    : "text-slate-400 hover:text-slate-600 cursor-pointer"
                             )}
                         >
                             <div className="flex items-center gap-2">

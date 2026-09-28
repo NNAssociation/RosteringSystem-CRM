@@ -12,6 +12,8 @@ const recurrenceRuleSchema = z.object({
 // ── Booking Schemas ──────────────────────────────────────────
 
 export const createBookingSchema = z.object({
+  timeZone: z.string().optional(),
+  stops: z.array(z.object({ address: z.string().min(1), lat: z.number().optional(), lng: z.number().optional(), placeId: z.string().optional() })).max(20).optional(),
   customerEmail: z.string().email("Valid email is required"),
   customerName: z.string().optional(),
   customerId: z.coerce.number().int().optional(),
@@ -38,12 +40,12 @@ export const createBookingSchema = z.object({
   bookingType: z.enum(["one_way", "round_trip", "repeatable"]).optional().default("one_way"),
 
   // NEW: Structured location data
-  pickupLat: z.number().optional(),
-  pickupLng: z.number().optional(),
-  pickupPlaceId: z.string().optional(),
-  dropoffLat: z.number().optional(),
-  dropoffLng: z.number().optional(),
-  dropoffPlaceId: z.string().optional(),
+  pickupLat: z.number().nullable().optional(),
+  pickupLng: z.number().nullable().optional(),
+  pickupPlaceId: z.string().nullable().optional(),
+  dropoffLat: z.number().nullable().optional(),
+  dropoffLng: z.number().nullable().optional(),
+  dropoffPlaceId: z.string().nullable().optional(),
 
   // NEW: Round trip
   returnDate: z.string().optional(),
@@ -55,6 +57,9 @@ export const createBookingSchema = z.object({
 });
 
 export const updateBookingSchema = z.object({
+  revision: z.number().int().positive().optional(),
+  timeZone: z.string().optional(),
+  stops: z.array(z.object({ address: z.string().min(1), lat: z.number().optional(), lng: z.number().optional(), placeId: z.string().optional() })).max(20).optional(),
   status: z.string().optional(),
   service: z.string().optional(),
   subject: z.string().optional(),
@@ -76,12 +81,12 @@ export const updateBookingSchema = z.object({
 
   // NEW fields
   bookingType: z.enum(["one_way", "round_trip", "repeatable"]).optional(),
-  pickupLat: z.number().optional(),
-  pickupLng: z.number().optional(),
-  pickupPlaceId: z.string().optional(),
-  dropoffLat: z.number().optional(),
-  dropoffLng: z.number().optional(),
-  dropoffPlaceId: z.string().optional(),
+  pickupLat: z.number().nullable().optional(),
+  pickupLng: z.number().nullable().optional(),
+  pickupPlaceId: z.string().nullable().optional(),
+  dropoffLat: z.number().nullable().optional(),
+  dropoffLng: z.number().nullable().optional(),
+  dropoffPlaceId: z.string().nullable().optional(),
   returnDate: z.string().optional(),
   returnTime: z.string().optional(),
   waitingDuration: z.coerce.number().int().min(0).optional(),

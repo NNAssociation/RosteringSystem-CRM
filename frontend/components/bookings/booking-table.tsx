@@ -1,5 +1,10 @@
 "use client";
 
+import { DispatchStatusBadge } from "./DispatchStatusBadge";
+import { formatTripDate } from "@/lib/workflow-api";
+import Link from "next/link";
+import { useCreationVersion } from "@/components/shared/created-record-notice";
+import { RecordStatusBadge } from "@/components/shared/record-status";
 import React from 'react';
 import { Badge } from "@/components/ui/badge";
 import { format } from "date-fns";
@@ -28,6 +33,7 @@ export function BookingsTable({
     selectedBookingId,
     onSelectBooking
 }: BookingsTableProps) {
+    const creationVersion = useCreationVersion("bookings");
     const [currentPage, setCurrentPage] = React.useState(1);
     const itemsPerPage = 8;
 
@@ -42,7 +48,7 @@ export function BookingsTable({
     // Reset page if filter changes
     React.useEffect(() => {
         setCurrentPage(1);
-    }, [filter, statusFilter]);
+    }, [filter, statusFilter, creationVersion]);
 
     const columns: Column<Booking>[] = [
         {
@@ -96,10 +102,10 @@ export function BookingsTable({
                 return (
                     <div className="flex flex-col py-1">
                         <span className="text-sm font-semibold text-slate-700 leading-none mb-1 tracking-tight">
-                            {format(startDate, "MMM dd, yyyy")}
+                            {formatTripDate(booking.startTime, booking.timeZone || "Australia/Sydney")}
                         </span>
                         <span className="text-xs font-medium text-slate-400">
-                            {format(startDate, "hh:mm aa")}
+                            {booking.timeZone || "Australia/Sydney"}
                         </span>
                     </div>
                 );
@@ -125,16 +131,32 @@ export function BookingsTable({
             header: "Status",
             headerClassName: "text-xs font-semibold text-slate-500",
             render: (booking) => (
-                <Badge
-                    className={cn(
-                        "font-semibold px-3 py-1 rounded-lg text-xs border-none shadow-none",
-                        booking.status === "Confirmed" ? "bg-emerald-100 text-emerald-700" :
-                            booking.status === "Cancelled" ? "bg-rose-100 text-rose-700" :
-                                "bg-amber-100/80 text-amber-700"
-                    )}
-                >
-                    {booking.status}
-                </Badge>
+                <RecordStatusBadge status={booking.status} />
+            )
+        },
+        {
+            key: "quotationStatus",
+            header: "Quotation",
+            headerClassName: "text-xs font-semibold text-slate-500",
+            render: (booking) => (
+                <div className="flex flex-col py-1">
+                    <span className="text-xs font-semibold text-slate-700">
+                        {booking.quotationStatus?.replaceAll("_", " ") || "NOT CREATED"}
+                    </span>
+                    <span className="text-[11px] font-medium text-slate-400">
+                        {booking.emailStatus || "Not emailed"}
+                    </span>
+                </div>
+            )
+        },
+        {
+            key: "dispatchStatus",
+            header: "Dispatch",
+            headerClassName: "text-xs font-semibold text-slate-500",
+            render: (booking) => (
+                <div className="flex flex-col py-1">
+                    <DispatchStatusBadge status={booking.status?.toUpperCase() === "CANCELLED" ? "CANCELLED" : booking.dispatchStatus} />
+                </div>
             )
         },
         {
@@ -159,9 +181,9 @@ export function BookingsTable({
                         variant="ghost"
                         size="icon"
                         className="h-8 w-8 rounded-lg hover:bg-slate-100 hover:text-slate-600 transition-all active:scale-90"
-                        onClick={(e) => e.stopPropagation()}
+                        asChild
                     >
-                        <Edit style={{ fontSize: '18px' }} />
+                        <Link href={`/dashboard/bookings/${booking.id}`} onClick={e => e.stopPropagation()} aria-label={`Open booking ${booking.id}`}><Edit style={{ fontSize: '18px' }} /></Link>
                     </Button>
                 </div>
             )
@@ -188,6 +210,7 @@ export function BookingsTable({
                     emptyMessage={emptyMessage}
                     onRowClick={handleViewBooking}
                     rowClassName={(booking) => cn(
+                        booking.status?.toUpperCase() === "CANCELLED" && "bg-slate-50/80 [&_td]:text-slate-500",
                         "group transition-all duration-300 hover:bg-slate-50/80 border-b border-slate-50 last:border-none",
                         selectedBookingId === booking.id && "bg-slate-50/100 border-l-4 border-l-primary"
                     )}

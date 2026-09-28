@@ -1,3 +1,5 @@
+import { boardWindow, localDate, dayWindow, dateTime, addDateDays } from "../services/businessTime.js";
+import { createAssignmentSchema, updateAssignmentSchema, acquireLockSchema } from "../validators/assignmentSchema.js";
 import type { Request, Response, NextFunction } from "express";
 import * as DispatchService from "../services/dispatchService.js";
 import * as AssignmentService from "../services/assignmentService.js";
@@ -26,9 +28,11 @@ export const getBoardData = async (req: Request, res: Response, next: NextFuncti
       end = endOfDay(addDays(weekStart, 6));
     }
 
-    const data = await DispatchService.getBoardData(start, end);
+    const window = boardWindow(dateQuery || localDate(new Date()), viewMode === "weekly");
+    const data = await DispatchService.getBoardData(window.start, window.end);
     res.json(data);
-  } catch (error) {
+  } catch (error: any) {
+    if (error.status) { res.status(error.status).json({ error: error.message }); return; }
     console.error("Error fetching board data:", error);
     next(new HttpError("Failed to fetch board data", 500));
   }
@@ -37,10 +41,12 @@ export const getBoardData = async (req: Request, res: Response, next: NextFuncti
 // POST /dispatch/assignments
 export const createAssignment = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
   try {
-    const userId = (req as any).clerkAuth?.userId ? 1 : 1; // Fallback to 1 for now if clerk config is missing proper mapping to DB user
-    const assignment = await AssignmentService.createAssignment(req.body, { userId });
+    const userId = (req as any).staffDbId; // Fallback to 1 for now if clerk config is missing proper mapping to DB user
+    const assignment = await AssignmentService.createAssignment(createAssignmentSchema.parse(req.body), { userId });
     res.status(201).json(assignment);
   } catch (error: any) {
+    if (error.name === "ZodError") { res.status(400).json({ error: error.issues.map((i: any) => i.message).join(", ") }); return; }
+    if (error.status) { res.status(error.status).json({ error: error.message }); return; }
     console.error("Error creating assignment:", error);
     if (error.name === "ValidationError") {
       res.status(400).json({ error: error.message });
@@ -53,10 +59,12 @@ export const createAssignment = async (req: Request, res: Response, next: NextFu
 // PATCH /dispatch/assignments/:id
 export const updateAssignment = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
   try {
-    const userId = (req as any).clerkAuth?.userId ? 1 : 1;
-    const assignment = await AssignmentService.updateAssignment(Number(req.params.id), req.body, { userId });
+    const userId = (req as any).staffDbId;
+    const assignment = await AssignmentService.updateAssignment(Number(req.params.id), updateAssignmentSchema.parse(req.body), { userId });
     res.json(assignment);
   } catch (error: any) {
+    if (error.name === "ZodError") { res.status(400).json({ error: error.issues.map((i: any) => i.message).join(", ") }); return; }
+    if (error.status) { res.status(error.status).json({ error: error.message }); return; }
     console.error("Error updating assignment:", error);
     if (error.name === "ValidationError") {
       res.status(409).json({ error: error.message }); // 409 Conflict is appropriate here
@@ -69,10 +77,11 @@ export const updateAssignment = async (req: Request, res: Response, next: NextFu
 // DELETE /dispatch/assignments/:id
 export const deleteAssignment = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
   try {
-    const userId = (req as any).clerkAuth?.userId ? 1 : 1;
-    const result = await AssignmentService.deleteAssignment(Number(req.params.id), { userId });
+    const userId = (req as any).staffDbId;
+    const result = await AssignmentService.deleteAssignment(Number(req.params.id), { userId }, Number(req.query.version));
     res.json(result);
-  } catch (error) {
+  } catch (error: any) {
+    if (error.status) { res.status(error.status).json({ error: error.message }); return; }
     console.error("Error deleting assignment:", error);
     next(new HttpError("Failed to delete assignment", 500));
   }
@@ -81,8 +90,9 @@ export const deleteAssignment = async (req: Request, res: Response, next: NextFu
 // POST /dispatch/locks
 export const acquireLock = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
   try {
-    const { resourceType, resourceId } = req.body;
-    const userId = (req as any).clerkAuth?.userId ? 1 : 1;
+    const { resourceType, resourceId } = acquireLockSchema.parse(req.body);
+    if (!(req as any).staffDbId) { res.status(403).json({ error: "Link your staff account to an employee to use resource locks" }); return; }
+    const userId = (req as any).staffDbId;
 
     const result = await DispatchService.acquireLock(resourceType, resourceId, userId);
     
@@ -92,7 +102,8 @@ export const acquireLock = async (req: Request, res: Response, next: NextFunctio
     }
 
     res.json(result);
-  } catch (error) {
+  } catch (error: any) {
+    if (error.status) { res.status(error.status).json({ error: error.message }); return; }
     console.error("Error acquiring lock:", error);
     next(new HttpError("Failed to acquire lock", 500));
   }
@@ -101,12 +112,14 @@ export const acquireLock = async (req: Request, res: Response, next: NextFunctio
 // DELETE /dispatch/locks
 export const releaseLock = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
   try {
-    const { resourceType, resourceId } = req.body;
-    const userId = (req as any).clerkAuth?.userId ? 1 : 1;
+    const { resourceType, resourceId } = acquireLockSchema.parse(req.body);
+    if (!(req as any).staffDbId) { res.status(403).json({ error: "Link your staff account to an employee to use resource locks" }); return; }
+    const userId = (req as any).staffDbId;
 
     const result = await DispatchService.releaseLock(resourceType, resourceId, userId);
     res.json(result);
-  } catch (error) {
+  } catch (error: any) {
+    if (error.status) { res.status(error.status).json({ error: error.message }); return; }
     console.error("Error releasing lock:", error);
     next(new HttpError("Failed to release lock", 500));
   }
@@ -118,7 +131,8 @@ export const migrateData = async (req: Request, res: Response, next: NextFunctio
     const { migrateLegacyJobs } = await import("../services/migrationService.js");
     const result = await migrateLegacyJobs();
     res.json(result);
-  } catch (error) {
+  } catch (error: any) {
+    if (error.status) { res.status(error.status).json({ error: error.message }); return; }
     console.error("Error migrating data:", error);
     next(new HttpError("Failed to migrate data", 500));
   }
@@ -131,7 +145,8 @@ export const getAnalytics = async (req: Request, res: Response, next: NextFuncti
     const dateQuery = req.query.date ? new Date(req.query.date as string) : new Date();
     const result = await getDispatchAnalytics(dateQuery);
     res.json(result);
-  } catch (error) {
+  } catch (error: any) {
+    if (error.status) { res.status(error.status).json({ error: error.message }); return; }
     console.error("Error fetching analytics:", error);
     next(new HttpError("Failed to fetch analytics", 500));
   }
@@ -142,12 +157,12 @@ export const getDutySpans = async (req: Request, res: Response, next: NextFuncti
   try {
     const dateQuery = req.query.date as string;
     const targetDate = dateQuery ? new Date(dateQuery) : new Date();
-    const start = startOfDay(targetDate);
-    const end = endOfDay(targetDate);
+    const { start, end } = dayWindow(dateQuery || localDate(new Date()));
 
     const data = await DispatchService.getDutySpans(start, end);
     res.json(data);
-  } catch (error) {
+  } catch (error: any) {
+    if (error.status) { res.status(error.status).json({ error: error.message }); return; }
     console.error("Error fetching duty spans:", error);
     next(new HttpError("Failed to fetch duty spans", 500));
   }
@@ -171,13 +186,15 @@ export const setDutySpan = async (req: Request, res: Response, next: NextFunctio
       return;
     }
 
-    const targetDate = new Date(date);
-    const start = new Date(startTime);
-    const end = new Date(endTime);
+    const targetDate = dateTime(date, "12:00");
+    const start = startTime.includes("T") ? new Date(startTime) : dateTime(date, startTime);
+    const end = endTime.includes("T") ? new Date(endTime) : dateTime(endTime <= startTime ? addDateDays(date, 1) : date, endTime);
 
     const result = await DispatchService.setDutySpan(numericDriverIds, targetDate, start, end);
     res.status(201).json(result);
   } catch (error: any) {
+    if (error.name === "ZodError") { res.status(400).json({ error: error.issues.map((i: any) => i.message).join(", ") }); return; }
+    if (error.status) { res.status(error.status).json({ error: error.message }); return; }
     console.error("Error setting duty span:", error);
     res.status(500).json({ error: "Failed to set duty span", details: error.message || String(error), stack: error.stack });
   }
@@ -198,8 +215,9 @@ export const autoSchedule = async (req: Request, res: Response, next: NextFuncti
       return;
     }
 
-    const start = startOfDay(startDateObj);
-    const end = endOfDay(endDateObj);
+    const start = dayWindow(startDateParam || localDate(new Date())).start;
+    const end = dayWindow(endDateParam || startDateParam || localDate(new Date())).end;
+    if (end <= start || end.getTime() - start.getTime() > 367 * 86400000) { res.status(400).json({ error: "Select a date range of at most one year" }); return; }
 
     if (req.method === "GET") {
       // Dry-run preview — no DB writes
@@ -218,7 +236,8 @@ export const autoSchedule = async (req: Request, res: Response, next: NextFuncti
     }
 
     res.status(200).json(result);
-  } catch (error) {
+  } catch (error: any) {
+    if (error.status) { res.status(error.status).json({ error: error.message }); return; }
     console.error("Error running auto-schedule:", error);
     next(new HttpError("Failed to run auto-schedule", 500));
   }

@@ -1,5 +1,6 @@
 import { createApi } from "@reduxjs/toolkit/query/react";
-import { User, Driver, CreateUserRequest } from "@/types";
+import { User, CreateUserRequest } from "@/types";
+import { employeesApi } from "./employees.api";
 import { baseQuery } from "./base-query";
 
 export const userApi = createApi({
@@ -11,22 +12,6 @@ export const userApi = createApi({
         getUsers: builder.query<User[], void>({
             query: () => "users",
             providesTags: ["User"],
-        }),
-
-        // GET drivers specifically (to sync with creation)
-        getDrivers: builder.query<Driver[], void>({
-            query: () => "users?roles=DRIVER",
-            transformResponse: (response: User[]) => {
-                return response.map(user => ({
-                    id: user.id,
-                    name: user.name,
-                    email: user.email,
-                    status: user.isActive ? "Active" : "Inactive",
-                    joinedDate: user.createdAt?.split('T')[0],
-                    ...user.profile // Flatten profile fields (phoneNumber1, driverLicense, etc.)
-                })) as Driver[];
-            },
-            providesTags: ["User"], // Shares same tag so createUser invalidates it
         }),
 
         // GET single user
@@ -42,6 +27,7 @@ export const userApi = createApi({
                 method: "POST",
                 body,
             }),
+            async onQueryStarted(_arg, { dispatch, queryFulfilled }) { try { await queryFulfilled; dispatch(employeesApi.util.invalidateTags(["Employee"])); } catch {} },
             invalidatesTags: ["User"],
         }),
 
@@ -52,6 +38,7 @@ export const userApi = createApi({
                 method: "PATCH",
                 body: data,
             }),
+            async onQueryStarted(_arg, { dispatch, queryFulfilled }) { try { await queryFulfilled; dispatch(employeesApi.util.invalidateTags(["Employee"])); } catch {} },
             invalidatesTags: (result, error, { id }) => [
                 { type: "User", id },
                 "User",
@@ -64,6 +51,7 @@ export const userApi = createApi({
                 url: `users/${id}`,
                 method: "DELETE",
             }),
+            async onQueryStarted(_arg, { dispatch, queryFulfilled }) { try { await queryFulfilled; dispatch(employeesApi.util.invalidateTags(["Employee"])); } catch {} },
             invalidatesTags: ["User"],
         }),
     }),
@@ -71,7 +59,6 @@ export const userApi = createApi({
 
 export const {
     useGetUsersQuery,
-    useGetDriversQuery,
     useGetUserByIdQuery,
     useCreateUserMutation,
     useUpdateUserMutation,

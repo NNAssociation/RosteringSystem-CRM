@@ -1,4 +1,5 @@
 import { prisma } from "../db.js";
+import { changeRecordLifecycle } from "./recordLifecycle.js";
 import type { CreateCustomerInput, UpdateCustomerInput } from "../validators/customerSchema.js";
 
 // ── Response Mapper ───────────────────────────────────────
@@ -12,16 +13,15 @@ function toCustomerResponse(customer: any) {
 
 // ── Service Methods ───────────────────────────────────────
 
-export async function getAllCustomers() {
-  const customers = await prisma.customer.findMany({
-    where: { isActive: true },
-    orderBy: { createdAt: "desc" },
+export async function getAllCustomers(db: any = prisma) {
+  const customers = await db.customer.findMany({
+    orderBy: [{ createdAt: "desc" }, { id: "desc" }],
   });
   return customers.map(toCustomerResponse);
 }
 
-export async function getCustomerById(id: number) {
-  const customer = await prisma.customer.findUnique({
+export async function getCustomerById(id: number, db: any = prisma) {
+  const customer = await db.customer.findUnique({
     where: { id },
     include: { bookings: true },
   });
@@ -29,8 +29,8 @@ export async function getCustomerById(id: number) {
   return toCustomerResponse(customer);
 }
 
-export async function createCustomer(input: CreateCustomerInput) {
-  const newCustomer = await prisma.customer.create({
+export async function createCustomer(input: CreateCustomerInput, db: any = prisma) {
+  const newCustomer = await db.customer.create({
     data: {
       email: input.email,
       name: input.name || input.email,
@@ -38,14 +38,23 @@ export async function createCustomer(input: CreateCustomerInput) {
       company: input.company,
       phone1: input.phone1,
       phone2: input.phone2,
+      customerType: input.customerType,
+      contactName: input.contactName,
+      contactRole: input.contactRole,
+      taxId: input.taxId,
+      preferredPaymentMethod: input.preferredPaymentMethod,
+      paymentTerms: input.paymentTerms,
+      internalNotes: input.internalNotes,
+      isVip: input.isVip,
+      accountStanding: input.accountStanding,
       isActive: true,
     },
   });
   return toCustomerResponse(newCustomer);
 }
 
-export async function updateCustomer(id: number, input: UpdateCustomerInput) {
-  const updatedCustomer = await prisma.customer.update({
+export async function updateCustomer(id: number, input: UpdateCustomerInput, db: any = prisma) {
+  const updatedCustomer = await db.customer.update({
     where: { id },
     data: {
       email: input.email,
@@ -54,6 +63,15 @@ export async function updateCustomer(id: number, input: UpdateCustomerInput) {
       company: input.company,
       phone1: input.phone1,
       phone2: input.phone2,
+      customerType: input.customerType,
+      contactName: input.contactName,
+      contactRole: input.contactRole,
+      taxId: input.taxId,
+      preferredPaymentMethod: input.preferredPaymentMethod,
+      paymentTerms: input.paymentTerms,
+      internalNotes: input.internalNotes,
+      isVip: input.isVip,
+      accountStanding: input.accountStanding,
       isActive: input.isActive,
     },
   });
@@ -83,9 +101,5 @@ export async function searchCustomers(query: string) {
 }
 
 export async function softDeleteCustomer(id: number) {
-  await prisma.customer.update({
-    where: { id },
-    data: { isActive: false },
-  });
-  return { success: true, id };
+  return changeRecordLifecycle("customers", id, false);
 }

@@ -10,11 +10,11 @@ export const createVehicleSchema = z.object({
   regoState: z.string().optional(),
   vin: z.string().min(1, "VIN is required"),
   status: z.string().optional().default("ACTIVE"),
-  maxPassengers: z.coerce.number().int().min(0).optional(),
-  maxCargoVolume: z.coerce.number().min(0).optional(),
+  maxPassengers: z.coerce.number().int().min(0).nullable().optional(),
+  maxCargoVolume: z.coerce.number().min(0).nullable().optional(),
   availableFrom: z.string().optional(),
   availableTo: z.string().optional(),
-  homeDepotId: z.coerce.number().int().min(1).optional(),
+  homeDepotId: z.coerce.number().int().min(1).nullable().optional(),
   assignedDriverId: z.coerce.number().int().min(1).optional().nullable(),
 });
 

@@ -5,7 +5,7 @@ import { baseQuery } from "./base-query";
 export const bookingsApi = createApi({
     reducerPath: "bookingsApi",
     baseQuery,
-    tagTypes: ["Booking"],
+    tagTypes: ["Booking", "CustomerSearch"],
     endpoints: (builder) => ({
         getBookings: builder.query<Booking[], void>({
             query: () => "bookings",
@@ -49,6 +49,7 @@ export const bookingsApi = createApi({
         // Customer search for booking form autocomplete
         searchCustomers: builder.query<CustomerSearchResult[], string>({
             query: (q) => `customers/search?q=${encodeURIComponent(q)}`,
+            providesTags: ["CustomerSearch"],
         }),
     }),
 });

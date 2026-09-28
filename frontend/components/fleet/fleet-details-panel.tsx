@@ -1,7 +1,9 @@
 "use client";
 
+import { RecordLifecycleActions } from "@/components/shared/record-lifecycle-actions";
+import { RecordStatusBadge, InactiveRecordNotice } from "@/components/shared/record-status";
 import React, { useState, useEffect } from 'react';
-import { useUpdateVehicleMutation, useDeleteVehicleMutation, useGetDepotsQuery, useGetUsersQuery } from '@/services/api';
+import { useUpdateVehicleMutation, useDeleteVehicleMutation, useGetDepotsQuery, useGetUsersQuery, useGetVehicleByIdQuery } from '@/services/api';
 import { Vehicle, ApiResponseError } from '@/types';
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -38,7 +40,9 @@ interface FleetDetailsPanelProps {
     onClose: () => void;
 }
 
-export function FleetDetailsPanel({ vehicle, onClose }: FleetDetailsPanelProps) {
+export function FleetDetailsPanel({ vehicle: suppliedVehicle, onClose }: FleetDetailsPanelProps) {
+    const { currentData: freshVehicle } = useGetVehicleByIdQuery(suppliedVehicle?.id ?? 0, { skip: !suppliedVehicle });
+    const vehicle = freshVehicle ?? suppliedVehicle;
     const [updateVehicle] = useUpdateVehicleMutation();
     const [deleteVehicle, { isLoading: isDeleting }] = useDeleteVehicleMutation();
     const { data: depots } = useGetDepotsQuery();
@@ -63,7 +67,10 @@ export function FleetDetailsPanel({ vehicle, onClose }: FleetDetailsPanelProps) 
         assignedDriverId: '',
     });
 
+    const hydratedId = React.useRef(vehicle?.id);
     useEffect(() => {
+        if (isEditing && hydratedId.current === vehicle?.id) return;
+        hydratedId.current = vehicle?.id;
         if (vehicle) {
             setEditForm({
                 make: vehicle.make || '',
@@ -73,8 +80,8 @@ export function FleetDetailsPanel({ vehicle, onClose }: FleetDetailsPanelProps) 
                 regoState: vehicle.regoState || '',
                 vin: vehicle.vin || '',
                 status: vehicle.status || '',
-                maxPassengers: (vehicle.maxPassengers || 0).toString(),
-                maxCargoVolume: (vehicle.maxCargoVolume || 0).toString(),
+                maxPassengers: vehicle.maxPassengers == null ? "" : vehicle.maxPassengers.toString(),
+                maxCargoVolume: vehicle.maxCargoVolume == null ? "" : vehicle.maxCargoVolume.toString(),
                 availableFrom: vehicle.availableFrom ? (vehicle.availableFrom.includes('T') ? vehicle.availableFrom.split('T')[0] : vehicle.availableFrom) : '',
                 availableTo: vehicle.availableTo ? (vehicle.availableTo.includes('T') ? vehicle.availableTo.split('T')[0] : vehicle.availableTo) : '',
                 homeDepotId: vehicle.homeDepotId ? vehicle.homeDepotId.toString() : '',
@@ -82,7 +89,7 @@ export function FleetDetailsPanel({ vehicle, onClose }: FleetDetailsPanelProps) 
             });
             setIsEditing(false);
         }
-    }, [vehicle]);
+    }, [vehicle, isEditing]);
 
     if (!vehicle) return null;
 
@@ -94,10 +101,10 @@ export function FleetDetailsPanel({ vehicle, onClose }: FleetDetailsPanelProps) 
                 data: {
                     ...editForm,
                     year: parseInt(editForm.year) || vehicle.year,
-                    maxPassengers: parseInt(editForm.maxPassengers) || vehicle.maxPassengers,
-                    maxCargoVolume: parseFloat(editForm.maxCargoVolume) || 0,
-                    homeDepotId: editForm.homeDepotId ? parseInt(editForm.homeDepotId) : undefined,
-                    assignedDriverId: editForm.assignedDriverId ? parseInt(editForm.assignedDriverId) : undefined,
+                    maxPassengers: editForm.maxPassengers === "" ? null : Number(editForm.maxPassengers),
+                    maxCargoVolume: editForm.maxCargoVolume === "" ? null : Number(editForm.maxCargoVolume),
+                    homeDepotId: editForm.homeDepotId ? Number(editForm.homeDepotId) : null,
+                    assignedDriverId: editForm.assignedDriverId ? Number(editForm.assignedDriverId) : null,
                 }
             }).unwrap();
             toast.success("Vehicle updated successfully");
@@ -111,16 +118,6 @@ export function FleetDetailsPanel({ vehicle, onClose }: FleetDetailsPanelProps) 
         }
     };
 
-    const handleDelete = async () => {
-        try {
-            await deleteVehicle(vehicle.id).unwrap();
-            toast.success("Vehicle deleted successfully");
-            onClose();
-        } catch (error: unknown) {
-            console.error("Failed to delete vehicle:", error);
-            toast.error((error as ApiResponseError)?.data?.error || "Failed to delete vehicle.");
-        }
-    };
 
     const statusConfig = {
         'Available': { class: "bg-green-100 text-green-700", dot: "bg-green-600" },
@@ -133,14 +130,24 @@ export function FleetDetailsPanel({ vehicle, onClose }: FleetDetailsPanelProps) 
 
     const config = statusConfig[vehicle.status as keyof typeof statusConfig] || statusConfig.Available;
 
+    const isEditYearValid = Boolean(parseInt(editForm.year) >= 1900 && parseInt(editForm.year) <= 2100);
+    const isEditValid = Boolean(
+        editForm.make.trim().length >= 2 &&
+        editForm.model.trim().length >= 2 &&
+        isEditYearValid &&
+        editForm.licensePlate.trim().length >= 2 &&
+        editForm.vin.trim().length >= 3 &&
+        parseInt(editForm.maxPassengers) >= 1
+    );
+
     const footer = (
         <div className="flex flex-col gap-4 p-6 border-t border-slate-100 bg-white">
             {isEditing ? (
                 <div className="grid grid-cols-2 gap-3">
                     <Button
                         onClick={handleSave}
-                        disabled={isUpdating}
-                        className="rounded-xl h-12 gap-2 bg-slate-900 hover:bg-black text-white font-semibold border-none transition-all active:scale-95 shadow-lg shadow-slate-200"
+                        disabled={isUpdating || !isEditValid}
+                        className="rounded-xl h-12 gap-2 bg-slate-900 hover:bg-black disabled:opacity-40 disabled:cursor-not-allowed text-white font-semibold border-none transition-all active:scale-95 shadow-lg shadow-slate-200"
                     >
                         <Save style={{ fontSize: '18px' }} /> Save Changes
                     </Button>
@@ -166,35 +173,7 @@ export function FleetDetailsPanel({ vehicle, onClose }: FleetDetailsPanelProps) 
                             <History style={{ fontSize: '18px' }} /> Trip History
                         </Button>
                     </div>
-                    <AlertDialog>
-                        <AlertDialogTrigger asChild>
-                            <Button
-                                disabled={isDeleting}
-                                variant="ghost"
-                                className="rounded-xl h-12 gap-2 text-rose-500 hover:text-rose-600 hover:bg-rose-50 font-semibold transition-all active:scale-95"
-                            >
-                                <DeleteOutline style={{ fontSize: '18px' }} /> Delete Vehicle
-                            </Button>
-                        </AlertDialogTrigger>
-                        <AlertDialogContent>
-                            <AlertDialogHeader>
-                                <AlertDialogTitle>Delete Vehicle from Fleet?</AlertDialogTitle>
-                                <AlertDialogDescription>
-                                    Are you sure you want to remove the {vehicle.year} {vehicle.make} {vehicle.model} ({vehicle.licensePlate})?
-                                    This action is permanent and will remove all maintenance and trip history.
-                                </AlertDialogDescription>
-                            </AlertDialogHeader>
-                            <AlertDialogFooter>
-                                <AlertDialogCancel className="rounded-xl">Cancel</AlertDialogCancel>
-                                <AlertDialogAction
-                                    onClick={handleDelete}
-                                    className="bg-rose-600 hover:bg-rose-700 text-white rounded-xl"
-                                >
-                                    Delete Vehicle
-                                </AlertDialogAction>
-                            </AlertDialogFooter>
-                        </AlertDialogContent>
-                    </AlertDialog>
+                    <RecordLifecycleActions resource="fleet" id={vehicle.id} inactive={vehicle.status?.toUpperCase() === "INACTIVE"} onDeleted={onClose} />
                 </div>
             )}
         </div>
@@ -212,15 +191,13 @@ export function FleetDetailsPanel({ vehicle, onClose }: FleetDetailsPanelProps) 
             onClose={onClose}
             title={`Vehicle Profile`}
             badge={
-                <Badge className={cn("px-3 py-1 rounded-lg border-none text-xs font-semibold shadow-none", config.class)}>
-                    {vehicle.status}
-                </Badge>
+                <RecordStatusBadge status={vehicle.status} />
             }
             footer={footer}
             contentClassName="p-0 flex flex-col h-full overflow-hidden"
             className="w-full max-w-md"
         >
-            <div className="flex flex-col h-full overflow-hidden">
+            <div className="flex flex-col h-full overflow-hidden">{vehicle.status?.toUpperCase() === "INACTIVE" && <InactiveRecordNotice />}
                 {/* Visual Header (Always Visible) */}
                 <div className="p-6 pb-2">
                     <div className="flex flex-col gap-1">
@@ -299,12 +276,12 @@ export function FleetDetailsPanel({ vehicle, onClose }: FleetDetailsPanelProps) 
                                         <option value="ACTIVE">Active (Available)</option>
                                         <option value="On Trip">On Trip</option>
                                         <option value="MAINTENANCE">Maintenance</option>
-                                        <option value="INACTIVE">Inactive</option>
+                                        <option value="INACTIVE">Deactivated</option>
                                     </select>
                                 ) : (
                                     <div className="flex items-center gap-2 ml-1">
                                         <div className={cn("w-2 h-2 rounded-full", config.dot)} />
-                                        <span className="text-sm font-semibold text-slate-900">{vehicle.status}</span>
+                                        <span className="text-sm font-semibold text-slate-900">{vehicle.status?.toUpperCase() === "INACTIVE" ? "Deactivated" : vehicle.status}</span>
                                     </div>
                                 )}
                             </div>
@@ -334,12 +311,12 @@ export function FleetDetailsPanel({ vehicle, onClose }: FleetDetailsPanelProps) 
                                         onChange={(e) => setEditForm({ ...editForm, assignedDriverId: e.target.value })}
                                     >
                                         <option value="">No Driver Assigned</option>
-                                        {drivers?.filter(d => d.isActive).map(driver => (
-                                            <option key={driver.id} value={driver.id}>{driver.name || driver.email}</option>
+                                        {drivers?.filter(d => (d.status === 'ACTIVE' && d.role === 'DRIVER') || String(d.id) === editForm.assignedDriverId).map(driver => (
+                                            <option key={driver.id} value={driver.id}>{driver.firstName || ''} {driver.lastName || ''} ({driver.email})</option>
                                         ))}
                                     </select>
                                 ) : (
-                                    <p className="text-sm font-semibold text-slate-900 ml-1">{vehicle.assignedDriver?.name || vehicle.assignedDriver?.email || "No Driver Assigned"}</p>
+                                    <p className="text-sm font-semibold text-slate-900 ml-1">{vehicle.assignedDriver ? `${vehicle.assignedDriver.firstName || ''} ${vehicle.assignedDriver.lastName || ''}`.trim() || vehicle.assignedDriver.email : "No Driver Assigned"}</p>
                                 )}
                             </div>
                         </div>
@@ -469,3 +446,4 @@ export function FleetDetailsPanel({ vehicle, onClose }: FleetDetailsPanelProps) 
         </SidePanel>
     );
 }
+

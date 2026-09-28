@@ -25,6 +25,7 @@ export function BookingModal() {
     formData,
     errors,
     isSubmitting,
+    isFormValid,
     setField,
     setLocation,
     setCustomer,
@@ -165,6 +166,7 @@ export function BookingModal() {
         {/* Footer */}
         <BookingModalFooter
           isSubmitting={isSubmitting}
+          canSubmit={isFormValid}
           onCancel={handleCancel}
           onSubmit={handleSubmit}
         />

@@ -1,9 +1,11 @@
 import { Router } from "express";
+import { requireStaff } from "../middleware/staffAuth.js";
 import { getBoardData, createAssignment, updateAssignment, deleteAssignment, acquireLock, releaseLock, migrateData, getAnalytics, getDutySpans, setDutySpan, autoSchedule } from "../controllers/dispatchController.js";
 import { requireClerkAuth } from "../middleware/authMiddleware.js";
 import { featureGate } from "../middleware/featureFlag.js";
 
 const router = Router();
+router.use(requireStaff);
 
 // Only enable if DISPATCH_ENABLED=true
 router.use(featureGate("DISPATCH_ENABLED"));

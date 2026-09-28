@@ -5,15 +5,30 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { useAddDriverAvailabilityMutation, useGetDriverAvailabilityQuery } from "@/services/api/drivers.api";
+import { useAddEmployeeAvailabilityMutation, useGetEmployeeAvailabilityQuery } from "@/services/api";
 import { format } from "date-fns";
 import toast from "react-hot-toast";
 import { CalendarClock, Plus, Trash2 } from "lucide-react";
 
-export function DriverAvailabilityDialog({ driverId, driverName }: { driverId: number, driverName: string }) {
+interface EmployeeAvailabilityDialogProps {
+  employeeId?: number;
+  employeeName?: string;
+  driverId?: number;
+  driverName?: string;
+}
+
+export function EmployeeAvailabilityDialog({
+  employeeId: empId,
+  employeeName: empName,
+  driverId: dId,
+  driverName: dName
+}: EmployeeAvailabilityDialogProps) {
+  const id = (empId ?? dId) as number;
+  const name = empName ?? dName ?? "Employee";
+
   const [isOpen, setIsOpen] = useState(false);
-  const { data: blocks, isLoading } = useGetDriverAvailabilityQuery(driverId, { skip: !isOpen });
-  const [addAvailability, { isLoading: isAdding }] = useAddDriverAvailabilityMutation();
+  const { data: blocks, isLoading } = useGetEmployeeAvailabilityQuery(id, { skip: !isOpen });
+  const [addAvailability, { isLoading: isAdding }] = useAddEmployeeAvailabilityMutation();
 
   const [startTime, setStartTime] = useState("");
   const [endTime, setEndTime] = useState("");
@@ -25,7 +40,7 @@ export function DriverAvailabilityDialog({ driverId, driverName }: { driverId: n
 
     try {
       await addAvailability({
-        driverId,
+        employeeId: id,
         data: {
           startTime: new Date(startTime).toISOString(),
           endTime: new Date(endTime).toISOString(),
@@ -52,7 +67,7 @@ export function DriverAvailabilityDialog({ driverId, driverName }: { driverId: n
       </DialogTrigger>
       <DialogContent className="max-w-md">
         <DialogHeader>
-          <DialogTitle>Manage Availability: {driverName}</DialogTitle>
+          <DialogTitle>Manage Availability: {name}</DialogTitle>
         </DialogHeader>
         
         <form onSubmit={handleAdd} className="space-y-4 pt-4">
@@ -103,3 +118,7 @@ export function DriverAvailabilityDialog({ driverId, driverName }: { driverId: n
     </Dialog>
   );
 }
+
+// Backward compatibility alias
+export const DriverAvailabilityDialog = EmployeeAvailabilityDialog;
+

@@ -1,3 +1,4 @@
+import { localDate } from "./businessTime.js";
 import { prisma } from "../db.js";
 import { startOfWeek, endOfWeek, startOfDay, endOfDay } from "date-fns";
 import { checkDriverConflict, checkVehicleConflict } from "./conflictService.js";
@@ -153,10 +154,9 @@ export async function runAutoScheduling(
   // 2. Fetch all active drivers
   const drivers = await prisma.user.findMany({
     where: {
-      isActive: true,
-      roles: { some: { role: { roleName: "DRIVER" } } }
-    },
-    include: { homeDepot: true }
+      status: "ACTIVE",
+      role: "DRIVER"
+    }
   });
 
   // 3. Fetch all active vehicles with assigned drivers
@@ -168,18 +168,16 @@ export async function runAutoScheduling(
   // 4. Fetch all unassigned jobs in the date range
   const unassignedJobs = await prisma.job.findMany({
     where: {
-      status: { in: ["UNASSIGNED", "OPEN", "PENDING", "Open", "pending"] },
-      assignments: { none: {} },
-      jobStartDateTime: { gte: startDate, lte: endDate }
+      status: { notIn: ["CANCELLED", "COMPLETED"] },
+      booking: { status: "CONFIRMED" },
+      jobStartDateTime: { gte: startDate, lt: endDate }
     },
-    include: { booking: true },
+    include: { booking: true, assignments: { where: { status: { not: "CANCELLED" } } } },
     orderBy: { jobStartDateTime: "asc" }
-  });
+  }).then((jobs: any[]) => jobs.filter(j => j.assignments.length < (j.booking?.noOfVehicles || 1)));
 
   if (unassignedJobs.length === 0) {
-    await prisma.autoScheduleRun.create({
-      data: { startDate, endDate, success: true, notes: "No unassigned jobs found in this period." }
-    });
+    await prisma.autoScheduleRun.upsert({ where: { startDate_endDate: { startDate, endDate } }, create: { startDate, endDate, success: true }, update: { success: true } });
     return { success: true, assignedJobsCount: 0, skippedCount: 0, notes: "No unassigned jobs found." };
   }
 
@@ -192,7 +190,7 @@ export async function runAutoScheduling(
   }> = new Map();
 
   for (const v of vehicles) {
-    if (v.assignedDriver && v.assignedDriver.isActive) {
+    if (v.assignedDriver && v.assignedDriver.status === "ACTIVE") {
       const load = await getDriverWeeklyLoad(v.assignedDriver.id, startDate);
       driverStates.set(v.assignedDriver.id, {
         driver: v.assignedDriver,
@@ -241,7 +239,7 @@ export async function runAutoScheduling(
   });
 
   for (const bId of sortedBookingIds) {
-    const bookingJobs = bookingMap.get(bId)!;
+    let bookingJobs = bookingMap.get(bId)!;
     if (bookingJobs.length === 0) continue;
 
     bookingJobs.sort((jA: any, jB: any) => {
@@ -253,7 +251,10 @@ export async function runAutoScheduling(
     const refBooking = bookingJobs[0]!.booking;
     const requiredVehicles = refBooking?.noOfVehicles || 1;
 
+    const allBookingJobs = bookingJobs;
     for (let slot = 0; slot < requiredVehicles; slot++) {
+      bookingJobs = allBookingJobs.filter((j: any) => (j.assignments?.length || 0) <= slot);
+      if (!bookingJobs.length) continue;
       const firstJobStart = new Date(bookingJobs[0]!.jobStartDateTime);
       const isWeekend = firstJobStart.getDay() === 0 || firstJobStart.getDay() === 6;
 
@@ -282,7 +283,7 @@ export async function runAutoScheduling(
         const state = driverStates.get(driverId)!;
         
         let vId: number | undefined = state.vehicleId;
-        const passengerCount = refBooking?.passengerCount || 0;
+        const passengerCount = Math.ceil((refBooking?.passengerCount || 0) / requiredVehicles);
         if (vId) {
           const assignedV = vehicles.find((v: any) => v.id === vId);
           if (assignedV && assignedV.maxPassengers != null && passengerCount > assignedV.maxPassengers) {
@@ -296,7 +297,7 @@ export async function runAutoScheduling(
           });
           if (candidateV) vId = candidateV.id;
         }
-        if (!vId && vehicles.length > 0) continue;
+        if (!vId) continue;
 
         let validForDriver = true;
         const currentProposed: typeof proposedJobs = [];
@@ -306,7 +307,7 @@ export async function runAutoScheduling(
           if (!job.jobStartDateTime) { validForDriver = false; break; }
           const durationHours = job.durationHours ? Number(job.durationHours) : 2;
           const actualStart = new Date(job.jobStartDateTime);
-          const actualEnd = new Date(actualStart.getTime() + durationHours * 3600000);
+          const actualEnd = new Date(job.jobEndDateTime || actualStart.getTime() + durationHours * 3600000);
 
           // 1. Check in-memory tentative driver overlap
           const driverOverlap = tentativeDriverSlots.some(
@@ -329,7 +330,7 @@ export async function runAutoScheduling(
 
           // Find driver's latest previous assignment on the same day
           const dayTentatives = tentativeDriverSlots
-            .filter(t => t.driverId === driverId && startOfDay(t.start).getTime() === startOfDay(actualStart).getTime() && t.end <= actualStart)
+            .filter(t => t.driverId === driverId && localDate(t.start) === localDate(actualStart) && t.end <= actualStart)
             .sort((a, b) => b.end.getTime() - a.end.getTime());
 
           if (dayTentatives.length > 0) {
@@ -370,7 +371,7 @@ export async function runAutoScheduling(
       if (selectedDriverId && proposedJobs.length > 0) {
         const state = driverStates.get(selectedDriverId)!;
         for (const pj of proposedJobs) {
-          await createAssignment({
+          try { await createAssignment({
             jobId: pj.job.id,
             driverId: selectedDriverId,
             vehicleId: selectedVehicleId || undefined,
@@ -380,7 +381,7 @@ export async function runAutoScheduling(
             travelToMinutes: pj.travelToMins,
             travelToKm: 0,
             bufferMinutes: rules.bufferMinutes,
-          });
+          }); } catch { skippedCount++; continue; }
 
           tentativeDriverSlots.push({ driverId: selectedDriverId, start: pj.actualStart, end: pj.actualEnd });
           if (selectedVehicleId) {
@@ -417,7 +418,7 @@ export async function runAutoScheduling(
     }
   }
 
-  skippedCount = unassignedJobs.length - assignedCount;
+  skippedCount = Math.max(skippedCount, unassignedJobs.reduce((n: number, j: any) => n + Math.max(0, (j.booking?.noOfVehicles || 1) - (j.assignments?.length || 0)), 0) - assignedCount);
 
   // 8. Record the automatic schedule run log
   await prisma.autoScheduleRun.upsert({
@@ -457,8 +458,7 @@ export async function previewAutoScheduling(
   const transitMinutes = rules.transitTimeMinutes;
 
   const drivers = await prisma.user.findMany({
-    where: { isActive: true, roles: { some: { role: { roleName: "DRIVER" } } } },
-    include: { homeDepot: true },
+    where: { status: "ACTIVE", role: "DRIVER" },
   });
 
   const vehicles = await prisma.fleetVehicle.findMany({ 
@@ -468,11 +468,11 @@ export async function previewAutoScheduling(
 
   const unassignedJobs = await prisma.job.findMany({
     where: {
-      status: { in: ["UNASSIGNED", "OPEN", "PENDING", "Open", "pending"] },
-      assignments: { none: {} },
-      jobStartDateTime: { gte: startDate, lte: endDate },
+      status: { notIn: ["CANCELLED", "COMPLETED"] },
+      booking: { status: "CONFIRMED" },
+      jobStartDateTime: { gte: startDate, lt: endDate },
     },
-    include: { booking: true },
+    include: { booking: true, assignments: { where: { status: { not: "CANCELLED" } } } },
     orderBy: { jobStartDateTime: "asc" },
   });
 
@@ -487,7 +487,7 @@ export async function previewAutoScheduling(
   }> = new Map();
 
   for (const v of vehicles) {
-    if (v.assignedDriver && v.assignedDriver.isActive) {
+    if (v.assignedDriver && v.assignedDriver.status === "ACTIVE") {
       const load = await getDriverWeeklyLoad(v.assignedDriver.id, startDate);
       driverStates.set(v.assignedDriver.id, {
         driver: v.assignedDriver,
@@ -529,7 +529,7 @@ export async function previewAutoScheduling(
   });
 
   for (const bId of sortedBookingIds) {
-    const bookingJobs = bookingMap.get(bId)!;
+    let bookingJobs = bookingMap.get(bId)!;
     if (bookingJobs.length === 0) continue;
 
     bookingJobs.sort((jA: any, jB: any) => {
@@ -541,7 +541,10 @@ export async function previewAutoScheduling(
     const refBooking = bookingJobs[0]!.booking;
     const requiredVehicles = refBooking?.noOfVehicles || 1;
 
+    const allBookingJobs = bookingJobs;
     for (let slot = 0; slot < requiredVehicles; slot++) {
+      bookingJobs = allBookingJobs.filter((j: any) => (j.assignments?.length || 0) <= slot);
+      if (!bookingJobs.length) continue;
       const firstJobStart = new Date(bookingJobs[0]!.jobStartDateTime);
       const isWeekend = firstJobStart.getDay() === 0 || firstJobStart.getDay() === 6;
 
@@ -565,7 +568,7 @@ export async function previewAutoScheduling(
         const state = driverStates.get(driverId)!;
 
         let vId: number | undefined = state.vehicleId;
-        const passengerCount = refBooking?.passengerCount || 0;
+        const passengerCount = Math.ceil((refBooking?.passengerCount || 0) / requiredVehicles);
         if (vId) {
           const assignedV = vehicles.find((v: any) => v.id === vId);
           if (assignedV && assignedV.maxPassengers != null && passengerCount > assignedV.maxPassengers) {
@@ -579,7 +582,7 @@ export async function previewAutoScheduling(
           });
           if (candidateV) vId = candidateV.id;
         }
-        if (!vId && vehicles.length > 0) continue;
+        if (!vId) continue;
 
         const selectedVehicle = vId ? vehicles.find((v: any) => v.id === vId) : undefined;
         let validForDriver = true;
@@ -590,7 +593,7 @@ export async function previewAutoScheduling(
           if (!job.jobStartDateTime) { validForDriver = false; break; }
           const durationHours = job.durationHours ? Number(job.durationHours) : 2;
           const actualStart = new Date(job.jobStartDateTime);
-          const actualEnd = new Date(actualStart.getTime() + durationHours * 3600000);
+          const actualEnd = new Date(job.jobEndDateTime || actualStart.getTime() + durationHours * 3600000);
 
           const hasTentativeConflict = tentativeDriverSlots.some(
             (t) => t.driverId === driverId && t.start < actualEnd && t.end > actualStart
@@ -602,6 +605,8 @@ export async function previewAutoScheduling(
               (s) => s.vehicleId === vId && s.start < actualEnd && s.end > actualStart
             );
             if (isBooked) { validForDriver = false; break; }
+            const conflict = await checkVehicleConflict(vId, actualStart, actualEnd);
+            if (conflict.hasConflict) { validForDriver = false; break; }
           }
 
           const jobStartCoords = getJobStartCoords(job);
@@ -609,7 +614,7 @@ export async function previewAutoScheduling(
           let prevEndTime: Date | null = null;
 
           const dayTentatives = tentativeDriverSlots
-            .filter(t => t.driverId === driverId && startOfDay(t.start).getTime() === startOfDay(actualStart).getTime() && t.end <= actualStart)
+            .filter(t => t.driverId === driverId && localDate(t.start) === localDate(actualStart) && t.end <= actualStart)
             .sort((a, b) => b.end.getTime() - a.end.getTime());
 
           if (dayTentatives.length > 0) {
@@ -678,7 +683,7 @@ export async function previewAutoScheduling(
   }
 
   for (const job of unassignedJobs) {
-    if (!assignedJobIds.has(job.id)) {
+    if (proposed.filter(p => p.jobId === job.id).length < Math.max(0, (job.booking?.noOfVehicles || 1) - job.assignments.length)) {
       skipped.push({
         jobId: job.id,
         jobStartLocation: job.jobStartLocation,
