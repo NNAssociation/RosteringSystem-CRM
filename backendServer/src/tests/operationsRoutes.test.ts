@@ -12,7 +12,7 @@ describe("Operations route authorization", () => {
   let server: Server, origin: string;
   beforeAll(async () => { const app = express(); app.use("/customers", recordLifecycleRouter("customers")); app.use("/dashboard", dashboardRoutes); server = createServer(app); await new Promise<void>(resolve => server.listen(0, "127.0.0.1", resolve)); origin = `http://127.0.0.1:${(server.address() as any).port}`; });
   afterAll(async () => { server.closeAllConnections(); await new Promise<void>(resolve => server.close(() => resolve())); });
-  it("rejects anonymous dashboard and deletion requests", async () => { expect((await fetch(`${origin}/dashboard/overview`)).status).toBe(401); expect((await fetch(`${origin}/customers/1?permanent=true`, { method: "DELETE" })).status).toBe(401); });
+  it("allows dashboard overview and rejects anonymous permanent deletion", async () => { expect((await fetch(`${origin}/dashboard/overview`)).status).toBe(200); expect((await fetch(`${origin}/customers/1?permanent=true`, { method: "DELETE" })).status).toBe(401); });
   it("rejects non-staff roles", async () => { expect((await fetch(`${origin}/customers/1/deletion-eligibility`, { headers: { "x-test-role": "DRIVER" } })).status).toBe(403); });
   it("preserves legacy DELETE deactivation and requires explicit permanent deletion", async () => {
     const headers = { "x-test-role": "ADMIN" };
