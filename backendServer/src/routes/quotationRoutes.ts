@@ -44,6 +44,7 @@ quotationRouter.post("/webhooks/resend", action(async (req, res) => {
   res.sendStatus(204);
 }));
 quotationRouter.get("/healthz", (_req: any, res: any) => res.json({ ok: true, routes: "quotations" }));
+quotationRouter.get("/config", action(async (_req, res) => res.json({ timeZone: businessTimeZone(), currency: process.env.QUOTATION_CURRENCY || "AUD", taxBasisPoints: Number(process.env.QUOTATION_TAX_BASIS_POINTS || 0), validityDays: Number(process.env.QUOTATION_VALIDITY_DAYS || 14), emailConfigured: quotes.emailConfiguration() })));
 quotationRouter.use(requireStaff);
 quotationRouter.post("/deliveries/:id/retry", action(async (req, res) => {
   const input = z.object({ confirmedNotSent: z.boolean().optional() }).parse(req.body);
@@ -71,7 +72,6 @@ quotationRouter.post("/estimate-route", action(async (req, res) => {
   }
   res.json({ durationMinutes, distanceKm: Math.round(distanceKm * 10) / 10, estimatedEnd: new Date(dateTime(input.date, input.time, input.timeZone).getTime() + durationMinutes * 60000).toISOString(), estimated: true });
 }));
-quotationRouter.get("/config", action(async (_req, res) => res.json({ timeZone: businessTimeZone(), currency: process.env.QUOTATION_CURRENCY || "AUD", taxBasisPoints: Number(process.env.QUOTATION_TAX_BASIS_POINTS || 0), validityDays: Number(process.env.QUOTATION_VALIDITY_DAYS || 14), emailConfigured: quotes.emailConfiguration() })));
 quotationRouter.get("/booking/:id", action(async (req, res) => res.json(await quotes.listQuotations(id(req.params.id)))));
 quotationRouter.get("/booking/:id/activity", action(async (req, res) => res.json(await prisma.activityLog.findMany({ where: { entity: "Booking", entityId: id(req.params.id) }, orderBy: { timestamp: "desc" }, take: 100 }))));
 quotationRouter.post("/booking/:id", action(async (req, res) => {

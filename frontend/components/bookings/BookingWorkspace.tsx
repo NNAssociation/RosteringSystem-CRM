@@ -1,6 +1,7 @@
 "use client";
 import "./booking-workspace.css";
 import { useCallback, useEffect, useState } from "react";
+import { useAuth } from "@clerk/nextjs";
 import { RecordLifecycleActions } from "@/components/shared/record-lifecycle-actions";
 import { RecordStatusBadge, InactiveRecordNotice } from "@/components/shared/record-status";
 import Link from "next/link";
@@ -23,6 +24,7 @@ const blank = { subject: "", customerName: "", customerEmail: "", customerId: un
 type Trip = typeof blank;
 type Line = { description: string; quantity: number; unitPriceMinor: number };
 export function BookingWorkspace({ bookingId }: { bookingId?: string }) {
+  const { isLoaded, isSignedIn } = useAuth();
   const [editing, setEditing] = useState(!bookingId);
   const api = useWorkflowApi(), router = useRouter();
   const [reloadKey, setReloadKey] = useState(0);
@@ -47,6 +49,7 @@ export function BookingWorkspace({ bookingId }: { bookingId?: string }) {
     setBooking(b); setQuotes(qs); setActivity(a); return { b, qs };
   }, [api, bookingId]);
   useEffect(() => {
+    if (!isLoaded) return;
     let cancelled = false;
     (async () => {
       setLoading(true); setError("");
@@ -65,7 +68,7 @@ export function BookingWorkspace({ bookingId }: { bookingId?: string }) {
         }
       } catch (e: any) { if (!cancelled) setError(e.message); } finally { if (!cancelled) setLoading(false); }
     })(); return () => { cancelled = true; };
-  }, [api, bookingId, refresh, reloadKey]);
+  }, [api, bookingId, refresh, reloadKey, isLoaded]);
   useEffect(() => { if (!bookingId && !loading) sessionStorage.setItem("booking-workspace-draft", JSON.stringify(trip)); }, [trip, bookingId, loading]);
   useEffect(() => {
     if (!bookingId || step !== 4) return;
@@ -100,9 +103,37 @@ export function BookingWorkspace({ bookingId }: { bookingId?: string }) {
     await refresh(); hydrateQuote(q); setStep(3); setNotice("Quotation revision saved. Review it before sending.");
   }
   const subtotal = items.reduce((n, i) => n + i.quantity * i.unitPriceMinor, 0), total = subtotal - discount + Math.round((subtotal - discount) * tax / 10000);
-  if (loading) return <div className="p-10" role="status">Loading booking workspace…</div>;
+  if (!isLoaded || (loading && !config)) return <div className="p-10" role="status">Loading booking workspace…</div>;
+  if (isLoaded && !isSignedIn) {
+    return (
+      <div role="alert" className="m-6 rounded-xl border border-blue-200 bg-blue-50 p-6 space-y-3">
+        <h2 className="font-semibold text-blue-900">Sign in to continue</h2>
+        <p className="text-sm text-blue-800">You must be signed in with an authorized staff account to access the booking workspace.</p>
+        <Button onClick={() => router.push("/sign-in")}>Sign In</Button>
+      </div>
+    );
+  }
   if (bookingId && !booking && config) return <div role="alert" className="p-8 space-y-3"><p>{error || "Booking not found or inaccessible."}</p><Link href="/dashboard/bookings">Back to bookings</Link><Button onClick={() => setReloadKey(k => k + 1)}>Retry</Button></div>;
-  if (!config) return <div role="alert" className="m-6 rounded-xl border border-amber-200 bg-amber-50 p-6 space-y-3"><h2 className="font-semibold">Booking service unavailable</h2><p className="text-sm">{error || "Could not load quotation settings."}</p><p className="text-xs text-slate-600">The frontend called <code className="bg-amber-100 px-1 rounded">{workflowBase}/quotations/config</code>. Check that the backend is running, rebuilt after the latest migration, and reachable at this address.</p><Button variant="outline" onClick={() => setReloadKey(k => k + 1)}>Retry connection</Button></div>;
+  if (!config) {
+    const isAuthError = error === "Sign in to continue" || error.toLowerCase().includes("sign in") || error.toLowerCase().includes("unauthorized") || error.toLowerCase().includes("staff role");
+    return (
+      <div role="alert" className="m-6 rounded-xl border border-amber-200 bg-amber-50 p-6 space-y-3">
+        <h2 className="font-semibold">{isAuthError ? "Sign in to continue" : "Booking service unavailable"}</h2>
+        <p className="text-sm">{error || "Could not load quotation settings."}</p>
+        {isAuthError ? (
+          <div className="flex gap-2 pt-1">
+            <Button onClick={() => router.push("/sign-in")}>Sign In</Button>
+            <Button variant="outline" onClick={() => setReloadKey(k => k + 1)}>Retry connection</Button>
+          </div>
+        ) : (
+          <>
+            <p className="text-xs text-slate-600">The frontend called <code className="bg-amber-100 px-1 rounded">{workflowBase}/quotations/config</code>. Check that the backend is running, rebuilt after the latest migration, and reachable at this address.</p>
+            <Button variant="outline" onClick={() => setReloadKey(k => k + 1)}>Retry connection</Button>
+          </>
+        )}
+      </div>
+    );
+  }
   return <div className="mx-auto max-w-7xl p-4 sm:p-8 space-y-6 booking-workspace">
     <header className="flex flex-wrap items-center justify-between gap-4"><div><Link href="/dashboard/bookings" className="text-sm text-slate-500 hover:underline">← All bookings</Link><h1 className="mt-2 text-2xl font-semibold">{bookingId ? `Booking #${bookingId}` : "New booking"}</h1><p className="text-sm text-slate-500 mt-1">{booking?.amendsBookingId ? `Amendment to booking #${booking.amendsBookingId}. The original stays active until acceptance.` : "Prepare the trip, send a quotation and track the customer’s response."}</p></div><div className="flex flex-wrap gap-2">{booking && <RecordLifecycleActions resource="bookings" id={booking.id} inactive={booking.status === "CANCELLED"} onChanged={refresh} onDeleted={() => router.push("/dashboard/bookings")} />}{booking && <RecordStatusBadge status={booking.status} />}{!locked && !editing && <Button onClick={() => setEditing(true)}>Edit booking</Button>}{editing && bookingId && <Button variant="outline" disabled={busy} onClick={() => { if ((tripDirty || quoteDirty) && !window.confirm("Discard unsaved changes?")) return; setTripDirty(false); setQuoteDirty(false); setEditing(false); setReloadKey(k => k + 1); }}>Cancel editing</Button>}{!locked && editing && <Button variant="outline" disabled={busy} onClick={() => run(() => step === 2 ? saveQuote() : saveTrip())}>Save draft</Button>}{booking?.status === "CONFIRMED" && <Button onClick={() => run(async () => { const b = await api(`quotations/booking/${bookingId}/amend`, "POST"); router.push(`/dashboard/bookings/${b.id}`); })} disabled={busy}>Create amendment</Button>}</div></header>
     {booking?.status === "CANCELLED" && <InactiveRecordNotice cancelled />}<nav aria-label="Booking progress" className="grid grid-cols-2 gap-2 sm:grid-cols-5">{steps.map((label, i) => { const Icon = bookingStepIcons[i]; return <button key={label} onClick={() => setStep(i)} disabled={!bookingId && i > 1} aria-current={step === i ? "step" : undefined} className={`flex items-center gap-3 rounded-xl border p-3 text-left transition-colors disabled:opacity-40 focus-visible:outline-2 focus-visible:outline-blue-500 ${step === i ? "border-blue-200 bg-blue-50 text-blue-800 shadow-sm" : "border-slate-200 bg-white text-slate-500 hover:border-blue-200 hover:bg-slate-50"}`}><span className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-lg ${step === i ? "bg-blue-600 text-white" : "bg-slate-100 text-slate-500"}`}><Icon size={18} aria-hidden="true" /></span><span><span className="block text-[10px] font-medium uppercase tracking-wider opacity-70">Step {i + 1}</span><span className="text-xs font-semibold">{label}</span></span></button>; })}</nav>

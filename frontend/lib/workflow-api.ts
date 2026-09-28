@@ -9,9 +9,12 @@ export function useWorkflowApi() {
   const { getToken } = useAuth();
   const dispatch = useDispatch();
   return useCallback(async (path: string, method = "GET", body?: unknown, pdf = false) => {
-    const token = await getToken();
+    let token = await getToken();
+    if (!token && typeof window !== "undefined") {
+      token = await (window as any).Clerk?.session?.getToken();
+    }
     const res = await fetch(`${workflowBase}/${path}`, { method, credentials: "include", headers: { ...(token ? { Authorization: `Bearer ${token}` } : {}), ...(body ? { "Content-Type": "application/json" } : {}) }, ...(body ? { body: JSON.stringify(body) } : {}), cache: "no-store" });
-    if (!res.ok) { const error = await res.json().catch(() => ({})); throw new Error(res.status === 404 && path === "quotations/config" ? "The connected API does not support quotations yet. Rebuild and restart the backend, then retry." : error.error || "Request failed. Please try again."); }
+    if (!res.ok) { const error = await res.json().catch(() => ({})); throw new Error(res.status === 404 && path === "quotations/config" ? "The connected API does not support quotations yet. Rebuild and restart the backend, then retry." : error.error || (res.status === 401 ? "Sign in to continue" : "Request failed. Please try again.")); }
     const result = pdf ? await res.blob() : await res.json();
     if (method !== "GET") dispatch({ type: "records/workflowChanged", payload: { id: result.id, createdResource: method === "POST" && path === "bookings" ? "bookings" : undefined } });
     return result;
