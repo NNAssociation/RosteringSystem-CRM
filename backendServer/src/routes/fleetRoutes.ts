@@ -1,10 +1,8 @@
-import { requireStaff } from "../middleware/staffAuth.js";
 import { Router } from "express";
 import { getVehicles, getVehicleById, createVehicle, updateVehicle, deleteVehicle } from "../controllers/fleetController.js";
 import { requireClerkAuth } from "../middleware/authMiddleware.js";
 
 const router = Router();
-router.use(requireStaff);
 
 router.get("/", getVehicles);
 router.get("/:id", getVehicleById);
