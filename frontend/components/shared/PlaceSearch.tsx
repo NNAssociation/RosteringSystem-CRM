@@ -20,6 +20,8 @@ export function PlaceSearch({
   useEffect(() => { callback.current = onSelect; }, [onSelect]);
   const { isLoaded, error: loaderError } = useGoogleMaps();
   const [error, setError] = useState("");
+  const [manualText, setManualText] = useState("");
+
   useEffect(() => {
     if (!isLoaded || !host.current) return;
     let disposed = false, widget: any, version = 0;
@@ -58,5 +60,27 @@ export function PlaceSearch({
     }).catch(failed);
     return () => { disposed = true; version++; widget?.removeEventListener("gmp-select", select); widget?.removeEventListener("gmp-error", failed); widget?.remove(); };
   }, [isLoaded, label, includedRegionCodes]);
-  return <div className="space-y-2 w-full"><div ref={host} className="place-search-host w-full" style={{ colorScheme: "light" }} />{!isLoaded && !loaderError && <p role="status" className="text-xs text-slate-500">Loading location search…</p>}{(loaderError || error) && <p role="alert" className="text-xs text-amber-800">{loaderError || error}</p>}</div>;
+
+  if (loaderError) {
+    return (
+      <div className="space-y-1.5 w-full">
+        <input
+          type="text"
+          value={manualText}
+          onChange={(e) => {
+            setManualText(e.target.value);
+            callback.current({ address: e.target.value });
+          }}
+          placeholder={label}
+          aria-label={label}
+          className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-slate-900"
+        />
+        <p role="alert" className="text-xs text-amber-700">
+          {loaderError}
+        </p>
+      </div>
+    );
+  }
+
+  return <div className="space-y-2 w-full"><div ref={host} className="place-search-host w-full" style={{ colorScheme: "light" }} />{!isLoaded && !loaderError && <p role="status" className="text-xs text-slate-500">Loading location search…</p>}{error && <p role="alert" className="text-xs text-amber-800">{error}</p>}</div>;
 }

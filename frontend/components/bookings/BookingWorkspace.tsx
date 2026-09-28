@@ -13,7 +13,7 @@ import { CustomerSelector } from "./add-booking/sections/CustomerSelector";
 import { RoutePreviewMap } from "./RoutePreviewMap";
 import { BookingRecordView } from "./BookingRecordView";
 import { BookingOverview, BookingSectionTitle, WorkflowStatus, bookingStepIcons } from "./BookingVisuals";
-import { ClipboardList, ReceiptText, Send, FileCheck2, UserRound, CalendarDays, Download, Mail } from "lucide-react";
+import { ClipboardList, ReceiptText, Send, FileCheck2, UserRound, CalendarDays, Download, Mail, AlertCircle } from "lucide-react";
 import { QuotationPreview } from "./QuotationPreview";
 import { useWorkflowApi, workflowBase, dateParts, formatMoney, formatTripDate, downloadPdf } from "@/lib/workflow-api";
 import type { StructuredLocation } from "@/types";
@@ -64,15 +64,19 @@ export function BookingWorkspace({ bookingId }: { bookingId?: string }) {
     (async () => {
       setLoading(true); setError("");
       try {
-        const c = await api("quotations/config"); if (cancelled) return; setConfig(c); setCurrency(c.currency); setTax(c.taxBasisPoints);
+        const [c, result] = await Promise.all([
+          api("quotations/config"),
+          bookingId ? refresh() : Promise.resolve(null)
+        ]);
+        if (cancelled) return;
+        setConfig(c); setCurrency(c.currency); setTax(c.taxBasisPoints);
         setExpires(new Date(Date.now() + c.validityDays * 86400000).toISOString().slice(0, 10));
-        if (bookingId) {
-          const result = await refresh(); if (!result || cancelled) return;
+        if (bookingId && result) {
           const { b, qs } = result, start = dateParts(b.startTime, b.timeZone), end = dateParts(b.endTime, b.timeZone), ret = b.returnTime ? dateParts(b.returnTime, b.timeZone) : null;
           setTrip({ ...blank, ...b, ...start, startTime: start.time, endDate: end.date, endTime: end.time, returnDate: ret?.date || "", returnTime: ret?.time || "14:00", pickup: { address: b.pickupLocation === "TBD" ? "" : b.pickupLocation, lat: b.pickupLat ?? undefined, lng: b.pickupLng ?? undefined, placeId: b.pickupPlaceId ?? undefined }, dropoff: { address: b.dropoffLocation === "TBD" ? "" : b.dropoffLocation, lat: b.dropoffLat ?? undefined, lng: b.dropoffLng ?? undefined, placeId: b.dropoffPlaceId ?? undefined }, stops: b.stops || [], recurrenceRule: b.recurrenceRule || blank.recurrenceRule });
           if (qs[0]) { hydrateQuote(qs[0]); setStep(0); }
           else setStep(0);
-        } else {
+        } else if (!bookingId) {
           const stored = sessionStorage.getItem("booking-workspace-draft");
           setTrip(stored ? JSON.parse(stored) : { ...blank, timeZone: c.timeZone, date: dateParts(new Date().toISOString(), c.timeZone).date });
         }
@@ -113,7 +117,21 @@ export function BookingWorkspace({ bookingId }: { bookingId?: string }) {
     await refresh(); hydrateQuote(q); setStep(3); setNotice("Quotation revision saved. Review it before sending.");
   }
   const subtotal = items.reduce((n, i) => n + i.quantity * i.unitPriceMinor, 0), total = subtotal - discount + Math.round((subtotal - discount) * tax / 10000);
-  if (!isLoaded || (loading && !config)) return <div className="p-10" role="status">Loading booking workspace…</div>;
+  if (!isLoaded || loading) {
+    return (
+      <div className="mx-auto max-w-7xl p-6 sm:p-10 space-y-6" role="status">
+        <div className="flex items-center gap-3 text-slate-600">
+          <div className="h-5 w-5 rounded-full border-2 border-blue-600 border-t-transparent animate-spin" />
+          <span className="text-sm font-medium">Loading booking workspace…</span>
+        </div>
+        <div className="animate-pulse space-y-6">
+          <div className="h-9 bg-slate-200/80 rounded-xl w-1/4"></div>
+          <div className="h-12 bg-slate-100 rounded-xl"></div>
+          <div className="h-80 bg-slate-100 rounded-2xl"></div>
+        </div>
+      </div>
+    );
+  }
   if (isLoaded && !isSignedIn) {
     return (
       <div role="alert" className="m-6 rounded-xl border border-blue-200 bg-blue-50 p-6 space-y-3">
@@ -123,7 +141,6 @@ export function BookingWorkspace({ bookingId }: { bookingId?: string }) {
       </div>
     );
   }
-  if (bookingId && !booking && config) return <div role="alert" className="p-8 space-y-3"><p>{error || "Booking not found or inaccessible."}</p><Link href="/dashboard/bookings">Back to bookings</Link><Button onClick={() => setReloadKey(k => k + 1)}>Retry</Button></div>;
   if (!config) {
     const isAuthError = error === "Sign in to continue" || error.toLowerCase().includes("sign in") || error.toLowerCase().includes("unauthorized") || error.toLowerCase().includes("staff role");
     return (
@@ -141,6 +158,23 @@ export function BookingWorkspace({ bookingId }: { bookingId?: string }) {
             <Button variant="outline" onClick={() => setReloadKey(k => k + 1)}>Retry connection</Button>
           </>
         )}
+      </div>
+    );
+  }
+  if (bookingId && !booking) {
+    return (
+      <div role="alert" className="mx-auto max-w-lg m-12 p-8 bg-white border border-slate-200 rounded-2xl shadow-sm text-center space-y-4">
+        <div className="w-12 h-12 mx-auto rounded-full bg-amber-50 border border-amber-200 flex items-center justify-center text-amber-600">
+          <AlertCircle size={24} />
+        </div>
+        <h2 className="text-lg font-semibold text-slate-900">Booking not found or inaccessible</h2>
+        <p className="text-sm text-slate-600">{error || "The booking you requested could not be retrieved. It may have been removed or you do not have permission to view it."}</p>
+        <div className="flex items-center justify-center gap-3 pt-2">
+          <Link href="/dashboard/bookings" className="inline-flex items-center justify-center rounded-xl bg-slate-100 hover:bg-slate-200 px-4 py-2 text-sm font-medium text-slate-800 transition-colors">
+            Back to bookings
+          </Link>
+          <Button onClick={() => setReloadKey(k => k + 1)}>Retry</Button>
+        </div>
       </div>
     );
   }
