@@ -1,4 +1,5 @@
 import { formatInTimeZone } from "date-fns-tz";
+import type { Prisma } from "../../generated/prisma/index.js";
 import { bookingItineraries, normalizePoints, routeFingerprint } from "./bookingRoute.js";
 import { addDateDays, businessTimeZone, dateTime, localDate, validZone } from "./businessTime.js";
 import { WorkflowError } from "./workflowError.js";
@@ -218,23 +219,25 @@ export function buildJobs(booking: any) {
     starts.push(start);
   }
 
-  const jobs: any[] = starts.map((s) => ({
-    itinerary: bookingItineraries(booking).outboundItinerary,
-    direction: "OUTBOUND",
-    routingEnforced: false,
-    bookingId: booking.id,
-    jobStartLocation: booking.startLocation,
-    jobEndLocation: booking.endLocation,
-    jobStartLat: booking.pickupLat,
-    jobStartLng: booking.pickupLng,
-    jobEndLat: booking.dropoffLat,
-    jobEndLng: booking.dropoffLng,
-    jobStartDateTime: s,
-    jobEndDateTime: new Date(s.getTime() + duration),
-    durationHours: duration / 3600000,
-    status: "UNASSIGNED",
-    jobCategory: booking.subject,
-  }));
+  const jobs = starts.map(
+    (s) =>
+      ({
+        itinerary: bookingItineraries(booking).outboundItinerary,
+        direction: "OUTBOUND",
+        bookingId: booking.id,
+        jobStartLocation: booking.startLocation,
+        jobEndLocation: booking.endLocation,
+        jobStartLat: booking.pickupLat,
+        jobStartLng: booking.pickupLng,
+        jobEndLat: booking.dropoffLat,
+        jobEndLng: booking.dropoffLng,
+        jobStartDateTime: s,
+        jobEndDateTime: new Date(s.getTime() + duration),
+        durationHours: duration / 3600000,
+        status: "UNASSIGNED",
+        jobCategory: booking.subject,
+      }) satisfies Prisma.JobCreateManyInput,
+  );
 
   if (booking.bookingType === "round_trip") {
     const ret = new Date(booking.returnDateTime);
@@ -245,7 +248,7 @@ export function buildJobs(booking: any) {
       : new Date(ret.getTime() + duration);
     if (!(returnEnd > ret)) throw new WorkflowError("Return arrival must follow return departure");
     jobs.push({
-      itinerary: bookingItineraries(booking).returnItinerary,
+      itinerary: bookingItineraries(booking).returnItinerary || [],
       direction: "RETURN",
       bookingId: booking.id,
       jobStartLocation: booking.endLocation,
@@ -259,7 +262,7 @@ export function buildJobs(booking: any) {
       durationHours: (returnEnd.getTime() - ret.getTime()) / 3600000,
       status: "UNASSIGNED",
       jobCategory: `${booking.subject} (Return)`,
-    });
+    } satisfies Prisma.JobCreateManyInput);
   }
 
   if (!jobs.length) throw new WorkflowError("Recurrence has no trips");

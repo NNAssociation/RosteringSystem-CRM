@@ -89,7 +89,7 @@ describe.skipIf(!process.env.TEST_DATABASE_URL)(
         title: "Safety briefing",
         body: "Test notice",
         category: "SAFETY",
-        priority: "URGENT",
+        priority: "WARNING",
         audience: ["DRIVER"],
         acknowledgementRequired: true,
       });
@@ -172,14 +172,19 @@ describe.skipIf(!process.env.TEST_DATABASE_URL)(
         storageLocation: "Depot desk",
       });
       items.push(item.id);
-      const matchInput = { reportId: report.id, itemId: item.id, reportVersion: 1, itemVersion: 1 };
+      await propertyAction("items", item.id, driver, "transfer", {
+        version: 1,
+        custodianId: admin.id,
+        storageLocation: "Depot desk",
+      });
+      const matchInput = { reportId: report.id, itemId: item.id, reportVersion: 1, itemVersion: 2 };
       const results = await Promise.allSettled([
         matchProperty(admin, matchInput),
         matchProperty(admin, matchInput),
       ]);
       expect(results.filter((r) => r.status === "fulfilled")).toHaveLength(1);
       const body = {
-        version: 2,
+        version: 3,
         recipientName: "Owner",
         verificationNotes: "Identified bag contents",
         collectedAt: new Date().toISOString(),

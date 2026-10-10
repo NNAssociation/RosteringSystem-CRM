@@ -183,8 +183,8 @@ describe("Itinerary compatibility and price review", () => {
       jobs = buildJobs({ ...booking, id: 1 });
     expect(booking.stops).toHaveLength(1);
     expect(booking.stops[0].dwellSeconds).toBe(300);
-    expect(jobs[0].itinerary.map((p: any) => p.id)).toEqual(["0", "1", "2", "3"]);
-    expect(jobs[1].itinerary.map((p: any) => p.id)).toEqual(["3", "4", "0"]);
+    expect(jobs[0]!.itinerary.map((p: any) => p.id)).toEqual(["0", "1", "2", "3"]);
+    expect(jobs[1]!.itinerary.map((p: any) => p.id)).toEqual(["3", "4", "0"]);
     expect(bookingData({ subject: "Changed title" }, booking).outboundItinerary).toEqual(
       booking.outboundItinerary,
     );
