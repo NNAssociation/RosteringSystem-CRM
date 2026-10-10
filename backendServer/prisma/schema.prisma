@@ -35,6 +35,7 @@ enum Department {
 }
 
 enum EmployeeRole {
+  YARD
   DRIVER
   ADMIN
   DISPATCHER
@@ -87,6 +88,26 @@ enum AssignmentStatus {
 // ══════════════════════════════════════════════════════════════
 
 model User {
+  clerkId String? @unique
+ notices Notice[]
+ noticeRevisions NoticeRevision[]
+ noticeRecipients NoticeRecipient[]
+ reportedIncidents Incident[] @relation("IncidentReporter")
+ ownedIncidents Incident[] @relation("IncidentOwner")
+ incidentUpdates IncidentUpdate[]
+ completedIncidentActions IncidentAction[]
+ propertyReports LostPropertyReport[] @relation("PropertyReporter")
+ handledPropertyReports LostPropertyReport[] @relation("PropertyOwner")
+ foundItems FoundPropertyItem[] @relation("ItemReporter")
+ handledItems FoundPropertyItem[] @relation("ItemOwner")
+ heldItems FoundPropertyItem[] @relation("ItemCustodian")
+ propertyMatches PropertyMatch[]
+ custodyEvents PropertyCustodyEvent[]
+ transfersFrom PropertyCustodyEvent[] @relation("CustodyFrom")
+ transfersTo PropertyCustodyEvent[] @relation("CustodyTo")
+ attachments Attachment[]
+ notifications Notification[]
+
   id             Int             @id @default(autoincrement())
   email          String          @unique
   employeeNumber String?         @unique
@@ -147,6 +168,8 @@ model UserProfile {
 }
 
 model Customer {
+  propertyReports LostPropertyReport[]
+
   id           Int          @id @default(autoincrement())
   email        String       @unique
   name         String?
@@ -176,6 +199,14 @@ model Customer {
 }
 
 model Booking {
+  routeCalculation Json?
+  outboundItinerary Json?
+  returnItinerary Json?
+  returnItineraryConfirmed Boolean @default(false)
+  incidents Incident[]
+ propertyReports LostPropertyReport[]
+ foundItems FoundPropertyItem[]
+
   id             Int       @id @default(autoincrement())
   subject        String
   inquiryDetails String?
@@ -203,6 +234,7 @@ model Booking {
 
   // Round trip fields
   returnDateTime  DateTime?
+  returnEndDateTime DateTime?
   waitingDuration Int? // minutes
 
   // Repeatable booking recurrence rule (JSON)
@@ -229,6 +261,12 @@ model Booking {
 }
 
 model Job {
+  itinerary Json?
+  direction String?
+  incidents Incident[]
+ propertyReports LostPropertyReport[]
+ foundItems FoundPropertyItem[]
+
   id               Int       @id @default(autoincrement())
   driverStatus     Boolean   @default(false)
   driverStatusAt   DateTime?
@@ -261,6 +299,11 @@ model Job {
 }
 
 model FleetVehicle {
+  facilities String[] @default([])
+  incidents Incident[]
+ propertyReports LostPropertyReport[]
+ foundItems FoundPropertyItem[]
+
   id             Int       @id @default(autoincrement())
   make           String
   model          String
@@ -297,6 +340,9 @@ model FleetVehicle {
 /// Replaces raw UserJob/FleetJob for dispatch workflows.
 /// Includes optimistic locking via `version` field.
 model Assignment {
+  positioningRouteIds Json?
+  incidents Incident[]
+
   id             Int              @id @default(autoincrement())
   jobId          Int
   driverId       Int?
@@ -363,6 +409,8 @@ model DriverAvailability {
 }
 
 model Quotation {
+  estimateReference Json?
+  routingReferences Json?
   id Int @id @default(autoincrement())
   bookingId Int
   booking Booking @relation(fields: [bookingId], references: [id], onDelete: Restrict)
@@ -470,6 +518,8 @@ model TravelTimeCache {
 
 /// Depot locations for drivers and vehicles
 model Depot {
+  foundItems FoundPropertyItem[]
+
   id        Int      @id @default(autoincrement())
   name      String   @unique
   address   String?
@@ -491,4 +541,284 @@ model SchedulingSetting {
   updatedAt   DateTime @updatedAt
 
   @@index([key])
+}
+
+model Notice {
+  id Int @id @default(autoincrement())
+  authorId Int
+  author User @relation(fields: [authorId], references: [id], onDelete: Restrict)
+  status String @default("DRAFT")
+  version Int @default(1)
+  currentRevision Int @default(1)
+  publishAt DateTime?
+  publishedAt DateTime?
+  pinned Boolean @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  revisions NoticeRevision[]
+  attachments Attachment[]
+  @@index([status, publishAt])
+}
+
+model NoticeRevision {
+  id Int @id @default(autoincrement())
+  noticeId Int
+  notice Notice @relation(fields: [noticeId], references: [id], onDelete: Restrict)
+  revision Int
+  title String
+  body String
+  category String
+  priority String
+  audience EmployeeRole[]
+  authorId Int
+  author User @relation(fields: [authorId], references: [id], onDelete: Restrict)
+  createdAt DateTime @default(now())
+  recipients NoticeRecipient[]
+  @@unique([noticeId, revision])
+}
+
+model NoticeRecipient {
+  id Int @id @default(autoincrement())
+  revisionId Int
+  revision NoticeRevision @relation(fields: [revisionId], references: [id], onDelete: Restrict)
+  userId Int
+  user User @relation(fields: [userId], references: [id], onDelete: Restrict)
+  snapshot Boolean @default(true)
+  readAt DateTime?
+  acknowledgedAt DateTime?
+  @@unique([revisionId, userId])
+}
+
+model Incident {
+  id Int @id @default(autoincrement())
+  reference String?
+  title String
+  description String
+  occurredAt DateTime
+  location String
+  category String
+  severity String
+  immediateAction String @default("")
+  unsafeVehicle Boolean @default(false)
+  fleetDecision String?
+  status String @default("SUBMITTED")
+  version Int @default(1)
+  reporterId Int
+  reporter User @relation("IncidentReporter", fields: [reporterId], references: [id], onDelete: Restrict)
+  ownerId Int?
+  owner User? @relation("IncidentOwner", fields: [ownerId], references: [id], onDelete: Restrict)
+  dueAt DateTime?
+  resolution String?
+  injury Boolean @default(false)
+  emergencyServices Boolean @default(false)
+  policeInvolved Boolean @default(false)
+  safeToContinue Boolean @default(true)
+  investigationSummary String @default("")
+  correctiveActions String @default("")
+  internalNotes String @default("")
+  outcomeSummary String @default("")
+  duplicateOfId Int?
+  duplicateOf Incident? @relation("IncidentDuplicate", fields: [duplicateOfId], references: [id], onDelete: Restrict)
+  duplicates Incident[] @relation("IncidentDuplicate")
+  vehicleId Int?
+  vehicle FleetVehicle? @relation(fields: [vehicleId], references: [id], onDelete: Restrict)
+  bookingId Int?
+  booking Booking? @relation(fields: [bookingId], references: [id], onDelete: Restrict)
+  jobId Int?
+  job Job? @relation(fields: [jobId], references: [id], onDelete: Restrict)
+  assignmentId Int?
+  assignment Assignment? @relation(fields: [assignmentId], references: [id], onDelete: Restrict)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  updates IncidentUpdate[]
+  actions IncidentAction[]
+  attachments Attachment[]
+  @@index([status, createdAt])
+  @@index([reporterId])
+  @@index([ownerId, dueAt])
+  @@index([vehicleId, occurredAt])
+  @@index([bookingId])
+  @@index([jobId])
+}
+
+model IncidentUpdate {
+  id Int @id @default(autoincrement())
+  incidentId Int
+  incident Incident @relation(fields: [incidentId], references: [id], onDelete: Restrict)
+  authorId Int
+  author User @relation(fields: [authorId], references: [id], onDelete: Restrict)
+  body String
+  officeOnly Boolean @default(false)
+  createdAt DateTime @default(now())
+  attachments Attachment[]
+}
+
+model IncidentAction {
+  id Int @id @default(autoincrement())
+  incidentId Int
+  incident Incident @relation(fields: [incidentId], references: [id], onDelete: Restrict)
+  description String
+  completedAt DateTime?
+  completedById Int?
+  completedBy User? @relation(fields: [completedById], references: [id], onDelete: Restrict)
+  createdAt DateTime @default(now())
+}
+
+model LostPropertyReport {
+  id Int @id @default(autoincrement())
+  description String
+  category String
+  colour String @default("")
+  brand String @default("")
+  identifyingDetails String @default("")
+  occurredAt DateTime
+  location String
+  status String @default("OPEN")
+  version Int @default(1)
+  reporterId Int
+  reporter User @relation("PropertyReporter", fields: [reporterId], references: [id], onDelete: Restrict)
+  ownerId Int?
+  owner User? @relation("PropertyOwner", fields: [ownerId], references: [id], onDelete: Restrict)
+  vehicleId Int?
+  vehicle FleetVehicle? @relation(fields: [vehicleId], references: [id], onDelete: Restrict)
+  bookingId Int?
+  booking Booking? @relation(fields: [bookingId], references: [id], onDelete: Restrict)
+  jobId Int?
+  job Job? @relation(fields: [jobId], references: [id], onDelete: Restrict)
+  customerId Int?
+  customer Customer? @relation(fields: [customerId], references: [id], onDelete: Restrict)
+  privateDetails PropertyClaimant?
+  matches PropertyMatch[]
+  attachments Attachment[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  @@index([status, occurredAt])
+  @@index([reporterId])
+  @@index([ownerId])
+  @@index([vehicleId, occurredAt])
+  @@index([bookingId])
+  @@index([jobId])
+}
+
+model PropertyClaimant {
+  id Int @id @default(autoincrement())
+  reportId Int @unique
+  report LostPropertyReport @relation(fields: [reportId], references: [id], onDelete: Restrict)
+  name String @default("")
+  contact String @default("")
+  notes String @default("")
+}
+
+model FoundPropertyItem {
+  id Int @id @default(autoincrement())
+  description String
+  category String @default("GENERAL")
+  colour String @default("")
+  brand String @default("")
+  identifyingDetails String @default("")
+  occurredAt DateTime @default(now())
+  location String
+  status String @default("SUBMITTED")
+  version Int @default(1)
+  reporterId Int
+  reporter User @relation("ItemReporter", fields: [reporterId], references: [id], onDelete: Restrict)
+  ownerId Int?
+  owner User? @relation("ItemOwner", fields: [ownerId], references: [id], onDelete: Restrict)
+  custodianId Int?
+  custodian User? @relation("ItemCustodian", fields: [custodianId], references: [id], onDelete: SetNull)
+  storageLocation String @default("")
+  depotId Int?
+  depot Depot? @relation(fields: [depotId], references: [id], onDelete: Restrict)
+  vehicleId Int?
+  vehicle FleetVehicle? @relation(fields: [vehicleId], references: [id], onDelete: Restrict)
+  bookingId Int?
+  booking Booking? @relation(fields: [bookingId], references: [id], onDelete: Restrict)
+  jobId Int?
+  job Job? @relation(fields: [jobId], references: [id], onDelete: Restrict)
+  matches PropertyMatch[]
+  custody PropertyCustodyEvent[]
+  attachments Attachment[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  @@index([status, occurredAt])
+  @@index([reporterId])
+  @@index([ownerId])
+  @@index([vehicleId, occurredAt])
+  @@index([bookingId])
+  @@index([jobId])
+}
+
+model PropertyMatch {
+  id Int @id @default(autoincrement())
+  reportId Int
+  report LostPropertyReport @relation(fields: [reportId], references: [id], onDelete: Restrict)
+  itemId Int
+  item FoundPropertyItem @relation(fields: [itemId], references: [id], onDelete: Restrict)
+  active Boolean @default(true)
+  previousItemStatus String
+  actorId Int
+  actor User @relation(fields: [actorId], references: [id], onDelete: Restrict)
+  releaseReason String?
+  createdAt DateTime @default(now())
+  releasedAt DateTime?
+  @@index([itemId, active])
+  @@index([reportId, active])
+}
+
+model PropertyCustodyEvent {
+  id Int @id @default(autoincrement())
+  itemId Int
+  item FoundPropertyItem @relation(fields: [itemId], references: [id], onDelete: Restrict)
+  actorId Int
+  actor User @relation(fields: [actorId], references: [id], onDelete: Restrict)
+  kind String
+  fromCustodianId Int?
+  fromCustodian User? @relation("CustodyFrom", fields: [fromCustodianId], references: [id], onDelete: Restrict)
+  toCustodianId Int?
+  toCustodian User? @relation("CustodyTo", fields: [toCustodianId], references: [id], onDelete: Restrict)
+  fromLocation String?
+  toLocation String?
+  details Json?
+  createdAt DateTime @default(now())
+}
+
+model Attachment {
+  id String @id @default(uuid())
+  storageKey String @unique
+  filename String
+  mimeType String
+  size Int
+  state String @default("PENDING")
+  uploaderId Int
+  uploader User @relation(fields: [uploaderId], references: [id], onDelete: Restrict)
+  noticeId Int?
+  notice Notice? @relation(fields: [noticeId], references: [id], onDelete: Restrict)
+  incidentId Int?
+  incident Incident? @relation(fields: [incidentId], references: [id], onDelete: Restrict)
+  updateId Int?
+  update IncidentUpdate? @relation(fields: [updateId], references: [id], onDelete: Restrict)
+  reportId Int?
+  report LostPropertyReport? @relation(fields: [reportId], references: [id], onDelete: Restrict)
+  itemId Int?
+  item FoundPropertyItem? @relation(fields: [itemId], references: [id], onDelete: Restrict)
+  createdAt DateTime @default(now())
+  @@index([state, createdAt])
+  @@index([noticeId])
+  @@index([incidentId])
+  @@index([updateId])
+  @@index([reportId])
+  @@index([itemId])
+}
+
+model Notification {
+  id Int @id @default(autoincrement())
+  userId Int
+  user User @relation(fields: [userId], references: [id], onDelete: Restrict)
+  title String
+  href String
+  entity String
+  entityId Int
+  readAt DateTime?
+  createdAt DateTime @default(now())
+  @@index([userId, readAt, createdAt])
 }

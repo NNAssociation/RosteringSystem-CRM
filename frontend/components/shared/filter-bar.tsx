@@ -1,8 +1,8 @@
 "use client";
 
-import React from "react";
 import { cn } from "@/lib/utils";
 import { motion } from "framer-motion";
+import React from "react";
 
 interface FilterBarProps {
   children?: React.ReactNode;
@@ -30,11 +30,7 @@ interface FilterGroupProps {
   position?: "left" | "right";
 }
 
-export function FilterGroup({
-  children,
-  className,
-  position = "left",
-}: FilterGroupProps) {
+export function FilterGroup({ children, className, position = "left" }: FilterGroupProps) {
   return (
     <div
       className={cn(

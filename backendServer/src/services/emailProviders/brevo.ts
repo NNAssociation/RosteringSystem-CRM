@@ -1,5 +1,5 @@
-import type { TransactionalEmailProvider, SendEmailPayload, SendEmailResult } from "./types.js";
 import { prisma } from "../../db.js";
+import type { SendEmailPayload, SendEmailResult, TransactionalEmailProvider } from "./types.js";
 
 export async function sendBrevoRaw(payload: any): Promise<SendEmailResult> {
   const response = await fetch("https://api.brevo.com/v3/smtp/email", {

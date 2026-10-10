@@ -1,5 +1,5 @@
-import { createApi } from '@reduxjs/toolkit/query/react';
-import { baseQuery } from './base-query';
+import { createApi } from "@reduxjs/toolkit/query/react";
+import { baseQuery } from "./base-query";
 
 export interface SchedulingSettings {
   maxContinuousDrivingMinutes: string;
@@ -11,26 +11,23 @@ export interface SchedulingSettings {
 }
 
 export const settingsApi = createApi({
-  reducerPath: 'settingsApi',
+  reducerPath: "settingsApi",
   baseQuery,
-  tagTypes: ['Settings'],
+  tagTypes: ["Settings"],
   endpoints: (builder) => ({
     getSchedulingSettings: builder.query<SchedulingSettings, void>({
-      query: () => '/settings/scheduling',
-      providesTags: ['Settings'],
+      query: () => "/settings/scheduling",
+      providesTags: ["Settings"],
     }),
     updateSchedulingSettings: builder.mutation<SchedulingSettings, Partial<SchedulingSettings>>({
       query: (body) => ({
-        url: '/settings/scheduling',
-        method: 'PUT',
+        url: "/settings/scheduling",
+        method: "PUT",
         body,
       }),
-      invalidatesTags: ['Settings'],
+      invalidatesTags: ["Settings"],
     }),
   }),
 });
 
-export const {
-  useGetSchedulingSettingsQuery,
-  useUpdateSchedulingSettingsMutation,
-} = settingsApi;
+export const { useGetSchedulingSettingsQuery, useUpdateSchedulingSettingsMutation } = settingsApi;

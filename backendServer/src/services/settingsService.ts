@@ -3,12 +3,30 @@ import { prisma } from "../db.js";
 // ── Default Values ────────────────────────────────────────
 
 export const SCHEDULING_DEFAULTS: Record<string, { value: string; description: string }> = {
-  maxContinuousDrivingMinutes: { value: "330", description: "Maximum continuous driving time in minutes (default 5.5 hours)" },
-  minBreakDurationMinutes: { value: "30", description: "Minimum break duration in minutes to reset driving counter" },
-  maxShiftDurationMinutes: { value: "720", description: "Maximum total shift duration in minutes (default 12 hours)" },
-  bufferMinutes: { value: "10", description: "Buffer/rest time in minutes between consecutive jobs" },
-  depotTravelBuffer: { value: "10", description: "Extra buffer in minutes added to depot-to-first-job travel" },
-  transitTimeMinutes: { value: "60", description: "Minimum transit time in minutes between end of one job and start of the next job" },
+  maxContinuousDrivingMinutes: {
+    value: "330",
+    description: "Maximum continuous driving time in minutes (default 5.5 hours)",
+  },
+  minBreakDurationMinutes: {
+    value: "30",
+    description: "Minimum break duration in minutes to reset driving counter",
+  },
+  maxShiftDurationMinutes: {
+    value: "720",
+    description: "Maximum total shift duration in minutes (default 12 hours)",
+  },
+  bufferMinutes: {
+    value: "10",
+    description: "Buffer/rest time in minutes between consecutive jobs",
+  },
+  depotTravelBuffer: {
+    value: "10",
+    description: "Extra buffer in minutes added to depot-to-first-job travel",
+  },
+  transitTimeMinutes: {
+    value: "60",
+    description: "Minimum transit time in minutes between end of one job and start of the next job",
+  },
 };
 
 // ── Types ─────────────────────────────────────────────────
@@ -72,19 +90,25 @@ export async function getSchedulingRules(): Promise<SchedulingRules> {
 /**
  * Update scheduling settings. Only updates provided keys.
  */
-export async function updateSettings(updates: Record<string, string | number>): Promise<Record<string, string>> {
+export async function updateSettings(
+  updates: Record<string, string | number>,
+  db: any = prisma,
+): Promise<Record<string, string>> {
   const validKeys = Object.keys(SCHEDULING_DEFAULTS);
+  const entriesToUpdate = Object.entries(updates).filter(([k]) => validKeys.includes(k));
 
-  for (const [key, value] of Object.entries(updates)) {
-    if (!validKeys.includes(key)) continue;
+  if (entriesToUpdate.length > 0) {
+    await db.$transaction(async (tx: any) => {
+      for (const [key, value] of entriesToUpdate) {
+        const strValue = String(value);
+        const description = SCHEDULING_DEFAULTS[key]?.description ?? "";
 
-    const strValue = String(value);
-    const description = SCHEDULING_DEFAULTS[key]?.description ?? "";
-
-    await prisma.schedulingSetting.upsert({
-      where: { key },
-      update: { value: strValue },
-      create: { key, value: strValue, description },
+        await tx.schedulingSetting.upsert({
+          where: { key },
+          update: { value: strValue },
+          create: { key, value: strValue, description },
+        });
+      }
     });
   }
 

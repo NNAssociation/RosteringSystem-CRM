@@ -1,6 +1,16 @@
 import { Router } from "express";
-import { getBoardData, createAssignment, updateAssignment, deleteAssignment, acquireLock, releaseLock, migrateData, getAnalytics, getDutySpans, setDutySpan, autoSchedule } from "../controllers/dispatchController.js";
-import { requireClerkAuth } from "../middleware/authMiddleware.js";
+import {
+  acquireLock,
+  createAssignment,
+  deleteAssignment,
+  getAnalytics,
+  getBoardData,
+  getDutySpans,
+  migrateData,
+  releaseLock,
+  setDutySpan,
+  updateAssignment,
+} from "../controllers/dispatchController.js";
 import { featureGate } from "../middleware/featureFlag.js";
 
 const router = Router();
@@ -22,8 +32,31 @@ router.get("/analytics", getAnalytics);
 router.get("/duty-span", getDutySpans);
 router.post("/duty-span", setDutySpan);
 
-// Auto-scheduling
-router.get("/auto-schedule", autoSchedule);   // preview (dry-run)
-router.post("/auto-schedule", autoSchedule);  // execute
+// Driver Timesheets & GPS Telematics Auditing
+router.get("/timesheets", async (req, res, next) => {
+  try {
+    const { getDriverTimesheets } = await import("../services/timesheetService.js");
+    const date = req.query.date as string | undefined;
+    const data = await getDriverTimesheets(date);
+    res.json(data);
+  } catch (error) {
+    next(error);
+  }
+});
+
+router.post("/timesheets/:id/approve", async (req, res, next) => {
+  try {
+    const { approveDriverTimesheet } = await import("../services/timesheetService.js");
+    const emp = (req as any).employee;
+    const supervisor =
+      emp?.firstName || emp?.lastName
+        ? `${emp.firstName || ""} ${emp.lastName || ""}`.trim()
+        : (req as any).staffId || "Operations Supervisor";
+    const result = await approveDriverTimesheet(Number(req.params.id), supervisor);
+    res.json(result);
+  } catch (error) {
+    next(error);
+  }
+});
 
 export default router;

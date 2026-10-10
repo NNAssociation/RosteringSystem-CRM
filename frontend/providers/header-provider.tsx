@@ -1,6 +1,6 @@
 "use client";
 
-import React, { createContext, useContext, useState, useCallback } from "react";
+import React, { createContext, useCallback, useContext, useState } from "react";
 
 interface HeaderAction {
   label: string;
@@ -44,9 +44,7 @@ export function HeaderProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   return (
-    <HeaderContext.Provider
-      value={{ config, setHeaderConfig, resetHeaderConfig }}
-    >
+    <HeaderContext.Provider value={{ config, setHeaderConfig, resetHeaderConfig }}>
       {children}
     </HeaderContext.Provider>
   );

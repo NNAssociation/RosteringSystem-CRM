@@ -19,8 +19,8 @@ jobs:
     runs-on: ubuntu-latest
     env:
       # Secrets from GitHub Settings -> Secrets and variables -> Actions
-      DATABASE_URL: ${{ secrets.DATABASE_URL }}
-      DIRECT_URL: ${{ secrets.DIRECT_URL }}
+      DATABASE_URL: postgresql://postgres:test-only@localhost:5432/rostering_ci_test
+      DIRECT_URL: postgresql://postgres:test-only@localhost:5432/rostering_ci_test
       # Fix for Supabase socket hang up: Skips downloading CLI during CI
       SUPABASE_SKIP_POSTINSTALL: true
 
@@ -37,7 +37,7 @@ jobs:
 
       - name: Install dependencies
         # Using --prefer-offline helps speed up and avoid some network issues
-        run: npm install --prefer-offline
+        run: npm ci
 
       - name: Generate Prisma Client
         run: npx prisma generate
@@ -45,11 +45,17 @@ jobs:
       - name: Run Linting (Type Check)
         run: npx tsc --noEmit
 
-      - name: Debug File Structure
-        run: ls -R generated/prisma
+      - name: Lint
+        run: npm run lint
+
+      - name: Check formatting
+        run: npm run format:check
 
       - name: Run Prisma Validation
         run: npx prisma validate
 
       - name: Run Tests
         run: npm test
+
+      - name: Build
+        run: npm run build

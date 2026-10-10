@@ -1,0 +1,3445 @@
+[
+  {
+    "file": ".github/workflows/ci.yml",
+    "status": "reviewed",
+    "depth": "manual targeted review + automated scan",
+    "lines": 62,
+    "bytes": 1578,
+    "signals": "",
+    "hash": "cc60ec7a4dffb958fc1ee29584938e28e35136be838b6af463b0f127c1ad3a16"
+  },
+  {
+    "file": ".github/workflows/frontend-ci.yml",
+    "status": "reviewed",
+    "depth": "manual targeted review + automated scan",
+    "lines": 51,
+    "bytes": 1138,
+    "signals": "",
+    "hash": "07e60ddea6b8a43f1d58a0a49cc71f4a3fe5119258ad5af3d4389b7ccbd409d9"
+  },
+  {
+    "file": ".github/workflows/quotation-workflow.yml",
+    "status": "reviewed",
+    "depth": "manual targeted review + automated scan",
+    "lines": 36,
+    "bytes": 1232,
+    "signals": "",
+    "hash": "12018093871340856e3b19c90152ea0e6019556e12ebde78432adaf6eaceb6f9"
+  },
+  {
+    "file": ".gitignore",
+    "status": "reviewed",
+    "depth": "manual targeted review + automated scan",
+    "lines": 77,
+    "bytes": 1074,
+    "signals": "",
+    "hash": "fe987e0967a30a9c9b69a91e5557b93bdbf1ca63c40cafa2df3b0c64a70a5e3f"
+  },
+  {
+    "file": ".prettierignore",
+    "status": "reviewed",
+    "depth": "automated structural scan only; manual review outstanding",
+    "lines": 11,
+    "bytes": 170,
+    "signals": "",
+    "hash": "b5e15479b615c32cd31d64046e6e2246452fd147ef254ab5c338f05d528521dd"
+  },
+  {
+    "file": ".prettierrc.json",
+    "status": "reviewed",
+    "depth": "automated structural scan only; manual review outstanding",
+    "lines": 9,
+    "bytes": 128,
+    "signals": "",
+    "hash": "6e735a92d35fc573d5d56102ee903bd697512a5ccaa6749c3387e28ba417c1fd"
+  },
+  {
+    "file": "LOCAL_SETUP.md",
+    "status": "reviewed",
+    "depth": "automated structural scan only; manual review outstanding",
+    "lines": 132,
+    "bytes": 4687,
+    "signals": "explicit-any:1",
+    "hash": "e35d5fc711eeab6a3b770605b2ee6691f78d2b308dd31783a3b8672d3c474441"
+  },
+  {
+    "file": "WORKPLACE_FEATURES.md",
+    "status": "reviewed",
+    "depth": "automated structural scan only; manual review outstanding",
+    "lines": 127,
+    "bytes": 7510,
+    "signals": "",
+    "hash": "15a819d0bc1fd6730a60852650264fa90afd802e0a24ffdf4a7692e1966f376c"
+  },
+  {
+    "file": "backendServer/.env.quotation.example",
+    "status": "reviewed",
+    "depth": "automated structural scan only; manual review outstanding",
+    "lines": 27,
+    "bytes": 903,
+    "signals": "",
+    "hash": "fce737703ce252b49a5d4ad728cc5819dc9f36c339fb29a52cd978b30dca7270"
+  },
+  {
+    "file": "backendServer/.env.workplace.example",
+    "status": "reviewed",
+    "depth": "automated structural scan only; manual review outstanding",
+    "lines": 16,
+    "bytes": 599,
+    "signals": "",
+    "hash": "9173cbd48ada87a535bb206cb27292dd06b9edc29208b2748aaab6cf183b252e"
+  },
+  {
+    "file": "backendServer/eslint.config.mjs",
+    "status": "reviewed",
+    "depth": "automated structural scan only; manual review outstanding",
+    "lines": 15,
+    "bytes": 398,
+    "signals": "explicit-any:1",
+    "hash": "45b3d24a0d5ed52acc89acfaf35c817c8daf3832f101a96e83e97b56d596f5e1"
+  },
+  {
+    "file": "backendServer/package-lock.json",
+    "status": "reviewed",
+    "depth": "automated structural scan only; manual review outstanding",
+    "lines": 7118,
+    "bytes": 253533,
+    "signals": "",
+    "hash": "17dc60d5935f03a526053caa9a1cd57b818794ee7a2b9af1eb0324718d2ceeb9"
+  },
+  {
+    "file": "backendServer/package.json",
+    "status": "reviewed",
+    "depth": "manual targeted review + automated scan",
+    "lines": 69,
+    "bytes": 2024,
+    "signals": "",
+    "hash": "f1a06f2fc9a78cd64cb7f5d4d241d55f2bf0f5b89766074c43d0b9e7c0847ff7"
+  },
+  {
+    "file": "backendServer/prisma.config.ts",
+    "status": "reviewed",
+    "depth": "automated structural scan only; manual review outstanding",
+    "lines": 19,
+    "bytes": 583,
+    "signals": "",
+    "hash": "6c2b1e401fcef66e9c995558e86f830131077da76f9e7eb898929441c672b809"
+  },
+  {
+    "file": "backendServer/prisma/migrations/20260512182715_init_dispatch_module/migration.sql",
+    "status": "reviewed",
+    "depth": "automated structural scan only; manual review outstanding",
+    "lines": 350,
+    "bytes": 10974,
+    "signals": "",
+    "hash": "9a273776dadbb8767cc8a518ff32be99585af317ab4cfb803b62e5da758daebf"
+  },
+  {
+    "file": "backendServer/prisma/migrations/20260515203536_sync_schema/migration.sql",
+    "status": "reviewed",
+    "depth": "automated structural scan only; manual review outstanding",
+    "lines": 15,
+    "bytes": 566,
+    "signals": "",
+    "hash": "0155c64bc5d90f806a29c0717bb2377e31070ad8f6a372e77826035359748821"
+  },
+  {
+    "file": "backendServer/prisma/migrations/202609270001_quotation_workflow/migration.sql",
+    "status": "reviewed",
+    "depth": "automated structural scan only; manual review outstanding",
+    "lines": 56,
+    "bytes": 4153,
+    "signals": "",
+    "hash": "a750460dd0dfc28ec5f47fa03d49f38d4097972b3dedefce78f1c4944ba27512"
+  },
+  {
+    "file": "backendServer/prisma/migrations/202609290001_workplace/migration.sql",
+    "status": "reviewed",
+    "depth": "automated structural scan only; manual review outstanding",
+    "lines": 463,
+    "bytes": 18372,
+    "signals": "",
+    "hash": "b806ebd9b2732b596e89123959d5ed35b7b0885e3f5486784c00ff706bf4d23e"
+  },
+  {
+    "file": "backendServer/prisma/migrations/202610010001_coach_routing/migration.sql",
+    "status": "reviewed",
+    "depth": "automated structural scan only; manual review outstanding",
+    "lines": 33,
+    "bytes": 3283,
+    "signals": "",
+    "hash": "81a8462b5315ceda4b9e232f750b213f8bf38b1fac03763e4640c9ee9ba751b6"
+  },
+  {
+    "file": "backendServer/prisma/migrations/202610060001_shift_operations/migration.sql",
+    "status": "reviewed",
+    "depth": "automated structural scan only; manual review outstanding",
+    "lines": 253,
+    "bytes": 10132,
+    "signals": "",
+    "hash": "bd7a62369e7392ffb2b51d5ea9df67f3f6110b021a6c9fab64513144aa8ba01f"
+  },
+  {
+    "file": "backendServer/prisma/migrations/20261006120000_booking_route_calculation/migration.sql",
+    "status": "reviewed",
+    "depth": "automated structural scan only; manual review outstanding",
+    "lines": 2,
+    "bytes": 60,
+    "signals": "",
+    "hash": "c9848bdd5be12d5929ba40c0edd43c3afd03a1fc6c27d33b1148aff4e5d8849f"
+  },
+  {
+    "file": "backendServer/prisma/migrations/migration_lock.toml",
+    "status": "reviewed",
+    "depth": "automated structural scan only; manual review outstanding",
+    "lines": 4,
+    "bytes": 128,
+    "signals": "",
+    "hash": "99836963713b4f5b269ad49af0ed3d7b0b2e336115c2f92dc9ac683d139d0900"
+  },
+  {
+    "file": "backendServer/prisma/schema.prisma",
+    "status": "reviewed",
+    "depth": "automated binary inventory only",
+    "bytes": 26011,
+    "hash": "c68799e6d82d3e9b993958697749da36797da33f7542992d2cf361b3a48c739d"
+  },
+  {
+    "file": "backendServer/prisma/seed.ts",
+    "status": "reviewed",
+    "depth": "automated structural scan only; manual review outstanding",
+    "lines": 122,
+    "bytes": 2687,
+    "signals": "",
+    "hash": "99b4317cf8cf5f8cabc29030541d28412ab08d1755b884082f01631baa4656da"
+  },
+  {
+    "file": "backendServer/scripts/fastJobs.ts",
+    "status": "reviewed",
+    "depth": "automated structural scan only; manual review outstanding",
+    "lines": 256,
+    "bytes": 9145,
+    "signals": "unsafe-sql:5",
+    "hash": "d43e257a9d8ea99cfca548648e914b79a90370418642a66f2f47940b5d136887"
+  },
+  {
+    "file": "backendServer/scripts/generateJobs.ts",
+    "status": "reviewed",
+    "depth": "automated structural scan only; manual review outstanding",
+    "lines": 216,
+    "bytes": 8008,
+    "signals": "",
+    "hash": "30bebc6e4f03255b6398a10ecc0e86c668c206779246f2950af179fe98eca979"
+  },
+  {
+    "file": "backendServer/scripts/verifyRecordPersistence.ts",
+    "status": "reviewed",
+    "depth": "automated structural scan only; manual review outstanding",
+    "lines": 258,
+    "bytes": 7954,
+    "signals": "explicit-any:3",
+    "hash": "4ed156ae340ba645b0cfd5706de35aabd08fb24f73fa31eacf80cbe4d2d180d0"
+  },
+  {
+    "file": "backendServer/src/config/trustedOrigins.ts",
+    "status": "reviewed",
+    "depth": "manual targeted review + automated scan",
+    "lines": 26,
+    "bytes": 1068,
+    "signals": "",
+    "hash": "861599fb905173c05a017a1ccfddfb572899fd2dc7dc4a582ac853fe2d379f58"
+  },
+  {
+    "file": "backendServer/src/constants/employee.ts",
+    "status": "reviewed",
+    "depth": "automated structural scan only; manual review outstanding",
+    "lines": 23,
+    "bytes": 977,
+    "signals": "",
+    "hash": "9960cfefd6ab5e2ecfdaedc0da14d2a3b4b44a5fcc1cca8111922e1ca6155965"
+  },
+  {
+    "file": "backendServer/src/controllers/bookingController.ts",
+    "status": "reviewed",
+    "depth": "automated structural scan only; manual review outstanding",
+    "lines": 116,
+    "bytes": 3332,
+    "signals": "explicit-any:3",
+    "hash": "5515540b92fdb4f0dad62515a34b8f78a417dde3642d6093d8292d61d701b0c5"
+  },
+  {
+    "file": "backendServer/src/controllers/customerController.ts",
+    "status": "reviewed",
+    "depth": "automated structural scan only; manual review outstanding",
+    "lines": 127,
+    "bytes": 3631,
+    "signals": "explicit-any:3",
+    "hash": "fa156a58cd157c9a64657e95d1bc9510c2fd2629f14978c9075010ed2a67f1c1"
+  },
+  {
+    "file": "backendServer/src/controllers/depotController.ts",
+    "status": "reviewed",
+    "depth": "manual targeted review + automated scan",
+    "lines": 125,
+    "bytes": 3788,
+    "signals": "explicit-any:3; database-list:1",
+    "hash": "26d13061a2662550b89acc42df43c9fc62ab6024e227024436481a792e443046"
+  },
+  {
+    "file": "backendServer/src/controllers/dispatchController.ts",
+    "status": "reviewed",
+    "depth": "automated structural scan only; manual review outstanding",
+    "lines": 372,
+    "bytes": 11893,
+    "signals": "explicit-any:28",
+    "hash": "8657735de21ee00a33b9d2d256aa85669d95fd1770541d00a321a3ecf774c484"
+  },
+  {
+    "file": "backendServer/src/controllers/fleetController.ts",
+    "status": "reviewed",
+    "depth": "automated structural scan only; manual review outstanding",
+    "lines": 118,
+    "bytes": 3277,
+    "signals": "explicit-any:5",
+    "hash": "da2932bd9abc57b7d99cde647120489c2994a74ac194aa3b23d1f0a77edc323c"
+  },
+  {
+    "file": "backendServer/src/controllers/settingsController.ts",
+    "status": "reviewed",
+    "depth": "manual targeted review + automated scan",
+    "lines": 102,
+    "bytes": 3378,
+    "signals": "explicit-any:1",
+    "hash": "b85202eb7db6e79526077d2931ff0957751192a1b8c7e8fe527caa817fa026fa"
+  },
+  {
+    "file": "backendServer/src/controllers/userController.ts",
+    "status": "reviewed",
+    "depth": "manual targeted review + automated scan",
+    "lines": 175,
+    "bytes": 5297,
+    "signals": "explicit-any:7",
+    "hash": "5e6cdf0494c53182b9ffea12a6061d31d64d1ffd112c247b52d73d5cfe23460c"
+  },
+  {
+    "file": "backendServer/src/db.ts",
+    "status": "reviewed",
+    "depth": "automated structural scan only; manual review outstanding",
+    "lines": 39,
+    "bytes": 1275,
+    "signals": "explicit-any:2",
+    "hash": "06c42d4578b73f4061bd37fdc2ebce540c1d3757328742433ea90e48ec44f520"
+  },
+  {
+    "file": "backendServer/src/events/eventBus.ts",
+    "status": "reviewed",
+    "depth": "automated structural scan only; manual review outstanding",
+    "lines": 65,
+    "bytes": 1650,
+    "signals": "",
+    "hash": "b4c3b33150bff6a266fed10ad0af8a3b8e265212b1406aa22e52e3ea4357635c"
+  },
+  {
+    "file": "backendServer/src/events/eventTypes.ts",
+    "status": "reviewed",
+    "depth": "automated structural scan only; manual review outstanding",
+    "lines": 45,
+    "bytes": 1272,
+    "signals": "explicit-any:1",
+    "hash": "aaa9d085e72e494ea656c3abd653936590002817593004035ad5ed2a7481cbb9"
+  },
+  {
+    "file": "backendServer/src/index.ts",
+    "status": "reviewed",
+    "depth": "manual targeted review + automated scan",
+    "lines": 157,
+    "bytes": 6116,
+    "signals": "explicit-any:1",
+    "hash": "a5a815049a28d69c1c4be91f407cac673b34852f5a16b931d5cd5528e0eea47c"
+  },
+  {
+    "file": "backendServer/src/jobs/autoScheduleJob.ts",
+    "status": "reviewed",
+    "depth": "automated structural scan only; manual review outstanding",
+    "lines": 34,
+    "bytes": 1222,
+    "signals": "explicit-any:2",
+    "hash": "ef4b783578edb45e4215fd51481e0d9c7e8b6c5d22a64b5407942e182670a73e"
+  },
+  {
+    "file": "backendServer/src/jobs/slaWarningJob.ts",
+    "status": "reviewed",
+    "depth": "automated structural scan only; manual review outstanding",
+    "lines": 48,
+    "bytes": 1484,
+    "signals": "explicit-any:2; database-list:1",
+    "hash": "c994d9bb65dac7603153f829a9beab215bdf9b7d9cf75f7661b16fb47dc5a5d9"
+  },
+  {
+    "file": "backendServer/src/middleware/authMiddleware.ts",
+    "status": "reviewed",
+    "depth": "manual targeted review + automated scan",
+    "lines": 54,
+    "bytes": 1707,
+    "signals": "explicit-any:2",
+    "hash": "fe791c1ea67d0aacc1b762dd4adc7c6adcd82c3b8af442d94ec8acbdbef4266e"
+  },
+  {
+    "file": "backendServer/src/middleware/employeeAuth.ts",
+    "status": "reviewed",
+    "depth": "manual targeted review + automated scan",
+    "lines": 72,
+    "bytes": 2519,
+    "signals": "explicit-any:4",
+    "hash": "78c5ff903cc17ba8198a252859b965717e96d97cce0b6f4a1db8cfd1257a20ab"
+  },
+  {
+    "file": "backendServer/src/middleware/errorMiddleware.ts",
+    "status": "reviewed",
+    "depth": "manual targeted review + automated scan",
+    "lines": 43,
+    "bytes": 1251,
+    "signals": "explicit-any:1",
+    "hash": "44063a2afcf3306ad7d8b63b882e6f199d9977ce847cbc6b1dd5b8b41bffbb10"
+  },
+  {
+    "file": "backendServer/src/middleware/featureFlag.ts",
+    "status": "reviewed",
+    "depth": "automated structural scan only; manual review outstanding",
+    "lines": 25,
+    "bytes": 789,
+    "signals": "",
+    "hash": "cbf09e967beed10be05ffbf0ea956fafcae430db35a998301afbefe71b21359a"
+  },
+  {
+    "file": "backendServer/src/middleware/requestId.ts",
+    "status": "reviewed",
+    "depth": "automated structural scan only; manual review outstanding",
+    "lines": 15,
+    "bytes": 628,
+    "signals": "explicit-any:1",
+    "hash": "0f7b835e48da9f960274f4655911441a23279c71e052e348fdfcaf50c04bd9dd"
+  },
+  {
+    "file": "backendServer/src/middleware/staffAuth.ts",
+    "status": "reviewed",
+    "depth": "manual targeted review + automated scan",
+    "lines": 29,
+    "bytes": 1026,
+    "signals": "explicit-any:3",
+    "hash": "df730f424c51e97c9f2b050e6d4ab5185e6e36a7035ff00d394fc2e69c6282ed"
+  },
+  {
+    "file": "backendServer/src/models/errorModel.ts",
+    "status": "reviewed",
+    "depth": "automated structural scan only; manual review outstanding",
+    "lines": 10,
+    "bytes": 194,
+    "signals": "",
+    "hash": "0c9132e848fa8fb4584e160f801d936aae1c50be502e1a54187ca2ae9f703fb1"
+  },
+  {
+    "file": "backendServer/src/modules/scheduling/preview.ts",
+    "status": "reviewed",
+    "depth": "automated structural scan only; manual review outstanding",
+    "lines": 348,
+    "bytes": 12171,
+    "signals": "explicit-any:13; database-list:3",
+    "hash": "0313d2734f649afeaae6ada8bd0a4fe739472426de637a49952a5ceb17544d4b"
+  },
+  {
+    "file": "backendServer/src/modules/scheduling/run.ts",
+    "status": "reviewed",
+    "depth": "automated structural scan only; manual review outstanding",
+    "lines": 441,
+    "bytes": 15159,
+    "signals": "explicit-any:16; database-list:3",
+    "hash": "73c86068fc12ceace6908b73049b535c85187e18e922f41821400153c788666c"
+  },
+  {
+    "file": "backendServer/src/modules/scheduling/types.ts",
+    "status": "reviewed",
+    "depth": "automated structural scan only; manual review outstanding",
+    "lines": 35,
+    "bytes": 789,
+    "signals": "",
+    "hash": "c51b7d85421779f8b4f9c33161df77b5428b136d6e1d3674c145f652ff728c53"
+  },
+  {
+    "file": "backendServer/src/modules/scheduling/weekly-load.ts",
+    "status": "reviewed",
+    "depth": "automated structural scan only; manual review outstanding",
+    "lines": 37,
+    "bytes": 1160,
+    "signals": "database-list:1",
+    "hash": "dd231039e10a624976f39285ce1fcf778608f607ec456273f1d89546b300c5cf"
+  },
+  {
+    "file": "backendServer/src/routes/bookingRoutes.ts",
+    "status": "reviewed",
+    "depth": "automated structural scan only; manual review outstanding",
+    "lines": 35,
+    "bytes": 994,
+    "signals": "explicit-any:1",
+    "hash": "50fe0ae4ef4fdf23489e4d4d42a6f502c1012fa74237e52775243fc154194b20"
+  },
+  {
+    "file": "backendServer/src/routes/customerRoutes.ts",
+    "status": "reviewed",
+    "depth": "automated structural scan only; manual review outstanding",
+    "lines": 21,
+    "bytes": 491,
+    "signals": "",
+    "hash": "1c8f8114d03ba37af57b9340cfad0e5dc84b8e9ca541b3e702a6ed34b9ea23f6"
+  },
+  {
+    "file": "backendServer/src/routes/dashboardRoutes.ts",
+    "status": "reviewed",
+    "depth": "automated structural scan only; manual review outstanding",
+    "lines": 15,
+    "bytes": 444,
+    "signals": "explicit-any:1",
+    "hash": "3b67aefe64fb5976bdd7a54061729fe8803c1660b0d37a3c222d2bd77809c5d9"
+  },
+  {
+    "file": "backendServer/src/routes/depotRoutes.ts",
+    "status": "reviewed",
+    "depth": "automated structural scan only; manual review outstanding",
+    "lines": 23,
+    "bytes": 613,
+    "signals": "",
+    "hash": "4a8d358d312d2900029a1464fa1650773d38a70cfc9241ecaaad027f1395a4e8"
+  },
+  {
+    "file": "backendServer/src/routes/dispatchRoutes.ts",
+    "status": "reviewed",
+    "depth": "manual targeted review + automated scan",
+    "lines": 63,
+    "bytes": 1840,
+    "signals": "explicit-any:2",
+    "hash": "c1f075b25c02c555afa39c1f800f5eddf648aa8145fba082cde1c861016378e2"
+  },
+  {
+    "file": "backendServer/src/routes/fleetRoutes.ts",
+    "status": "reviewed",
+    "depth": "automated structural scan only; manual review outstanding",
+    "lines": 19,
+    "bytes": 396,
+    "signals": "",
+    "hash": "655424630aedc702a64c1fb608d363ee6e6df68c651d3c6e19cee64ad7c974c4"
+  },
+  {
+    "file": "backendServer/src/routes/quotationRoutes.ts",
+    "status": "reviewed",
+    "depth": "manual targeted review + automated scan",
+    "lines": 366,
+    "bytes": 12196,
+    "signals": "explicit-any:10; database-list:1",
+    "hash": "c6854102122cdb79553d7ce7019255862c102ccc526121a673cf9b246098f4b6"
+  },
+  {
+    "file": "backendServer/src/routes/recordLifecycleRoutes.ts",
+    "status": "reviewed",
+    "depth": "manual targeted review + automated scan",
+    "lines": 49,
+    "bytes": 1834,
+    "signals": "explicit-any:4",
+    "hash": "1440756ee819d645ab72b78415259d28d1948f99c1fa467d4eca37b1b9771898"
+  },
+  {
+    "file": "backendServer/src/routes/reportRoutes.ts",
+    "status": "reviewed",
+    "depth": "absent from working tree; see deletion evidence and pre-existing changes"
+  },
+  {
+    "file": "backendServer/src/routes/settingsRoutes.ts",
+    "status": "reviewed",
+    "depth": "manual targeted review + automated scan",
+    "lines": 18,
+    "bytes": 448,
+    "signals": "",
+    "hash": "1821a4ec8a8acdd6c72e7a1cac0e36fa4d685e6774bc1935604aaf3c6682f953"
+  },
+  {
+    "file": "backendServer/src/routes/userRoutes.ts",
+    "status": "reviewed",
+    "depth": "manual targeted review + automated scan",
+    "lines": 24,
+    "bytes": 505,
+    "signals": "",
+    "hash": "0b03fc1d5001798b0720b8cd98f7895bec450fde364b139884e52b8ff4ab370c"
+  },
+  {
+    "file": "backendServer/src/routes/workplaceRoutes.ts",
+    "status": "reviewed",
+    "depth": "automated structural scan only; manual review outstanding",
+    "lines": 403,
+    "bytes": 12478,
+    "signals": "explicit-any:18; database-list:11",
+    "hash": "51fbc6a0f5d47b6b96b8f813b7def433b65118eb80a1d543e0cb70436a3637c1"
+  },
+  {
+    "file": "backendServer/src/routes/yardRoutes.ts",
+    "status": "reviewed",
+    "depth": "automated structural scan only; manual review outstanding",
+    "lines": 111,
+    "bytes": 3418,
+    "signals": "explicit-any:4; database-list:2",
+    "hash": "d9913285d45443879ab22e3804ce358eab856ff595244d8a6303fd8b711776d5"
+  },
+  {
+    "file": "backendServer/src/scripts/fastJobs.ts",
+    "status": "reviewed",
+    "depth": "absent from working tree; see deletion evidence and pre-existing changes"
+  },
+  {
+    "file": "backendServer/src/scripts/generateJobs.ts",
+    "status": "reviewed",
+    "depth": "absent from working tree; see deletion evidence and pre-existing changes"
+  },
+  {
+    "file": "backendServer/src/scripts/verifyOperations.ts",
+    "status": "reviewed",
+    "depth": "absent from working tree; see deletion evidence and pre-existing changes"
+  },
+  {
+    "file": "backendServer/src/scripts/verifyRecordPersistence.ts",
+    "status": "reviewed",
+    "depth": "absent from working tree; see deletion evidence and pre-existing changes"
+  },
+  {
+    "file": "backendServer/src/services/assignmentService.ts",
+    "status": "reviewed",
+    "depth": "automated structural scan only; manual review outstanding",
+    "lines": 423,
+    "bytes": 16757,
+    "signals": "explicit-any:16; database-list:4",
+    "hash": "1d251450be2dce98a8a03374be8dd2aa7c8567e35a40dc2ff6e30908e5a232e2"
+  },
+  {
+    "file": "backendServer/src/services/attachmentService.ts",
+    "status": "reviewed",
+    "depth": "manual targeted review + automated scan",
+    "lines": 212,
+    "bytes": 8281,
+    "signals": "explicit-any:5; database-list:2; network-call:2",
+    "hash": "74201f8917dde8bc9959d794ece8645e8a7ea25c35e3e912c251660f867ec2e2"
+  },
+  {
+    "file": "backendServer/src/services/auditService.ts",
+    "status": "reviewed",
+    "depth": "automated structural scan only; manual review outstanding",
+    "lines": 41,
+    "bytes": 1024,
+    "signals": "explicit-any:1; database-list:1",
+    "hash": "c72ad1c8377f1a2c3ec17126af340c09df3c97690c70130fc0e41f17d6554cd0"
+  },
+  {
+    "file": "backendServer/src/services/autoScheduleService.ts",
+    "status": "reviewed",
+    "depth": "automated structural scan only; manual review outstanding",
+    "lines": 9,
+    "bytes": 330,
+    "signals": "",
+    "hash": "15d93f6248f22bdca7b90a0b4bc47c6b769639b0882a7dc4839e2af8d4f030fd"
+  },
+  {
+    "file": "backendServer/src/services/availabilityWindows.ts",
+    "status": "reviewed",
+    "depth": "automated structural scan only; manual review outstanding",
+    "lines": 28,
+    "bytes": 1013,
+    "signals": "explicit-any:2",
+    "hash": "6259ef5d18926bfe5462a33080ad87ba1b0b1fcb46376254f2b06b2ee0586eef"
+  },
+  {
+    "file": "backendServer/src/services/bookingDispatchStatus.ts",
+    "status": "reviewed",
+    "depth": "automated structural scan only; manual review outstanding",
+    "lines": 20,
+    "bytes": 824,
+    "signals": "explicit-any:7",
+    "hash": "c80509fb6268f7249ec0ed2c6fa37370931610b192a11477a1ffc7812bc73dec"
+  },
+  {
+    "file": "backendServer/src/services/bookingRoute.ts",
+    "status": "reviewed",
+    "depth": "automated structural scan only; manual review outstanding",
+    "lines": 258,
+    "bytes": 8642,
+    "signals": "explicit-any:12",
+    "hash": "9f227422b641fd25373c76e86dcbf54077236da7ea2742b8e87322c411b42ad9"
+  },
+  {
+    "file": "backendServer/src/services/bookingService.ts",
+    "status": "reviewed",
+    "depth": "automated structural scan only; manual review outstanding",
+    "lines": 166,
+    "bytes": 6647,
+    "signals": "explicit-any:9; database-list:1",
+    "hash": "71fd9aba2b6e3704d25c1a70b14216d5491629c16d42cc9c8dbdc2bdff281085"
+  },
+  {
+    "file": "backendServer/src/services/bookingWorkflow.ts",
+    "status": "reviewed",
+    "depth": "automated structural scan only; manual review outstanding",
+    "lines": 268,
+    "bytes": 11055,
+    "signals": "explicit-any:8",
+    "hash": "8c966d018b11f58dfc43070644e4496d3f6a0ed839e61c80d8f7f267eecd53ee"
+  },
+  {
+    "file": "backendServer/src/services/businessTime.ts",
+    "status": "reviewed",
+    "depth": "manual targeted review + automated scan",
+    "lines": 44,
+    "bytes": 1655,
+    "signals": "",
+    "hash": "7e1aa610162c2145f7fc6bea1823522109490282ecb045c99ba88236a9c934e3"
+  },
+  {
+    "file": "backendServer/src/services/charterPricingService.ts",
+    "status": "reviewed",
+    "depth": "manual targeted review + automated scan",
+    "lines": 358,
+    "bytes": 11469,
+    "signals": "explicit-any:1",
+    "hash": "b8f83afbc4b7ef3c9f48d921b18d2d260ebe3eaf79508807e71637a714c5e63f"
+  },
+  {
+    "file": "backendServer/src/services/conflictService.ts",
+    "status": "reviewed",
+    "depth": "automated structural scan only; manual review outstanding",
+    "lines": 470,
+    "bytes": 15084,
+    "signals": "explicit-any:11; database-list:3",
+    "hash": "4b763d5af3dd154afcfbd017a89ddf38802a1c1d2929ab6b5a2f59a6ffac01d8"
+  },
+  {
+    "file": "backendServer/src/services/customerService.ts",
+    "status": "reviewed",
+    "depth": "automated structural scan only; manual review outstanding",
+    "lines": 106,
+    "bytes": 3242,
+    "signals": "explicit-any:5; database-list:2",
+    "hash": "c3802a2408c3de447c70eff23d710b2dee8fe9ba44de901082ed67052c83f881"
+  },
+  {
+    "file": "backendServer/src/services/dashboardService.ts",
+    "status": "reviewed",
+    "depth": "automated structural scan only; manual review outstanding",
+    "lines": 186,
+    "bytes": 6975,
+    "signals": "explicit-any:19; database-list:5",
+    "hash": "9894ecc64efdcff3ffa3b55b0dbe0e49c7319916637778bccc041a5907bae8b1"
+  },
+  {
+    "file": "backendServer/src/services/dispatchService.ts",
+    "status": "reviewed",
+    "depth": "automated structural scan only; manual review outstanding",
+    "lines": 331,
+    "bytes": 9917,
+    "signals": "explicit-any:9; database-list:7",
+    "hash": "b04df4ccf47a09d1e183e2c8b65521179eab2cd81a1fc95804e6e2e88b043a02"
+  },
+  {
+    "file": "backendServer/src/services/emailProviders/brevo.ts",
+    "status": "reviewed",
+    "depth": "automated structural scan only; manual review outstanding",
+    "lines": 79,
+    "bytes": 2939,
+    "signals": "explicit-any:4; network-call:1",
+    "hash": "752ee1bc309aefe39c8bdb0e1bc544c6c9633e05a984f0762519a5996834747b"
+  },
+  {
+    "file": "backendServer/src/services/emailProviders/index.ts",
+    "status": "reviewed",
+    "depth": "automated structural scan only; manual review outstanding",
+    "lines": 19,
+    "bytes": 525,
+    "signals": "",
+    "hash": "3106810505fe4ee7914cb55244ea2d80ce5534a250e0d058cd64605f4b678789"
+  },
+  {
+    "file": "backendServer/src/services/emailProviders/resend.ts",
+    "status": "reviewed",
+    "depth": "manual targeted review + automated scan",
+    "lines": 99,
+    "bytes": 3162,
+    "signals": "explicit-any:3; network-call:1",
+    "hash": "e22a5b00960ee6bf187a2d431cd7dcfd45a9f4a6d2925fbbe0a53c1a22dbfd4d"
+  },
+  {
+    "file": "backendServer/src/services/emailProviders/types.ts",
+    "status": "reviewed",
+    "depth": "automated structural scan only; manual review outstanding",
+    "lines": 36,
+    "bytes": 760,
+    "signals": "explicit-any:1",
+    "hash": "a0487ba8d68f5776cec34535b5bea46f428f3a4f596e894e7364462d8ecc3930"
+  },
+  {
+    "file": "backendServer/src/services/emailService.ts",
+    "status": "reviewed",
+    "depth": "automated structural scan only; manual review outstanding",
+    "lines": 137,
+    "bytes": 5463,
+    "signals": "explicit-any:3; database-list:2; network-call:1",
+    "hash": "61d81cd2355a4339fc3b925cda8f4ad5a1608583f1b4f05f7ac4d6b5a39dda6e"
+  },
+  {
+    "file": "backendServer/src/services/employeePermissions.ts",
+    "status": "reviewed",
+    "depth": "manual targeted review + automated scan",
+    "lines": 31,
+    "bytes": 1019,
+    "signals": "",
+    "hash": "c309bd0e8026d6e92bc02392f33bd4005e1dbddcb7facf059a07f7b6c228d564"
+  },
+  {
+    "file": "backendServer/src/services/fleetService.ts",
+    "status": "reviewed",
+    "depth": "automated structural scan only; manual review outstanding",
+    "lines": 123,
+    "bytes": 4781,
+    "signals": "explicit-any:6; database-list:2",
+    "hash": "8d012d834d6c3b7b034a62e73bd152523123f1347cc55bd3c2fd6a5cae1c0e25"
+  },
+  {
+    "file": "backendServer/src/services/googleMapsService.ts",
+    "status": "reviewed",
+    "depth": "automated structural scan only; manual review outstanding",
+    "lines": 207,
+    "bytes": 6102,
+    "signals": "explicit-any:3; network-call:1",
+    "hash": "4a39b571d6bef7e81d9f20806c290dd4730f603f825e48422e4fc524d7f2c5ca"
+  },
+  {
+    "file": "backendServer/src/services/incidentService.ts",
+    "status": "reviewed",
+    "depth": "automated structural scan only; manual review outstanding",
+    "lines": 332,
+    "bytes": 11974,
+    "signals": "explicit-any:6; database-list:1",
+    "hash": "46aed35e1b6218602cf29386870389404eeac4278e5a51fb287641b3eece7673"
+  },
+  {
+    "file": "backendServer/src/services/mapRoutingService.ts",
+    "status": "reviewed",
+    "depth": "automated structural scan only; manual review outstanding",
+    "lines": 5,
+    "bytes": 132,
+    "signals": "",
+    "hash": "65cee85d0599c5ae489be44695db1767f2028106181dbf876c5449657a4def8a"
+  },
+  {
+    "file": "backendServer/src/services/migrationService.ts",
+    "status": "reviewed",
+    "depth": "manual targeted review + automated scan",
+    "lines": 8,
+    "bytes": 309,
+    "signals": "",
+    "hash": "c618d8d397ba9f41a588be469134d3793c8703e18ed5fc872e65520387d529bf"
+  },
+  {
+    "file": "backendServer/src/services/noticeService.ts",
+    "status": "reviewed",
+    "depth": "automated structural scan only; manual review outstanding",
+    "lines": 256,
+    "bytes": 9452,
+    "signals": "explicit-any:11; database-list:3",
+    "hash": "b72eeb9d41e9f17a6965974e128e2ae85a521f57710344d200fc9fa3b69bb5dd"
+  },
+  {
+    "file": "backendServer/src/services/propertyService.ts",
+    "status": "reviewed",
+    "depth": "automated structural scan only; manual review outstanding",
+    "lines": 459,
+    "bytes": 16044,
+    "signals": "explicit-any:14; database-list:2",
+    "hash": "6dd61c34430753f55aee2fb7bead097958343328db903a041c8345d264d4cd5b"
+  },
+  {
+    "file": "backendServer/src/services/queueService.ts",
+    "status": "reviewed",
+    "depth": "automated structural scan only; manual review outstanding",
+    "lines": 103,
+    "bytes": 2593,
+    "signals": "explicit-any:3",
+    "hash": "6bc4065b8742eb858a089da7a09afea576c26e8791abf3aadb74669ab4cf4db4"
+  },
+  {
+    "file": "backendServer/src/services/quotationDocument.ts",
+    "status": "reviewed",
+    "depth": "automated structural scan only; manual review outstanding",
+    "lines": 83,
+    "bytes": 4639,
+    "signals": "explicit-any:2",
+    "hash": "fd6fffa517edb3ad4a2666316645ae5c4a061778d32925b25e462646016d2896"
+  },
+  {
+    "file": "backendServer/src/services/quotationMath.ts",
+    "status": "reviewed",
+    "depth": "manual targeted review + automated scan",
+    "lines": 35,
+    "bytes": 1645,
+    "signals": "",
+    "hash": "cfc76daf4f6993ebee4dd38cf48b6f46a5097d0d929b6ef1351f02fadd27a7f2"
+  },
+  {
+    "file": "backendServer/src/services/quotationService.ts",
+    "status": "reviewed",
+    "depth": "automated structural scan only; manual review outstanding",
+    "lines": 424,
+    "bytes": 17312,
+    "signals": "explicit-any:13; database-list:1",
+    "hash": "501cbc81d1e01d8735e09473c7972a3e2947d9fba5ae7759b555bff1197aab80"
+  },
+  {
+    "file": "backendServer/src/services/recordLifecycle.ts",
+    "status": "reviewed",
+    "depth": "manual targeted review + automated scan",
+    "lines": 171,
+    "bytes": 6787,
+    "signals": "explicit-any:6; unsafe-sql:1",
+    "hash": "721735cad9cbd8f1738c1625223a5a181dab2fd9ac78d9209f941103ae20d7b0"
+  },
+  {
+    "file": "backendServer/src/services/settingsService.ts",
+    "status": "reviewed",
+    "depth": "manual targeted review + automated scan",
+    "lines": 131,
+    "bytes": 4422,
+    "signals": "explicit-any:2; database-list:1",
+    "hash": "8da22851c3d60763a1029beee6e9d55e7a3a6c4f3ac480a06e4ab513b0c68250"
+  },
+  {
+    "file": "backendServer/src/services/timesheetService.ts",
+    "status": "reviewed",
+    "depth": "manual targeted review + automated scan",
+    "lines": 248,
+    "bytes": 8643,
+    "signals": "explicit-any:5; database-list:2",
+    "hash": "c42e602bcdc11d890d2112c070d374087d37883dd172113c7e4f77fc5a93a19c"
+  },
+  {
+    "file": "backendServer/src/services/userService.ts",
+    "status": "reviewed",
+    "depth": "manual targeted review + automated scan",
+    "lines": 254,
+    "bytes": 8788,
+    "signals": "explicit-any:14; database-list:3",
+    "hash": "ac6890a1d8e1c7dc494701a09676d443a67269bd023037a1cfe569f6c15330d6"
+  },
+  {
+    "file": "backendServer/src/services/workflowError.ts",
+    "status": "reviewed",
+    "depth": "automated structural scan only; manual review outstanding",
+    "lines": 10,
+    "bytes": 171,
+    "signals": "",
+    "hash": "93b630ea80dffc126291ab59726a108f06ea7b15d1452631fa0c02ef325a509e"
+  },
+  {
+    "file": "backendServer/src/services/workplaceCommon.ts",
+    "status": "reviewed",
+    "depth": "manual targeted review + automated scan",
+    "lines": 190,
+    "bytes": 6449,
+    "signals": "explicit-any:16; database-list:2",
+    "hash": "620cb42798d8fe06c1031fee5fd0cc4f5165afef35812bff62b1498105d864bc"
+  },
+  {
+    "file": "backendServer/src/tests/autoSchedule.test.ts",
+    "status": "reviewed",
+    "depth": "automated structural scan only; manual review outstanding",
+    "lines": 55,
+    "bytes": 2330,
+    "signals": "",
+    "hash": "1239470c73f43b224c59f8785ff7462eafb367f84fb862d6200274fc67ff7898"
+  },
+  {
+    "file": "backendServer/src/tests/bookingRoute.test.ts",
+    "status": "reviewed",
+    "depth": "automated structural scan only; manual review outstanding",
+    "lines": 260,
+    "bytes": 9520,
+    "signals": "explicit-any:6",
+    "hash": "a33337b4730ce52a11d4091f6f08703937cebc8d474c49f58f24523968820018"
+  },
+  {
+    "file": "backendServer/src/tests/bookingRouteAccess.test.ts",
+    "status": "reviewed",
+    "depth": "automated structural scan only; manual review outstanding",
+    "lines": 48,
+    "bytes": 1574,
+    "signals": "explicit-any:3; network-call:1",
+    "hash": "72fc684add7873de46f4fdaefd0c5aa3c96ae0f9986215639991c942f4a2e328"
+  },
+  {
+    "file": "backendServer/src/tests/bookingRoutePersistence.test.ts",
+    "status": "reviewed",
+    "depth": "automated structural scan only; manual review outstanding",
+    "lines": 233,
+    "bytes": 8668,
+    "signals": "explicit-any:5",
+    "hash": "8ff237b1a03f406b74a2089c91b735279d56d21112df4f474e20ddde7d61b08a"
+  },
+  {
+    "file": "backendServer/src/tests/charterPricing.test.ts",
+    "status": "reviewed",
+    "depth": "automated structural scan only; manual review outstanding",
+    "lines": 155,
+    "bytes": 5781,
+    "signals": "explicit-any:1",
+    "hash": "ad957e82895e111e0ed7845669ef44aaad840714d5fb2ed2eb34bc152bfa1375"
+  },
+  {
+    "file": "backendServer/src/tests/dispatchWorkflow.test.ts",
+    "status": "reviewed",
+    "depth": "automated structural scan only; manual review outstanding",
+    "lines": 121,
+    "bytes": 5639,
+    "signals": "",
+    "hash": "c3516386ed4c7f01ec773fa0131cf6d80c80c27a13995bf0de6bf2e55234d461"
+  },
+  {
+    "file": "backendServer/src/tests/dutySpans.test.ts",
+    "status": "reviewed",
+    "depth": "automated structural scan only; manual review outstanding",
+    "lines": 90,
+    "bytes": 3865,
+    "signals": "",
+    "hash": "90ec4509360bace5d8c5224d2026f03455754ed1597744c2b9e63d3ef68ca997"
+  },
+  {
+    "file": "backendServer/src/tests/emailDelivery.test.ts",
+    "status": "reviewed",
+    "depth": "automated structural scan only; manual review outstanding",
+    "lines": 137,
+    "bytes": 4922,
+    "signals": "",
+    "hash": "4f0ec1b9a3fbc7b00da3c57a869e59bd98a415552eb6fa31ce20be3b3a660aa0"
+  },
+  {
+    "file": "backendServer/src/tests/emailProviders.test.ts",
+    "status": "reviewed",
+    "depth": "automated structural scan only; manual review outstanding",
+    "lines": 112,
+    "bytes": 3571,
+    "signals": "explicit-any:1",
+    "hash": "8c433e22a7f1c9eeef9f313ef55433c1a0107188777cd3c40541dd6e1380f292"
+  },
+  {
+    "file": "backendServer/src/tests/operations.test.ts",
+    "status": "reviewed",
+    "depth": "absent from working tree; see deletion evidence and pre-existing changes"
+  },
+  {
+    "file": "backendServer/src/tests/operationsRoutes.test.ts",
+    "status": "reviewed",
+    "depth": "absent from working tree; see deletion evidence and pre-existing changes"
+  },
+  {
+    "file": "backendServer/src/tests/queueConfiguration.test.ts",
+    "status": "reviewed",
+    "depth": "automated structural scan only; manual review outstanding",
+    "lines": 40,
+    "bytes": 1249,
+    "signals": "explicit-any:1",
+    "hash": "046d941672fa4b87061058d2e56ed47d84095196c2b687d6de17a74c5352f41f"
+  },
+  {
+    "file": "backendServer/src/tests/quotationWorkflow.test.ts",
+    "status": "reviewed",
+    "depth": "automated structural scan only; manual review outstanding",
+    "lines": 265,
+    "bytes": 10050,
+    "signals": "",
+    "hash": "047f6c7249a2d314a3836a33d0ae7ce390e8e7954823b5e6792a027354868cf6"
+  },
+  {
+    "file": "backendServer/src/tests/recordReliability.test.ts",
+    "status": "reviewed",
+    "depth": "automated structural scan only; manual review outstanding",
+    "lines": 177,
+    "bytes": 5933,
+    "signals": "",
+    "hash": "bfdcb9ff16bc8cfbecad573121bb29e781f9e5cf9e8a2c31fe8db7e00c8a45d9"
+  },
+  {
+    "file": "backendServer/src/tests/securityBoundaries.test.ts",
+    "status": "reviewed",
+    "depth": "automated structural scan only; manual review outstanding",
+    "lines": 110,
+    "bytes": 4072,
+    "signals": "explicit-any:4; network-call:3",
+    "hash": "1eae3ce67d1587f7456a0e9ab8e9550c9d9a852de7685f603320eb6f0d4ea132"
+  },
+  {
+    "file": "backendServer/src/tests/timesheets.test.ts",
+    "status": "reviewed",
+    "depth": "manual targeted review + automated scan",
+    "lines": 108,
+    "bytes": 4269,
+    "signals": "",
+    "hash": "d119233b47cf002629c9cd0f0df6d28f60a7f16c96bf9f1cbbbb3428b2436942"
+  },
+  {
+    "file": "backendServer/src/tests/trustedOrigins.test.ts",
+    "status": "reviewed",
+    "depth": "automated structural scan only; manual review outstanding",
+    "lines": 26,
+    "bytes": 1242,
+    "signals": "",
+    "hash": "d3760040218ec4bd38ca174d5c184d1cd43512e303f70d2edaebb47b35996773"
+  },
+  {
+    "file": "backendServer/src/tests/websocketAccess.test.ts",
+    "status": "reviewed",
+    "depth": "automated structural scan only; manual review outstanding",
+    "lines": 39,
+    "bytes": 1586,
+    "signals": "explicit-any:3",
+    "hash": "9da514c90fa5bece7cf3e6f60496c51cf4229d98275732ca780a935b0def1b9f"
+  },
+  {
+    "file": "backendServer/src/tests/workflowDatabase.test.ts",
+    "status": "reviewed",
+    "depth": "manual targeted review + automated scan",
+    "lines": 244,
+    "bytes": 9970,
+    "signals": "explicit-any:6; database-list:1",
+    "hash": "47aa890e4ad3af5c2f0e313eb9ef352d4805ab04cf484d75f52f1dc02188e14e"
+  },
+  {
+    "file": "backendServer/src/tests/workplace.test.ts",
+    "status": "reviewed",
+    "depth": "automated structural scan only; manual review outstanding",
+    "lines": 446,
+    "bytes": 17444,
+    "signals": "explicit-any:5",
+    "hash": "ff8e54a6d43a4bf16b9a97a29d4b3b74319590206c1e365360b4a0fe3cdb2166"
+  },
+  {
+    "file": "backendServer/src/tests/workplaceDatabase.test.ts",
+    "status": "reviewed",
+    "depth": "manual targeted review + automated scan",
+    "lines": 201,
+    "bytes": 7875,
+    "signals": "explicit-any:9",
+    "hash": "8431052b380bcb83896238de0851c34f2d1cdd95be277c91b0c726b6053ccc12"
+  },
+  {
+    "file": "backendServer/src/tests/workplaceRoutes.test.ts",
+    "status": "reviewed",
+    "depth": "automated structural scan only; manual review outstanding",
+    "lines": 194,
+    "bytes": 6905,
+    "signals": "explicit-any:5; network-call:10",
+    "hash": "b3e9935c8ee40ed9d98698944e06482ae571b2c841abb72fef94f3282a2813e2"
+  },
+  {
+    "file": "backendServer/src/tests/yardRoutes.test.ts",
+    "status": "reviewed",
+    "depth": "automated structural scan only; manual review outstanding",
+    "lines": 110,
+    "bytes": 4332,
+    "signals": "explicit-any:3; network-call:3",
+    "hash": "b5cd993295b57521917360fd48bfe2e58f6fd0f202febf5945a24be5ed6f0c84"
+  },
+  {
+    "file": "backendServer/src/validators/assignmentSchema.ts",
+    "status": "reviewed",
+    "depth": "automated structural scan only; manual review outstanding",
+    "lines": 38,
+    "bytes": 1566,
+    "signals": "",
+    "hash": "0092dd5618b93e69497b2d331eb116c786015a42802eb647c7b395eb8dbc8e18"
+  },
+  {
+    "file": "backendServer/src/validators/bookingSchema.ts",
+    "status": "reviewed",
+    "depth": "automated structural scan only; manual review outstanding",
+    "lines": 119,
+    "bytes": 4898,
+    "signals": "",
+    "hash": "6c6e6f5b50e986440784cd34873f6afdbe31d1a381ec16668c91e00b3132d130"
+  },
+  {
+    "file": "backendServer/src/validators/charterPricingSchema.ts",
+    "status": "reviewed",
+    "depth": "manual targeted review + automated scan",
+    "lines": 51,
+    "bytes": 1350,
+    "signals": "",
+    "hash": "1d67dab49c2ee691923fe4a5cd0c0ed64840cccae001e792d77ef25a5470ed4f"
+  },
+  {
+    "file": "backendServer/src/validators/customerSchema.ts",
+    "status": "reviewed",
+    "depth": "automated structural scan only; manual review outstanding",
+    "lines": 40,
+    "bytes": 1331,
+    "signals": "",
+    "hash": "bbb4326bae484661fdcc7c0faadb072ec54669e1e76c106ca4902f3ba430b028"
+  },
+  {
+    "file": "backendServer/src/validators/depotSchema.ts",
+    "status": "reviewed",
+    "depth": "automated structural scan only; manual review outstanding",
+    "lines": 30,
+    "bytes": 1093,
+    "signals": "",
+    "hash": "301e243ea6faa7b576952897615b8eff407601be849e04fb92ad4c101e549bc6"
+  },
+  {
+    "file": "backendServer/src/validators/fleetSchema.ts",
+    "status": "reviewed",
+    "depth": "automated structural scan only; manual review outstanding",
+    "lines": 26,
+    "bytes": 1199,
+    "signals": "",
+    "hash": "d7cee2f784211f7a8f8ecd19308b499a72929dfe0c1bbec1a950d3beef9eb783"
+  },
+  {
+    "file": "backendServer/src/validators/settingsSchema.ts",
+    "status": "reviewed",
+    "depth": "manual targeted review + automated scan",
+    "lines": 36,
+    "bytes": 1391,
+    "signals": "",
+    "hash": "75bd34b04eb38f22d770713d2771d2e9d37eec7a3aa45643cd46f88d09c48607"
+  },
+  {
+    "file": "backendServer/src/validators/userSchema.ts",
+    "status": "reviewed",
+    "depth": "manual targeted review + automated scan",
+    "lines": 75,
+    "bytes": 2637,
+    "signals": "",
+    "hash": "453aa998a4d61e0659b9b2debe68eba1a8a395be6ba9c907318f6ca9a03848c0"
+  },
+  {
+    "file": "backendServer/src/websocket/dispatchNamespace.ts",
+    "status": "reviewed",
+    "depth": "manual targeted review + automated scan",
+    "lines": 62,
+    "bytes": 2273,
+    "signals": "",
+    "hash": "768a21d4df795c9ee2efc3272cf1f6548a0a1a226c60b3194b995e433543a5d0"
+  },
+  {
+    "file": "backendServer/src/websocket/socketServer.ts",
+    "status": "reviewed",
+    "depth": "manual targeted review + automated scan",
+    "lines": 42,
+    "bytes": 1246,
+    "signals": "",
+    "hash": "748931eb3876aa987dca4876e28b5ef2f80b999e68843afcd8d7c8e20c2c1f21"
+  },
+  {
+    "file": "backendServer/tsconfig.json",
+    "status": "reviewed",
+    "depth": "automated structural scan only; manual review outstanding",
+    "lines": 56,
+    "bytes": 1562,
+    "signals": "",
+    "hash": "0e84db9b7b2f241f554711047908fbb9c4e6d799bf396be1218021592682e730"
+  },
+  {
+    "file": "backendServer/vitest.config.ts",
+    "status": "reviewed",
+    "depth": "automated structural scan only; manual review outstanding",
+    "lines": 9,
+    "bytes": 182,
+    "signals": "",
+    "hash": "ace29a26156dd7217de8e989e0d64a6f2b63b5c6e123f81197ee559a3e746667"
+  },
+  {
+    "file": "docs/audit/README.md",
+    "status": "reviewed",
+    "depth": "automated structural scan only; manual review outstanding",
+    "lines": 68,
+    "bytes": 11292,
+    "signals": "explicit-any:2",
+    "hash": "162a37f0e5b94be430c8ce6e82e1ad7868602c6f679d5b7c13126a3a60bf2b55"
+  },
+  {
+    "file": "docs/audit/verification.md",
+    "status": "reviewed",
+    "depth": "automated structural scan only; manual review outstanding",
+    "lines": 48,
+    "bytes": 4265,
+    "signals": "",
+    "hash": "e71f70f7713f0cedc6adad9345a8f5ed8fa1b617d84eae5a0ab9d79676431ba8"
+  },
+  {
+    "file": "docs/booking-route-editor.md",
+    "status": "reviewed",
+    "depth": "automated structural scan only; manual review outstanding",
+    "lines": 12,
+    "bytes": 1998,
+    "signals": "",
+    "hash": "560904201b1023649586d3e91bc344372c6e26949ed588a0965b9ce78960d691"
+  },
+  {
+    "file": "frontend/.env.workplace.example",
+    "status": "reviewed",
+    "depth": "automated structural scan only; manual review outstanding",
+    "lines": 6,
+    "bytes": 257,
+    "signals": "",
+    "hash": "4969b01cb2186f8f823b03c08ff9d0cddddd50aad96086ac858a034d1f25ae53"
+  },
+  {
+    "file": "frontend/.gitignore",
+    "status": "reviewed",
+    "depth": "automated structural scan only; manual review outstanding",
+    "lines": 2,
+    "bytes": 18,
+    "signals": "",
+    "hash": "8c01c9519c1cab8723caa07501f62a27a993f3197c3c5bfe5c1e08158cec9eb2"
+  },
+  {
+    "file": "frontend/README.md",
+    "status": "reviewed",
+    "depth": "automated structural scan only; manual review outstanding",
+    "lines": 37,
+    "bytes": 1486,
+    "signals": "",
+    "hash": "3b3ed71ebf50e973209bc634f6849e8ecf235a6c0686c285e1f36af5caa1c2cc"
+  },
+  {
+    "file": "frontend/app/dashboard/bookings/[id]/page.tsx",
+    "status": "reviewed",
+    "depth": "automated structural scan only; manual review outstanding",
+    "lines": 7,
+    "bytes": 257,
+    "signals": "",
+    "hash": "85ea8893bd6bdf555ca143418fcff00981a8938ea17c7c53d680a06863d6c8fc"
+  },
+  {
+    "file": "frontend/app/dashboard/bookings/new/page.tsx",
+    "status": "reviewed",
+    "depth": "automated structural scan only; manual review outstanding",
+    "lines": 5,
+    "bytes": 147,
+    "signals": "",
+    "hash": "26b99b700c656f0f87401b8e9217ed31228086061bd6fda05223d60e811b94ff"
+  },
+  {
+    "file": "frontend/app/dashboard/bookings/page.tsx",
+    "status": "reviewed",
+    "depth": "automated structural scan only; manual review outstanding",
+    "lines": 196,
+    "bytes": 7689,
+    "signals": "",
+    "hash": "4766517423de1e1268a4e713580115fbc837388d52652bb20a7ce8a7df3f4e31"
+  },
+  {
+    "file": "frontend/app/dashboard/customers/page.tsx",
+    "status": "reviewed",
+    "depth": "automated structural scan only; manual review outstanding",
+    "lines": 162,
+    "bytes": 6143,
+    "signals": "",
+    "hash": "ac5a3f44613dde5213ab32e6405be4eb202eb9d19a30e3072c1564ef0c4e4274"
+  },
+  {
+    "file": "frontend/app/dashboard/dispatch/page.tsx",
+    "status": "reviewed",
+    "depth": "automated structural scan only; manual review outstanding",
+    "lines": 17,
+    "bytes": 580,
+    "signals": "",
+    "hash": "0ecab9559926851156141055be3011f8635e304983944889b166f155ece3f53b"
+  },
+  {
+    "file": "frontend/app/dashboard/employees/page.tsx",
+    "status": "reviewed",
+    "depth": "automated structural scan only; manual review outstanding",
+    "lines": 173,
+    "bytes": 6209,
+    "signals": "",
+    "hash": "1933680ee8a002782646926e520799b2870d811a23ddee4087a73171a73f8650"
+  },
+  {
+    "file": "frontend/app/dashboard/fleet-ops/page.tsx",
+    "status": "reviewed",
+    "depth": "automated structural scan only; manual review outstanding",
+    "lines": 169,
+    "bytes": 6590,
+    "signals": "",
+    "hash": "933f3aa41ed9542b71d72eca3e8e7c15daaf973e6f451d0948feb9f368f998af"
+  },
+  {
+    "file": "frontend/app/dashboard/incidents/[id]/page.tsx",
+    "status": "reviewed",
+    "depth": "automated structural scan only; manual review outstanding",
+    "lines": 6,
+    "bytes": 267,
+    "signals": "",
+    "hash": "c05c0d0212c36c58d496e1c310fdc0f76e6d7e9f4b6dde62adf3302bb37bab8d"
+  },
+  {
+    "file": "frontend/app/dashboard/incidents/page.tsx",
+    "status": "reviewed",
+    "depth": "automated structural scan only; manual review outstanding",
+    "lines": 10,
+    "bytes": 279,
+    "signals": "",
+    "hash": "1348a194f5085bd329781f986bedfea8e0181008407cf648394dee9ee914ad79"
+  },
+  {
+    "file": "frontend/app/dashboard/layout.tsx",
+    "status": "reviewed",
+    "depth": "automated structural scan only; manual review outstanding",
+    "lines": 24,
+    "bytes": 847,
+    "signals": "",
+    "hash": "5538ca009058c607a3d814af5f6b6cc4b1ffce5fa0bce16dbb2666a469b587a6"
+  },
+  {
+    "file": "frontend/app/dashboard/lost-property/items/[id]/page.tsx",
+    "status": "reviewed",
+    "depth": "automated structural scan only; manual review outstanding",
+    "lines": 6,
+    "bytes": 277,
+    "signals": "",
+    "hash": "432c0e8f9087d9758987db85eac00cf13f77b33b9473092ba81a3a979b11b433"
+  },
+  {
+    "file": "frontend/app/dashboard/lost-property/page.tsx",
+    "status": "reviewed",
+    "depth": "automated structural scan only; manual review outstanding",
+    "lines": 10,
+    "bytes": 283,
+    "signals": "",
+    "hash": "92b350789628ce66c679b484986daa51dd5985a5af96d0896e274e142c4b66d6"
+  },
+  {
+    "file": "frontend/app/dashboard/lost-property/reports/[id]/page.tsx",
+    "status": "reviewed",
+    "depth": "automated structural scan only; manual review outstanding",
+    "lines": 6,
+    "bytes": 279,
+    "signals": "",
+    "hash": "d79446c94eddc8c067fb90c858dc579e487894063d124acdd88e915e970faea6"
+  },
+  {
+    "file": "frontend/app/dashboard/notices/[id]/page.tsx",
+    "status": "reviewed",
+    "depth": "automated structural scan only; manual review outstanding",
+    "lines": 6,
+    "bytes": 265,
+    "signals": "",
+    "hash": "ed24bdf140175a10c14cccfcfc968a3e8b9bb78dfc2faa6f9e60415e2c6f2a0f"
+  },
+  {
+    "file": "frontend/app/dashboard/notices/page.tsx",
+    "status": "reviewed",
+    "depth": "automated structural scan only; manual review outstanding",
+    "lines": 10,
+    "bytes": 277,
+    "signals": "",
+    "hash": "22f11db626e42d50d8851dd8127d61b03691cb3204d716805c014c2352fd4335"
+  },
+  {
+    "file": "frontend/app/dashboard/page.tsx",
+    "status": "reviewed",
+    "depth": "automated structural scan only; manual review outstanding",
+    "lines": 2,
+    "bytes": 60,
+    "signals": "",
+    "hash": "101c81839e7fbed3b500b2aae9d2c95c8656e8c55f6b8cbb3fed4518a5fb04c4"
+  },
+  {
+    "file": "frontend/app/dashboard/settings/page.tsx",
+    "status": "reviewed",
+    "depth": "automated structural scan only; manual review outstanding",
+    "lines": 730,
+    "bytes": 31810,
+    "signals": "explicit-any:4",
+    "hash": "adafca3a97e54296b0e9cd576ebb14dd4a7282af0ead92098cbde6f334c3d7bd"
+  },
+  {
+    "file": "frontend/app/dashboard/test-reports/page.tsx",
+    "status": "reviewed",
+    "depth": "absent from working tree; see deletion evidence and pre-existing changes"
+  },
+  {
+    "file": "frontend/app/dashboard/timesheets/page.tsx",
+    "status": "reviewed",
+    "depth": "automated structural scan only; manual review outstanding",
+    "lines": 573,
+    "bytes": 21913,
+    "signals": "explicit-any:3",
+    "hash": "0b59e712daefe769527669a405cf200b96f5185178b67044120cf76721e4a63d"
+  },
+  {
+    "file": "frontend/app/dashboard/yard/page.tsx",
+    "status": "reviewed",
+    "depth": "automated structural scan only; manual review outstanding",
+    "lines": 688,
+    "bytes": 30676,
+    "signals": "explicit-any:4",
+    "hash": "9a2552e9dcb04c62a0534937d802b9405a0bf48f8e127be79d64ff7434df124f"
+  },
+  {
+    "file": "frontend/app/error.tsx",
+    "status": "reviewed",
+    "depth": "automated structural scan only; manual review outstanding",
+    "lines": 40,
+    "bytes": 1232,
+    "signals": "",
+    "hash": "d9f20557c492cfb2e1c6362add32186a5bda42a91988241cb7c4ae755d3c2deb"
+  },
+  {
+    "file": "frontend/app/globals.css",
+    "status": "reviewed",
+    "depth": "automated structural scan only; manual review outstanding",
+    "lines": 161,
+    "bytes": 5651,
+    "signals": "",
+    "hash": "7bfe03104e98fd555f1344f1a2f20ddc2e2fa5d7401f81781d380f3cf0b13916"
+  },
+  {
+    "file": "frontend/app/layout.tsx",
+    "status": "reviewed",
+    "depth": "automated structural scan only; manual review outstanding",
+    "lines": 33,
+    "bytes": 1029,
+    "signals": "",
+    "hash": "32771b55780620db6a6495ef2ea6e422cb391d09e6d432a30e2634c8aee0eda4"
+  },
+  {
+    "file": "frontend/app/not-found.tsx",
+    "status": "reviewed",
+    "depth": "automated structural scan only; manual review outstanding",
+    "lines": 21,
+    "bytes": 778,
+    "signals": "",
+    "hash": "49403bb343383460b3869175067539725abc24a671020b56732c4d259ecde37f"
+  },
+  {
+    "file": "frontend/app/page.tsx",
+    "status": "reviewed",
+    "depth": "automated structural scan only; manual review outstanding",
+    "lines": 8,
+    "bytes": 259,
+    "signals": "",
+    "hash": "95bc5bcd19786d0670afef5e98f1e64a1138ed13582bbaa0954ed0bd96cef2cf"
+  },
+  {
+    "file": "frontend/app/quotations/[token]/page.tsx",
+    "status": "reviewed",
+    "depth": "automated structural scan only; manual review outstanding",
+    "lines": 165,
+    "bytes": 6547,
+    "signals": "explicit-any:3; network-call:2",
+    "hash": "1a3441be76eb10bd220fc7f391d0a24adf8ae4665199fd652953b85219455cc9"
+  },
+  {
+    "file": "frontend/app/quotations/layout.tsx",
+    "status": "reviewed",
+    "depth": "automated structural scan only; manual review outstanding",
+    "lines": 9,
+    "bytes": 246,
+    "signals": "",
+    "hash": "48df6aed8b18ecc44d7b8a94e711a0b08b3db1c3c55e5973b82f3a960d61c127"
+  },
+  {
+    "file": "frontend/app/sign-in/page.tsx",
+    "status": "reviewed",
+    "depth": "automated structural scan only; manual review outstanding",
+    "lines": 18,
+    "bytes": 473,
+    "signals": "",
+    "hash": "1c0fce751bd7da4509d574cf0032652b9e40eaf14e5819564072b7a0b89ffe7f"
+  },
+  {
+    "file": "frontend/app/sign-up/page.tsx",
+    "status": "reviewed",
+    "depth": "automated structural scan only; manual review outstanding",
+    "lines": 17,
+    "bytes": 435,
+    "signals": "",
+    "hash": "33f34d9fa43917674a2c91e4943a0495df3bbf702ca5cbad498db71b46d84e9a"
+  },
+  {
+    "file": "frontend/components.json",
+    "status": "reviewed",
+    "depth": "automated structural scan only; manual review outstanding",
+    "lines": 24,
+    "bytes": 460,
+    "signals": "",
+    "hash": "737461edcef955f8c418a4d87d15c4de092edc79236ade5efd43da0acd642030"
+  },
+  {
+    "file": "frontend/components/OperationsDashboard.tsx",
+    "status": "reviewed",
+    "depth": "automated structural scan only; manual review outstanding",
+    "lines": 335,
+    "bytes": 13817,
+    "signals": "",
+    "hash": "0fb936d4515db2c1fc468050e43355a392ab755e7e4e0dc7079786673d67f4a8"
+  },
+  {
+    "file": "frontend/components/bookings/BookingRecordView.tsx",
+    "status": "reviewed",
+    "depth": "automated structural scan only; manual review outstanding",
+    "lines": 326,
+    "bytes": 12844,
+    "signals": "",
+    "hash": "8a8042f54241ec05ce2a40eea529151d4c5ea47c8cbec5ca7c0c29571c1798ed"
+  },
+  {
+    "file": "frontend/components/bookings/BookingRouteEditor.tsx",
+    "status": "reviewed",
+    "depth": "automated structural scan only; manual review outstanding",
+    "lines": 805,
+    "bytes": 31375,
+    "signals": "",
+    "hash": "cbcdcea92d16a6605727feaec1ad2085cc342e02a8e0a0be93a1f2d1c2680018"
+  },
+  {
+    "file": "frontend/components/bookings/BookingVisuals.tsx",
+    "status": "reviewed",
+    "depth": "automated structural scan only; manual review outstanding",
+    "lines": 179,
+    "bytes": 6412,
+    "signals": "explicit-any:2",
+    "hash": "c31e7bfdf7120271a2710b5de102d0e64b63ab35edcd7da83cd523b53a958d39"
+  },
+  {
+    "file": "frontend/components/bookings/BookingWorkspace.tsx",
+    "status": "reviewed",
+    "depth": "automated structural scan only; manual review outstanding",
+    "lines": 692,
+    "bytes": 23174,
+    "signals": "",
+    "hash": "e3f79fa4a8daecec30bb4f436791c1968e2f838b5a63fd2e9f70ff32c6a36e42"
+  },
+  {
+    "file": "frontend/components/bookings/CharterPricingCalculatorCard.tsx",
+    "status": "reviewed",
+    "depth": "automated structural scan only; manual review outstanding",
+    "lines": 537,
+    "bytes": 20563,
+    "signals": "",
+    "hash": "f747d24e2ae57bcd3a7606506d88e9bef7446da8d525046a2e7e8b6d1ce2c84d"
+  },
+  {
+    "file": "frontend/components/bookings/CustomerSelector.tsx",
+    "status": "reviewed",
+    "depth": "automated structural scan only; manual review outstanding",
+    "lines": 198,
+    "bytes": 8050,
+    "signals": "",
+    "hash": "b7f42709413b070e875d7fb26907742f3cf80fa44d542b228cae9284da4b057d"
+  },
+  {
+    "file": "frontend/components/bookings/DispatchStatusBadge.tsx",
+    "status": "reviewed",
+    "depth": "automated structural scan only; manual review outstanding",
+    "lines": 20,
+    "bytes": 777,
+    "signals": "",
+    "hash": "4047fef02429768b4a67d22d2b22286bd8de1cad8f6b30f519c02b551d0f6ddf"
+  },
+  {
+    "file": "frontend/components/bookings/LocationPicker.tsx",
+    "status": "reviewed",
+    "depth": "automated structural scan only; manual review outstanding",
+    "lines": 285,
+    "bytes": 10621,
+    "signals": "",
+    "hash": "890cb4fc9fd4b89a820319ecfb695c838a973d593919ef0cc84186e1ec47a4d1"
+  },
+  {
+    "file": "frontend/components/bookings/QuotationPreview.tsx",
+    "status": "reviewed",
+    "depth": "automated structural scan only; manual review outstanding",
+    "lines": 124,
+    "bytes": 5268,
+    "signals": "explicit-any:4",
+    "hash": "97153b24f4f7a0b0e2683a4804b8efbf2a2fa863205ed3c19f16dd3026effb93"
+  },
+  {
+    "file": "frontend/components/bookings/RoutePreviewMap.tsx",
+    "status": "reviewed",
+    "depth": "absent from working tree; see deletion evidence and pre-existing changes"
+  },
+  {
+    "file": "frontend/components/bookings/StopAccessFields.tsx",
+    "status": "reviewed",
+    "depth": "automated structural scan only; manual review outstanding",
+    "lines": 200,
+    "bytes": 8591,
+    "signals": "explicit-any:2",
+    "hash": "9784cf482ba08918e1c9abb7add41339dc5cb1bb213c461d74f29c49b278d4a2"
+  },
+  {
+    "file": "frontend/components/bookings/add-booking/BookingCategoryTabs.tsx",
+    "status": "reviewed",
+    "depth": "absent from working tree; see deletion evidence and pre-existing changes"
+  },
+  {
+    "file": "frontend/components/bookings/add-booking/BookingForm.tsx",
+    "status": "reviewed",
+    "depth": "absent from working tree; see deletion evidence and pre-existing changes"
+  },
+  {
+    "file": "frontend/components/bookings/add-booking/BookingModal.tsx",
+    "status": "reviewed",
+    "depth": "absent from working tree; see deletion evidence and pre-existing changes"
+  },
+  {
+    "file": "frontend/components/bookings/add-booking/BookingModalFooter.tsx",
+    "status": "reviewed",
+    "depth": "absent from working tree; see deletion evidence and pre-existing changes"
+  },
+  {
+    "file": "frontend/components/bookings/add-booking/config/booking.config.ts",
+    "status": "reviewed",
+    "depth": "absent from working tree; see deletion evidence and pre-existing changes"
+  },
+  {
+    "file": "frontend/components/bookings/add-booking/hooks/useBookingForm.ts",
+    "status": "reviewed",
+    "depth": "absent from working tree; see deletion evidence and pre-existing changes"
+  },
+  {
+    "file": "frontend/components/bookings/add-booking/hooks/useCustomerSearch.ts",
+    "status": "reviewed",
+    "depth": "absent from working tree; see deletion evidence and pre-existing changes"
+  },
+  {
+    "file": "frontend/components/bookings/add-booking/index.ts",
+    "status": "reviewed",
+    "depth": "absent from working tree; see deletion evidence and pre-existing changes"
+  },
+  {
+    "file": "frontend/components/bookings/add-booking/sections/AddCustomerMini.tsx",
+    "status": "reviewed",
+    "depth": "absent from working tree; see deletion evidence and pre-existing changes"
+  },
+  {
+    "file": "frontend/components/bookings/add-booking/sections/CustomerSelector.tsx",
+    "status": "reviewed",
+    "depth": "absent from working tree; see deletion evidence and pre-existing changes"
+  },
+  {
+    "file": "frontend/components/bookings/add-booking/sections/DateTimeSection.tsx",
+    "status": "reviewed",
+    "depth": "absent from working tree; see deletion evidence and pre-existing changes"
+  },
+  {
+    "file": "frontend/components/bookings/add-booking/sections/LocationPicker.tsx",
+    "status": "reviewed",
+    "depth": "absent from working tree; see deletion evidence and pre-existing changes"
+  },
+  {
+    "file": "frontend/components/bookings/add-booking/sections/NotesSection.tsx",
+    "status": "reviewed",
+    "depth": "absent from working tree; see deletion evidence and pre-existing changes"
+  },
+  {
+    "file": "frontend/components/bookings/add-booking/sections/PassengerPlanner.tsx",
+    "status": "reviewed",
+    "depth": "absent from working tree; see deletion evidence and pre-existing changes"
+  },
+  {
+    "file": "frontend/components/bookings/add-booking/sections/RepeatBookingSection.tsx",
+    "status": "reviewed",
+    "depth": "absent from working tree; see deletion evidence and pre-existing changes"
+  },
+  {
+    "file": "frontend/components/bookings/add-booking/validation/booking.validation.ts",
+    "status": "reviewed",
+    "depth": "absent from working tree; see deletion evidence and pre-existing changes"
+  },
+  {
+    "file": "frontend/components/bookings/booking-details-panel.tsx",
+    "status": "reviewed",
+    "depth": "automated structural scan only; manual review outstanding",
+    "lines": 554,
+    "bytes": 22802,
+    "signals": "explicit-any:1",
+    "hash": "7c14c68b2be4bfcf7a33eaad5e3b28ed95ba39f1b4d22930bff0eef88f81c59f"
+  },
+  {
+    "file": "frontend/components/bookings/booking-table.tsx",
+    "status": "reviewed",
+    "depth": "automated structural scan only; manual review outstanding",
+    "lines": 254,
+    "bytes": 8696,
+    "signals": "",
+    "hash": "e8aa37b8025e2e8d2cf5cc9fa9d8d0aae38a8ea6bc655a843f4955ac8a6228f0"
+  },
+  {
+    "file": "frontend/components/bookings/booking-workspace.css",
+    "status": "reviewed",
+    "depth": "automated structural scan only; manual review outstanding",
+    "lines": 30,
+    "bytes": 761,
+    "signals": "",
+    "hash": "b401d5dabcea3d0ea5cceebbaac0e10343de40390b8b8197b5f0c69f78f3a337"
+  },
+  {
+    "file": "frontend/components/bookings/config/booking-workflow.config.ts",
+    "status": "reviewed",
+    "depth": "automated structural scan only; manual review outstanding",
+    "lines": 78,
+    "bytes": 2277,
+    "signals": "explicit-any:1",
+    "hash": "eebe9db1289c2bc77bb941c7b2d06bc852a10407340f98ba3539f5c3838bc6be"
+  },
+  {
+    "file": "frontend/components/bookings/hooks/useBookingWorkflow.ts",
+    "status": "reviewed",
+    "depth": "manual targeted review + automated scan",
+    "lines": 365,
+    "bytes": 12105,
+    "signals": "explicit-any:1; browser-storage:1",
+    "hash": "6440ad7500dd16d1ff98aaae75ea7135f4d7363fcfc9512df868069165941aa9"
+  },
+  {
+    "file": "frontend/components/bookings/hooks/useCustomerSearch.ts",
+    "status": "reviewed",
+    "depth": "automated structural scan only; manual review outstanding",
+    "lines": 95,
+    "bytes": 2484,
+    "signals": "",
+    "hash": "f9a19547999797c1585caff9262824f79ab451dc11d0ce747ccaf018b557cb7d"
+  },
+  {
+    "file": "frontend/components/bookings/hooks/useQuotationEditor.ts",
+    "status": "reviewed",
+    "depth": "manual targeted review + automated scan",
+    "lines": 129,
+    "bytes": 3714,
+    "signals": "",
+    "hash": "29b052d8b9d315217739c11f6e9f8d3a784c30b626b8cc3f85a10d732b2be4e8"
+  },
+  {
+    "file": "frontend/components/bookings/steps/BookingStep0BasicDetails.tsx",
+    "status": "reviewed",
+    "depth": "automated structural scan only; manual review outstanding",
+    "lines": 360,
+    "bytes": 12938,
+    "signals": "",
+    "hash": "54ab5966789de2d0af3265292cb7f5969c17ce91ed79f7352b5f47d1a3996f3d"
+  },
+  {
+    "file": "frontend/components/bookings/steps/BookingStep1Locations.tsx",
+    "status": "reviewed",
+    "depth": "automated structural scan only; manual review outstanding",
+    "lines": 128,
+    "bytes": 4602,
+    "signals": "",
+    "hash": "888f8c715c89a2ac1811ec311c272c092824edc06f486697011327a5d35f14e7"
+  },
+  {
+    "file": "frontend/components/bookings/steps/BookingStep2Quotation.tsx",
+    "status": "reviewed",
+    "depth": "automated structural scan only; manual review outstanding",
+    "lines": 314,
+    "bytes": 10334,
+    "signals": "",
+    "hash": "0f05f96eb2ec1d8777316a26cd95c2198eca8c10e0f3d32fbbb35f186d77c8b6"
+  },
+  {
+    "file": "frontend/components/bookings/steps/BookingStep3PreviewSend.tsx",
+    "status": "reviewed",
+    "depth": "automated structural scan only; manual review outstanding",
+    "lines": 125,
+    "bytes": 3962,
+    "signals": "",
+    "hash": "2fa27e61f4d5476a664c965d473a13c3428ca981a57ae948cfc4fd11ffe273ab"
+  },
+  {
+    "file": "frontend/components/bookings/steps/BookingStep4Response.tsx",
+    "status": "reviewed",
+    "depth": "automated structural scan only; manual review outstanding",
+    "lines": 176,
+    "bytes": 6534,
+    "signals": "",
+    "hash": "87065575caee1c2b8ef2adf03386a0c6ee5d6582f6642478d572321ea121dcd4"
+  },
+  {
+    "file": "frontend/components/customers/add-customer-dialog.tsx",
+    "status": "reviewed",
+    "depth": "automated structural scan only; manual review outstanding",
+    "lines": 435,
+    "bytes": 18376,
+    "signals": "explicit-any:1",
+    "hash": "62667d708cce9a9a6f02cc0c86349a9ca9298807b362d9530e1ff91eecd7b3ad"
+  },
+  {
+    "file": "frontend/components/customers/customer-details-panel.tsx",
+    "status": "reviewed",
+    "depth": "automated structural scan only; manual review outstanding",
+    "lines": 476,
+    "bytes": 21312,
+    "signals": "",
+    "hash": "38e6c2c7479d2c5eed298c2958f4aa6e3c989e2253a07a5a2093a7d4cb05555e"
+  },
+  {
+    "file": "frontend/components/customers/customer-table.tsx",
+    "status": "reviewed",
+    "depth": "automated structural scan only; manual review outstanding",
+    "lines": 197,
+    "bytes": 6761,
+    "signals": "",
+    "hash": "b57dee1009d6cac57b3bf8fab9c82d4a735322af9b23ea8b643e7c405ba674d9"
+  },
+  {
+    "file": "frontend/components/dispatch/AutoScheduleModal.tsx",
+    "status": "reviewed",
+    "depth": "automated structural scan only; manual review outstanding",
+    "lines": 558,
+    "bytes": 25148,
+    "signals": "explicit-any:4",
+    "hash": "cc41cfbc6de9213a493ebdecaaa14f040d0605fa4176fa5b501be2b16ae21acd"
+  },
+  {
+    "file": "frontend/components/dispatch/BookingCard.tsx",
+    "status": "reviewed",
+    "depth": "absent from working tree; see deletion evidence and pre-existing changes"
+  },
+  {
+    "file": "frontend/components/dispatch/BreakBlock.tsx",
+    "status": "reviewed",
+    "depth": "absent from working tree; see deletion evidence and pre-existing changes"
+  },
+  {
+    "file": "frontend/components/dispatch/ConflictAlert.tsx",
+    "status": "reviewed",
+    "depth": "absent from working tree; see deletion evidence and pre-existing changes"
+  },
+  {
+    "file": "frontend/components/dispatch/DispatchBoardPage.tsx",
+    "status": "reviewed",
+    "depth": "automated structural scan only; manual review outstanding",
+    "lines": 1147,
+    "bytes": 47434,
+    "signals": "explicit-any:30",
+    "hash": "a9f2789606bc3b3b479bda754996aa80336ae41cdad169a67ba4166edfc5eb67"
+  },
+  {
+    "file": "frontend/components/dispatch/DriverRowTimeline.tsx",
+    "status": "reviewed",
+    "depth": "absent from working tree; see deletion evidence and pre-existing changes"
+  },
+  {
+    "file": "frontend/components/dispatch/DriverTimelineGrid.tsx",
+    "status": "reviewed",
+    "depth": "absent from working tree; see deletion evidence and pre-existing changes"
+  },
+  {
+    "file": "frontend/components/dispatch/DutySpanModal.tsx",
+    "status": "reviewed",
+    "depth": "automated structural scan only; manual review outstanding",
+    "lines": 168,
+    "bytes": 6299,
+    "signals": "explicit-any:3",
+    "hash": "1f9a211aff6899658d57b4863d8cf998200024c2e5ec5eda28861c728d0489e5"
+  },
+  {
+    "file": "frontend/components/dispatch/DutySpanOverlay.tsx",
+    "status": "reviewed",
+    "depth": "absent from working tree; see deletion evidence and pre-existing changes"
+  },
+  {
+    "file": "frontend/components/dispatch/JobDetailsModal.tsx",
+    "status": "reviewed",
+    "depth": "absent from working tree; see deletion evidence and pre-existing changes"
+  },
+  {
+    "file": "frontend/components/dispatch/SidebarDispatchNav.tsx",
+    "status": "reviewed",
+    "depth": "absent from working tree; see deletion evidence and pre-existing changes"
+  },
+  {
+    "file": "frontend/components/dispatch/TravelBlock.tsx",
+    "status": "reviewed",
+    "depth": "absent from working tree; see deletion evidence and pre-existing changes"
+  },
+  {
+    "file": "frontend/components/dispatch/UnassignedBookingPanel.tsx",
+    "status": "reviewed",
+    "depth": "absent from working tree; see deletion evidence and pre-existing changes"
+  },
+  {
+    "file": "frontend/components/dispatch/assignment-block.tsx",
+    "status": "reviewed",
+    "depth": "absent from working tree; see deletion evidence and pre-existing changes"
+  },
+  {
+    "file": "frontend/components/dispatch/board/DriverLane.tsx",
+    "status": "reviewed",
+    "depth": "automated structural scan only; manual review outstanding",
+    "lines": 104,
+    "bytes": 3237,
+    "signals": "explicit-any:2",
+    "hash": "8bcb6cebd72dfaa55365077053f65026fc9533e8846220ea53d107a3b5e0846c"
+  },
+  {
+    "file": "frontend/components/dispatch/board/JobBlock.tsx",
+    "status": "reviewed",
+    "depth": "automated structural scan only; manual review outstanding",
+    "lines": 86,
+    "bytes": 3141,
+    "signals": "",
+    "hash": "af070642404b2b18cc8577375b6534582983382368d78b48393abeb4969a49c9"
+  },
+  {
+    "file": "frontend/components/dispatch/board/Pool.tsx",
+    "status": "reviewed",
+    "depth": "automated structural scan only; manual review outstanding",
+    "lines": 48,
+    "bytes": 1341,
+    "signals": "",
+    "hash": "97f768487f6e475cfbe64e6d5ddf110e64075e47bef477bf102a7f7485a75ebb"
+  },
+  {
+    "file": "frontend/components/dispatch/board/TimelineGrid.tsx",
+    "status": "reviewed",
+    "depth": "automated structural scan only; manual review outstanding",
+    "lines": 76,
+    "bytes": 2281,
+    "signals": "",
+    "hash": "40383b048251f857bf8ddc8b1dee18252e9df369047d798dbb24e540a7ee4386"
+  },
+  {
+    "file": "frontend/components/dispatch/board/drag-item.ts",
+    "status": "reviewed",
+    "depth": "automated structural scan only; manual review outstanding",
+    "lines": 14,
+    "bytes": 539,
+    "signals": "explicit-any:1",
+    "hash": "0ae2a87e4220c334e445be2a03af67369efa638cc5878e276a1b48cfa2826a09"
+  },
+  {
+    "file": "frontend/components/dispatch/dispatch-analytics.tsx",
+    "status": "reviewed",
+    "depth": "absent from working tree; see deletion evidence and pre-existing changes"
+  },
+  {
+    "file": "frontend/components/dispatch/dispatch-board.tsx",
+    "status": "reviewed",
+    "depth": "absent from working tree; see deletion evidence and pre-existing changes"
+  },
+  {
+    "file": "frontend/components/dispatch/driver-row.tsx",
+    "status": "reviewed",
+    "depth": "absent from working tree; see deletion evidence and pre-existing changes"
+  },
+  {
+    "file": "frontend/components/dispatch/timeline.tsx",
+    "status": "reviewed",
+    "depth": "absent from working tree; see deletion evidence and pre-existing changes"
+  },
+  {
+    "file": "frontend/components/dispatch/unassigned-pool.tsx",
+    "status": "reviewed",
+    "depth": "absent from working tree; see deletion evidence and pre-existing changes"
+  },
+  {
+    "file": "frontend/components/dispatch/useTimelineZoom.ts",
+    "status": "reviewed",
+    "depth": "automated structural scan only; manual review outstanding",
+    "lines": 158,
+    "bytes": 6168,
+    "signals": "explicit-any:6",
+    "hash": "38a01dad0832a5703891da5c8cb78bad05776230b1b7d78385fa0799bedf8e2a"
+  },
+  {
+    "file": "frontend/components/employees/add-employee-dialog.tsx",
+    "status": "reviewed",
+    "depth": "automated structural scan only; manual review outstanding",
+    "lines": 563,
+    "bytes": 24225,
+    "signals": "",
+    "hash": "36ec3074d6ef26ac8bed46d9181bac38112394b911e1fc25ae71554bf46c9beb"
+  },
+  {
+    "file": "frontend/components/employees/employee-availability-dialog.tsx",
+    "status": "reviewed",
+    "depth": "automated structural scan only; manual review outstanding",
+    "lines": 151,
+    "bytes": 4906,
+    "signals": "explicit-any:2",
+    "hash": "f2e4f9a566675ec837f60cb1312a4ec015813f079176f24e4cce8c3a9953b03a"
+  },
+  {
+    "file": "frontend/components/employees/employee-details-panel.tsx",
+    "status": "reviewed",
+    "depth": "automated structural scan only; manual review outstanding",
+    "lines": 600,
+    "bytes": 26098,
+    "signals": "explicit-any:7",
+    "hash": "55a96da9934ba305e4794896ab30583e43e5f6bb0d7d05cd6c04722ada86a665"
+  },
+  {
+    "file": "frontend/components/employees/employee-sidebar.tsx",
+    "status": "reviewed",
+    "depth": "absent from working tree; see deletion evidence and pre-existing changes"
+  },
+  {
+    "file": "frontend/components/employees/employee-table.tsx",
+    "status": "reviewed",
+    "depth": "automated structural scan only; manual review outstanding",
+    "lines": 249,
+    "bytes": 8683,
+    "signals": "",
+    "hash": "848ab41acb06fc0dd0cc93f2054819ee861ff347a800507f82aeb3020434fec6"
+  },
+  {
+    "file": "frontend/components/fleet/add-fleet-dialog.tsx",
+    "status": "reviewed",
+    "depth": "automated structural scan only; manual review outstanding",
+    "lines": 405,
+    "bytes": 16516,
+    "signals": "",
+    "hash": "63541bb4a4fee44d1be1d5eb9abfdd2b184b9b5c3510ea1264a53a3528e7c602"
+  },
+  {
+    "file": "frontend/components/fleet/fleet-details-panel.tsx",
+    "status": "reviewed",
+    "depth": "automated structural scan only; manual review outstanding",
+    "lines": 548,
+    "bytes": 24382,
+    "signals": "explicit-any:2",
+    "hash": "9cff4e186cc933d2bb85efa2ab924f773c9a1da3dd71451e730beee228eef882"
+  },
+  {
+    "file": "frontend/components/fleet/fleet-table.tsx",
+    "status": "reviewed",
+    "depth": "automated structural scan only; manual review outstanding",
+    "lines": 171,
+    "bytes": 6034,
+    "signals": "",
+    "hash": "c15a0682cdce8512b5bc0cc213810e49d26540928b62d4e7ecf0d6f81c62d68e"
+  },
+  {
+    "file": "frontend/components/layout/header.tsx",
+    "status": "reviewed",
+    "depth": "automated structural scan only; manual review outstanding",
+    "lines": 142,
+    "bytes": 5595,
+    "signals": "",
+    "hash": "ddd0c43501213fa10915dbf0ed5d00ddb17049080e9af3e7578e87a886a3542d"
+  },
+  {
+    "file": "frontend/components/layout/sidebar.tsx",
+    "status": "reviewed",
+    "depth": "automated structural scan only; manual review outstanding",
+    "lines": 215,
+    "bytes": 8655,
+    "signals": "",
+    "hash": "7e3c61f9119ff11adc85c56e366fbe6eb4a90952e319f13b4c61e1ec90c2d735"
+  },
+  {
+    "file": "frontend/components/settings/CharterPricingSettings.tsx",
+    "status": "reviewed",
+    "depth": "automated structural scan only; manual review outstanding",
+    "lines": 779,
+    "bytes": 34589,
+    "signals": "",
+    "hash": "5ba3851d9bb71c0ff6bd1f66d79838d902d7be624e8cd273b9a40783ef4ba77c"
+  },
+  {
+    "file": "frontend/components/settings/useCharterPricingSettings.ts",
+    "status": "reviewed",
+    "depth": "manual targeted review + automated scan",
+    "lines": 66,
+    "bytes": 1874,
+    "signals": "",
+    "hash": "765a8665a8cac60c424ea0404c788855333ca9984120c92f24a0f420f2e79631"
+  },
+  {
+    "file": "frontend/components/shared/MapPickerModal.tsx",
+    "status": "reviewed",
+    "depth": "automated structural scan only; manual review outstanding",
+    "lines": 186,
+    "bytes": 5793,
+    "signals": "explicit-any:1",
+    "hash": "92479862fddc10a800ec881c20261937395268099ef5b46272e139048a49de50"
+  },
+  {
+    "file": "frontend/components/shared/MapboxMap.tsx",
+    "status": "reviewed",
+    "depth": "automated structural scan only; manual review outstanding",
+    "lines": 320,
+    "bytes": 11970,
+    "signals": "",
+    "hash": "aeb1e49a788f025618fe549d7a3d696faa378592da085e324c3e2a1fa35e177d"
+  },
+  {
+    "file": "frontend/components/shared/PlaceSearch.tsx",
+    "status": "reviewed",
+    "depth": "automated structural scan only; manual review outstanding",
+    "lines": 247,
+    "bytes": 8268,
+    "signals": "",
+    "hash": "2b4e090d103ed0e21074df83262be47fdf0be6e6f4109bbbdf0614ecc44d9372"
+  },
+  {
+    "file": "frontend/components/shared/created-record-notice.tsx",
+    "status": "reviewed",
+    "depth": "automated structural scan only; manual review outstanding",
+    "lines": 38,
+    "bytes": 1106,
+    "signals": "",
+    "hash": "1591e93884cd50d3c160c116c535bf52fb726473ffc086be9d26493ac75e9278"
+  },
+  {
+    "file": "frontend/components/shared/data-table.tsx",
+    "status": "reviewed",
+    "depth": "automated structural scan only; manual review outstanding",
+    "lines": 127,
+    "bytes": 3394,
+    "signals": "",
+    "hash": "e10866fda4d067a3a5a96e70bb7601fe6b9f634164d0fc861eb42fdae1a21bd6"
+  },
+  {
+    "file": "frontend/components/shared/dialog-box.tsx",
+    "status": "reviewed",
+    "depth": "automated structural scan only; manual review outstanding",
+    "lines": 68,
+    "bytes": 1775,
+    "signals": "explicit-any:1",
+    "hash": "873af8adfc608a0680d398f41fb006694c4e6e6f7f12247019cfec0e19f82fe4"
+  },
+  {
+    "file": "frontend/components/shared/filter-bar.tsx",
+    "status": "reviewed",
+    "depth": "automated structural scan only; manual review outstanding",
+    "lines": 46,
+    "bytes": 1075,
+    "signals": "",
+    "hash": "e82f819c255b2ca66c771b1859c451ef9857219ce68fe4665ecce58823295b25"
+  },
+  {
+    "file": "frontend/components/shared/page-header.tsx",
+    "status": "reviewed",
+    "depth": "automated structural scan only; manual review outstanding",
+    "lines": 85,
+    "bytes": 2466,
+    "signals": "",
+    "hash": "3e5cddbccfffe01a05edf531eee8855bdbdee6067996e45096ebf713e1189769"
+  },
+  {
+    "file": "frontend/components/shared/pagination.tsx",
+    "status": "reviewed",
+    "depth": "automated structural scan only; manual review outstanding",
+    "lines": 110,
+    "bytes": 3502,
+    "signals": "",
+    "hash": "1b2872fa99f265085398202f013d36b7d3b08c40fb620a06c15d8f6dc536bb60"
+  },
+  {
+    "file": "frontend/components/shared/record-lifecycle-actions.tsx",
+    "status": "reviewed",
+    "depth": "automated structural scan only; manual review outstanding",
+    "lines": 145,
+    "bytes": 4503,
+    "signals": "explicit-any:1",
+    "hash": "39e75f4bf51603e427b60188816d9666045bf7949a9f547cd58d9e3906d7a7ae"
+  },
+  {
+    "file": "frontend/components/shared/record-status.tsx",
+    "status": "reviewed",
+    "depth": "automated structural scan only; manual review outstanding",
+    "lines": 60,
+    "bytes": 2274,
+    "signals": "",
+    "hash": "f21f92ed6b96be178714737b29061fcfc85376ef2376f2457a148de5a1501269"
+  },
+  {
+    "file": "frontend/components/shared/side-panel.tsx",
+    "status": "reviewed",
+    "depth": "automated structural scan only; manual review outstanding",
+    "lines": 93,
+    "bytes": 2462,
+    "signals": "",
+    "hash": "2becc95a4d8b94faff9245dda56172a6572e53e90cea2d01d6b05d8f97ecaebe"
+  },
+  {
+    "file": "frontend/components/ui/accordion.tsx",
+    "status": "reviewed",
+    "depth": "automated structural scan only; manual review outstanding",
+    "lines": 65,
+    "bytes": 2057,
+    "signals": "",
+    "hash": "847607dae9cd6874c581d4fc8bd4710e28b8948969f1647a910ee9428fcab9d7"
+  },
+  {
+    "file": "frontend/components/ui/alert-dialog.tsx",
+    "status": "reviewed",
+    "depth": "automated structural scan only; manual review outstanding",
+    "lines": 180,
+    "bytes": 5428,
+    "signals": "",
+    "hash": "c193ac253f89dd8a84102d4e2fc118edb05f64b908ef10c66d87dde8c1167a9e"
+  },
+  {
+    "file": "frontend/components/ui/alert.tsx",
+    "status": "reviewed",
+    "depth": "automated structural scan only; manual review outstanding",
+    "lines": 61,
+    "bytes": 1596,
+    "signals": "",
+    "hash": "4205aeaec5ef68156ad66e83ac55b5c352238cee349032597fe60e3e8c251aff"
+  },
+  {
+    "file": "frontend/components/ui/aspect-ratio.tsx",
+    "status": "reviewed",
+    "depth": "automated structural scan only; manual review outstanding",
+    "lines": 10,
+    "bytes": 276,
+    "signals": "",
+    "hash": "8ea78d33cf200e991151c48dccb22192a5016cc7967caba7fdea00b91e1f9f60"
+  },
+  {
+    "file": "frontend/components/ui/avatar.tsx",
+    "status": "reviewed",
+    "depth": "automated structural scan only; manual review outstanding",
+    "lines": 97,
+    "bytes": 2912,
+    "signals": "",
+    "hash": "4fcbd7308c663c0d3a116916d5034bdaafaa00528b5ee152aaa05f9e85affd9b"
+  },
+  {
+    "file": "frontend/components/ui/badge.tsx",
+    "status": "reviewed",
+    "depth": "automated structural scan only; manual review outstanding",
+    "lines": 47,
+    "bytes": 1773,
+    "signals": "",
+    "hash": "0885213be007ff524f0325b8391379e7788afc0694500455def4111bd533a479"
+  },
+  {
+    "file": "frontend/components/ui/breadcrumb.tsx",
+    "status": "reviewed",
+    "depth": "automated structural scan only; manual review outstanding",
+    "lines": 103,
+    "bytes": 2355,
+    "signals": "",
+    "hash": "9a29616c383bee12fe3e4947be92d72726d9d3c6da5e18454084bc5a295e4417"
+  },
+  {
+    "file": "frontend/components/ui/button-group.tsx",
+    "status": "reviewed",
+    "depth": "automated structural scan only; manual review outstanding",
+    "lines": 79,
+    "bytes": 2207,
+    "signals": "",
+    "hash": "3c50e8117e821e168bba686758bccbf6cc5531d414afe10fc1d0521a8b97611d"
+  },
+  {
+    "file": "frontend/components/ui/button.tsx",
+    "status": "reviewed",
+    "depth": "automated structural scan only; manual review outstanding",
+    "lines": 63,
+    "bytes": 2382,
+    "signals": "",
+    "hash": "59d02877c1f0898a54fbd42503fae6de662ffde56788783f58454f9d9922f857"
+  },
+  {
+    "file": "frontend/components/ui/calendar.tsx",
+    "status": "reviewed",
+    "depth": "automated structural scan only; manual review outstanding",
+    "lines": 181,
+    "bytes": 7427,
+    "signals": "",
+    "hash": "575f9d972d75f765be9cc183c1be860a731a5a1ba0dec74feeefdd02ea79c15d"
+  },
+  {
+    "file": "frontend/components/ui/card.tsx",
+    "status": "reviewed",
+    "depth": "automated structural scan only; manual review outstanding",
+    "lines": 76,
+    "bytes": 1928,
+    "signals": "",
+    "hash": "d6547b6645a98dc8bb55928305a10c21233ef4d9845fe412f590b762076f84ba"
+  },
+  {
+    "file": "frontend/components/ui/carousel.tsx",
+    "status": "reviewed",
+    "depth": "automated structural scan only; manual review outstanding",
+    "lines": 232,
+    "bytes": 5691,
+    "signals": "",
+    "hash": "94800bf310de96a5ce015c47a7debd0c5ae96cb8b93d0e35e1581ca47e747869"
+  },
+  {
+    "file": "frontend/components/ui/chart.tsx",
+    "status": "reviewed",
+    "depth": "automated structural scan only; manual review outstanding",
+    "lines": 327,
+    "bytes": 9993,
+    "signals": "html-injection-sink:1",
+    "hash": "6bd3af9b0328d777b772170b56ec102755aeb59aefdc8d21150cc1313ab95f48"
+  },
+  {
+    "file": "frontend/components/ui/checkbox.tsx",
+    "status": "reviewed",
+    "depth": "automated structural scan only; manual review outstanding",
+    "lines": 30,
+    "bytes": 1218,
+    "signals": "",
+    "hash": "88b05c58133a8f94c5a3e9a1a1b559a73b587ca072f0c5b7eadc869fae23fb8e"
+  },
+  {
+    "file": "frontend/components/ui/collapsible.tsx",
+    "status": "reviewed",
+    "depth": "automated structural scan only; manual review outstanding",
+    "lines": 22,
+    "bytes": 747,
+    "signals": "",
+    "hash": "9ef2d1af07fde060317a3d660705b8d9130641f2a2615aa5375eb1ca73649129"
+  },
+  {
+    "file": "frontend/components/ui/combobox.tsx",
+    "status": "reviewed",
+    "depth": "automated structural scan only; manual review outstanding",
+    "lines": 283,
+    "bytes": 9101,
+    "signals": "",
+    "hash": "c10c58b5cf4b10fbad65c87fb0ef9c9410b911691828418b4ba8f7a9381e5754"
+  },
+  {
+    "file": "frontend/components/ui/command.tsx",
+    "status": "reviewed",
+    "depth": "automated structural scan only; manual review outstanding",
+    "lines": 162,
+    "bytes": 4759,
+    "signals": "",
+    "hash": "c5ef4dd8450bfa33e8fb9f5b1ec6ef74757b4fe4f30ed312ecba7befdb5ecba2"
+  },
+  {
+    "file": "frontend/components/ui/context-menu.tsx",
+    "status": "reviewed",
+    "depth": "automated structural scan only; manual review outstanding",
+    "lines": 225,
+    "bytes": 8183,
+    "signals": "",
+    "hash": "2c305d77ccff9898ec53aaff97888735d831b716c8e723b78930d205ef00d534"
+  },
+  {
+    "file": "frontend/components/ui/dialog.tsx",
+    "status": "reviewed",
+    "depth": "automated structural scan only; manual review outstanding",
+    "lines": 145,
+    "bytes": 4288,
+    "signals": "",
+    "hash": "db7f57cac69f6b687558f48a6cce579f91e7611ab9cb79ad26e74ae76a810f9b"
+  },
+  {
+    "file": "frontend/components/ui/direction.tsx",
+    "status": "reviewed",
+    "depth": "automated structural scan only; manual review outstanding",
+    "lines": 21,
+    "bytes": 501,
+    "signals": "",
+    "hash": "b9bdc33c1d9350660ed4d349adab96ed20ad999d21255ab917c1ecab785779fe"
+  },
+  {
+    "file": "frontend/components/ui/drawer.tsx",
+    "status": "reviewed",
+    "depth": "automated structural scan only; manual review outstanding",
+    "lines": 125,
+    "bytes": 4261,
+    "signals": "",
+    "hash": "b911a90c9b4366d2bdf6233fe343e1280cadbb5101021be0862fcb460519239c"
+  },
+  {
+    "file": "frontend/components/ui/dropdown-menu.tsx",
+    "status": "reviewed",
+    "depth": "automated structural scan only; manual review outstanding",
+    "lines": 229,
+    "bytes": 8319,
+    "signals": "",
+    "hash": "e555d19487f5780444a9eeb0b4d952028e2ab5385235a7e322cfc11cd35457f9"
+  },
+  {
+    "file": "frontend/components/ui/empty.tsx",
+    "status": "reviewed",
+    "depth": "automated structural scan only; manual review outstanding",
+    "lines": 95,
+    "bytes": 2373,
+    "signals": "",
+    "hash": "3dd086f4c231a8a087ad126b0d1a10b9eb3f182640a12287e19d3a77247b02f6"
+  },
+  {
+    "file": "frontend/components/ui/field.tsx",
+    "status": "reviewed",
+    "depth": "automated structural scan only; manual review outstanding",
+    "lines": 235,
+    "bytes": 6076,
+    "signals": "",
+    "hash": "c055eeb48334b45343239c59fad9281b4ca2b8a64de369ff2c6789cadc527e92"
+  },
+  {
+    "file": "frontend/components/ui/form.tsx",
+    "status": "reviewed",
+    "depth": "automated structural scan only; manual review outstanding",
+    "lines": 153,
+    "bytes": 3717,
+    "signals": "",
+    "hash": "53963a9a542bdf5a7909dc1cf66c5892a2c67fcbf7c3fe88bfa77be5849ced0c"
+  },
+  {
+    "file": "frontend/components/ui/hover-card.tsx",
+    "status": "reviewed",
+    "depth": "automated structural scan only; manual review outstanding",
+    "lines": 39,
+    "bytes": 1521,
+    "signals": "",
+    "hash": "41c5e9e8caf0ca7905ebe8c9ed53e0067e46882a9cd4b3927b1eb0e427ba0b81"
+  },
+  {
+    "file": "frontend/components/ui/input-group.tsx",
+    "status": "reviewed",
+    "depth": "automated structural scan only; manual review outstanding",
+    "lines": 159,
+    "bytes": 5020,
+    "signals": "",
+    "hash": "56c28c1b0357554ff765c2315ecc1aff99548835b300985592ce1214f9fe1372"
+  },
+  {
+    "file": "frontend/components/ui/input-otp.tsx",
+    "status": "reviewed",
+    "depth": "automated structural scan only; manual review outstanding",
+    "lines": 71,
+    "bytes": 2223,
+    "signals": "",
+    "hash": "4ec1dc749489acb689d3a7165d39295ddb585e7c68b2fe1f39e0ac7697a8a446"
+  },
+  {
+    "file": "frontend/components/ui/input.tsx",
+    "status": "reviewed",
+    "depth": "automated structural scan only; manual review outstanding",
+    "lines": 22,
+    "bytes": 967,
+    "signals": "",
+    "hash": "42044918d929bb9700f7e3d09b5563d077556a5811edfba0800d7f513cdde653"
+  },
+  {
+    "file": "frontend/components/ui/item.tsx",
+    "status": "reviewed",
+    "depth": "automated structural scan only; manual review outstanding",
+    "lines": 173,
+    "bytes": 4375,
+    "signals": "",
+    "hash": "ac9200febcfded9f3e83388142703b3e5be4ae8c2ac1fae85b595b9d2bd1db0c"
+  },
+  {
+    "file": "frontend/components/ui/kbd.tsx",
+    "status": "reviewed",
+    "depth": "automated structural scan only; manual review outstanding",
+    "lines": 29,
+    "bytes": 867,
+    "signals": "",
+    "hash": "5a73023f469daeb4fca665d6dd2729df85b7f8bdeee9bbbfeba41a909a2e7358"
+  },
+  {
+    "file": "frontend/components/ui/label.tsx",
+    "status": "reviewed",
+    "depth": "automated structural scan only; manual review outstanding",
+    "lines": 22,
+    "bytes": 609,
+    "signals": "",
+    "hash": "8481affae596520526710a8321c699613749392a728bd4b39da047fd13342a63"
+  },
+  {
+    "file": "frontend/components/ui/menubar.tsx",
+    "status": "reviewed",
+    "depth": "automated structural scan only; manual review outstanding",
+    "lines": 253,
+    "bytes": 8347,
+    "signals": "",
+    "hash": "494eb9b62019c2470056b73919daa6bcabc1f6a16d4286e3b2f1c8c3e05c958f"
+  },
+  {
+    "file": "frontend/components/ui/native-select.tsx",
+    "status": "reviewed",
+    "depth": "automated structural scan only; manual review outstanding",
+    "lines": 45,
+    "bytes": 1828,
+    "signals": "",
+    "hash": "2dc238f739820a9a2f74e4919ec5d6b5a7dc8ef32f7568fa59697b4a55ff3e72"
+  },
+  {
+    "file": "frontend/components/ui/navigation-menu.tsx",
+    "status": "reviewed",
+    "depth": "automated structural scan only; manual review outstanding",
+    "lines": 162,
+    "bytes": 6629,
+    "signals": "",
+    "hash": "c600789fe16a58a96a451ab8841255a0ffc452da8637bd5c4a678b2fe06252c4"
+  },
+  {
+    "file": "frontend/components/ui/page-header.tsx",
+    "status": "reviewed",
+    "depth": "automated structural scan only; manual review outstanding",
+    "lines": 16,
+    "bytes": 345,
+    "signals": "",
+    "hash": "42354c04e23728769787252b4538d545561a327c446be85863a48ce814eeb613"
+  },
+  {
+    "file": "frontend/components/ui/pagination.tsx",
+    "status": "reviewed",
+    "depth": "automated structural scan only; manual review outstanding",
+    "lines": 107,
+    "bytes": 2701,
+    "signals": "",
+    "hash": "f6d9aeb8f8a054fa549b027c23f42337e60e4ecaa38de947fa331571be06bd27"
+  },
+  {
+    "file": "frontend/components/ui/popover.tsx",
+    "status": "reviewed",
+    "depth": "automated structural scan only; manual review outstanding",
+    "lines": 75,
+    "bytes": 2328,
+    "signals": "",
+    "hash": "da309401485fbaffef7f228dd09f5d5640eed0358835d8f7dc6e9f2bba0abd35"
+  },
+  {
+    "file": "frontend/components/ui/progress.tsx",
+    "status": "reviewed",
+    "depth": "automated structural scan only; manual review outstanding",
+    "lines": 29,
+    "bytes": 717,
+    "signals": "",
+    "hash": "57f2d5f699c1c68dbb4db5be4c65b8b4f04227a659b726eac81cf8f5ae34b7ce"
+  },
+  {
+    "file": "frontend/components/ui/resizable.tsx",
+    "status": "reviewed",
+    "depth": "automated structural scan only; manual review outstanding",
+    "lines": 48,
+    "bytes": 1797,
+    "signals": "",
+    "hash": "42734b43a384042c567086bd036a6b85bd0e97620ec8aaa1f3be7be41cb20af9"
+  },
+  {
+    "file": "frontend/components/ui/scroll-area.tsx",
+    "status": "reviewed",
+    "depth": "automated structural scan only; manual review outstanding",
+    "lines": 57,
+    "bytes": 1627,
+    "signals": "",
+    "hash": "7f9b4b474086913112b49634626e0058a41440ddc227a59c5f907ade7d43e8e9"
+  },
+  {
+    "file": "frontend/components/ui/select.tsx",
+    "status": "reviewed",
+    "depth": "automated structural scan only; manual review outstanding",
+    "lines": 176,
+    "bytes": 6316,
+    "signals": "",
+    "hash": "4629c94b5a43c2d1fd222f1137b4bedf75ffc9c08fbd6aca3ef2541dd4f2d2e8"
+  },
+  {
+    "file": "frontend/components/ui/separator.tsx",
+    "status": "reviewed",
+    "depth": "automated structural scan only; manual review outstanding",
+    "lines": 29,
+    "bytes": 701,
+    "signals": "",
+    "hash": "e6861f70735e708677fcd329067eec71879f1243b6f737083d53e134c194a561"
+  },
+  {
+    "file": "frontend/components/ui/sheet.tsx",
+    "status": "reviewed",
+    "depth": "automated structural scan only; manual review outstanding",
+    "lines": 135,
+    "bytes": 4198,
+    "signals": "",
+    "hash": "8e2c8f34b36d87d6f344cd0c7f70b240adc991dd3402d2bf8501b942f127542a"
+  },
+  {
+    "file": "frontend/components/ui/sidebar.tsx",
+    "status": "reviewed",
+    "depth": "automated structural scan only; manual review outstanding",
+    "lines": 697,
+    "bytes": 21839,
+    "signals": "browser-storage:1",
+    "hash": "fe4bdaa8cf2548fd724f8038170ccdee49d0cc71e8ed99ce08c7651c6d9fc568"
+  },
+  {
+    "file": "frontend/components/ui/skeleton.tsx",
+    "status": "reviewed",
+    "depth": "automated structural scan only; manual review outstanding",
+    "lines": 14,
+    "bytes": 279,
+    "signals": "",
+    "hash": "e3bd46b60fec62fbe72b7c9a22da75206d507d70700e976fb45778be250d0822"
+  },
+  {
+    "file": "frontend/components/ui/table.tsx",
+    "status": "reviewed",
+    "depth": "automated structural scan only; manual review outstanding",
+    "lines": 93,
+    "bytes": 2369,
+    "signals": "",
+    "hash": "24ccdf493e81cec30e1978adae7176066c8a74bcef77d5487e6c21de65cda948"
+  },
+  {
+    "file": "frontend/components/ui/tabs.tsx",
+    "status": "reviewed",
+    "depth": "automated structural scan only; manual review outstanding",
+    "lines": 106,
+    "bytes": 2990,
+    "signals": "",
+    "hash": "482ae7c9ccb4219e7bf823e491e06dd80e310256627a85bf96edba4737743bba"
+  },
+  {
+    "file": "frontend/components/ui/textarea.tsx",
+    "status": "reviewed",
+    "depth": "automated structural scan only; manual review outstanding",
+    "lines": 19,
+    "bytes": 764,
+    "signals": "",
+    "hash": "4cb95b6b1c5942b12aa839e417e60d46cf8875478b89eaf4304a03599a79f9b5"
+  },
+  {
+    "file": "frontend/components/ui/tooltip.tsx",
+    "status": "reviewed",
+    "depth": "automated structural scan only; manual review outstanding",
+    "lines": 54,
+    "bytes": 1836,
+    "signals": "",
+    "hash": "0d227be583bd41ffd354ad0d926c582bb59f5fadbba13830c435da8da02be22f"
+  },
+  {
+    "file": "frontend/components/workplace/access.tsx",
+    "status": "reviewed",
+    "depth": "manual targeted review + automated scan",
+    "lines": 134,
+    "bytes": 4870,
+    "signals": "explicit-any:1",
+    "hash": "05afb93e88f7b4cb5a0ed7c3542d4fa3a7e9dfe889bc1c66de6242b0123439ce"
+  },
+  {
+    "file": "frontend/components/workplace/attachments.tsx",
+    "status": "reviewed",
+    "depth": "automated structural scan only; manual review outstanding",
+    "lines": 496,
+    "bytes": 17030,
+    "signals": "explicit-any:6; network-call:2",
+    "hash": "8b588361ea4fa96040d1b96387ade6d9afaa7d1a3eff6dcbe5ded5318a69e5b0"
+  },
+  {
+    "file": "frontend/components/workplace/context-links.tsx",
+    "status": "reviewed",
+    "depth": "automated structural scan only; manual review outstanding",
+    "lines": 66,
+    "bytes": 2018,
+    "signals": "",
+    "hash": "f9ed25cf3c1572cbdbab3218ac10afb71e170408cb69b575b5aec19230626de2"
+  },
+  {
+    "file": "frontend/components/workplace/dashboard-attention.tsx",
+    "status": "reviewed",
+    "depth": "automated structural scan only; manual review outstanding",
+    "lines": 71,
+    "bytes": 2107,
+    "signals": "",
+    "hash": "a26e333d6013b3aee0acf2bff9751656400f3a8b58a796689568a1a7cc93acfa"
+  },
+  {
+    "file": "frontend/components/workplace/forms.tsx",
+    "status": "reviewed",
+    "depth": "automated structural scan only; manual review outstanding",
+    "lines": 201,
+    "bytes": 6949,
+    "signals": "explicit-any:5",
+    "hash": "517a970ffd2907baf286a449322a1361da0956ef4ae2e327f1daae584a0251b9"
+  },
+  {
+    "file": "frontend/components/workplace/notifications.tsx",
+    "status": "reviewed",
+    "depth": "automated structural scan only; manual review outstanding",
+    "lines": 272,
+    "bytes": 8875,
+    "signals": "explicit-any:1",
+    "hash": "94bdd19b043ead54875fe2e6e9bd2e2021fb764b8f1a685e95434d81490221b2"
+  },
+  {
+    "file": "frontend/components/workplace/record-detail.tsx",
+    "status": "reviewed",
+    "depth": "automated structural scan only; manual review outstanding",
+    "lines": 1023,
+    "bytes": 40190,
+    "signals": "explicit-any:6",
+    "hash": "9ffc219efa15567bb2798cff5078e6940678e88f0335ce63440b8500a246cc2d"
+  },
+  {
+    "file": "frontend/components/workplace/record-form.tsx",
+    "status": "reviewed",
+    "depth": "automated structural scan only; manual review outstanding",
+    "lines": 493,
+    "bytes": 16683,
+    "signals": "explicit-any:3",
+    "hash": "4ec326a7f93f8c6c5acacfacfd694ed66ea624188b8f977f1ad460a9c3251048"
+  },
+  {
+    "file": "frontend/components/workplace/workplace-page.tsx",
+    "status": "reviewed",
+    "depth": "automated structural scan only; manual review outstanding",
+    "lines": 467,
+    "bytes": 18369,
+    "signals": "explicit-any:1",
+    "hash": "57cb25bc83ed031ebd413e5df00c475c0b28ad13634e40481a9c3457e2c36f9c"
+  },
+  {
+    "file": "frontend/config/api.ts",
+    "status": "reviewed",
+    "depth": "manual targeted review + automated scan",
+    "lines": 7,
+    "bytes": 222,
+    "signals": "",
+    "hash": "b5a9a41d3429495c0cb9b74790dc2b906e7d050de54dded45b4f18e04f8e77e7"
+  },
+  {
+    "file": "frontend/config/env.ts",
+    "status": "reviewed",
+    "depth": "automated structural scan only; manual review outstanding",
+    "lines": 19,
+    "bytes": 626,
+    "signals": "",
+    "hash": "1b46da1de58a92adf781fc83ef37f0558045e51c50c29199e270bf56b75a41af"
+  },
+  {
+    "file": "frontend/config/features.ts",
+    "status": "reviewed",
+    "depth": "automated structural scan only; manual review outstanding",
+    "lines": 12,
+    "bytes": 516,
+    "signals": "",
+    "hash": "a5b16850e4966debe1f6b95256e109434aae28026353c1008fb0d9e2a490afd2"
+  },
+  {
+    "file": "frontend/config/navigation.ts",
+    "status": "reviewed",
+    "depth": "automated structural scan only; manual review outstanding",
+    "lines": 72,
+    "bytes": 2477,
+    "signals": "",
+    "hash": "8b83066643cddfb3794757f840efcad098c915f4939e9e666dc3f96b56534f90"
+  },
+  {
+    "file": "frontend/constants/employee.ts",
+    "status": "reviewed",
+    "depth": "automated structural scan only; manual review outstanding",
+    "lines": 60,
+    "bytes": 1994,
+    "signals": "",
+    "hash": "8a8883145600790e8735dae083123c4a15c65ee3bf6515d5f707366db63d6fba"
+  },
+  {
+    "file": "frontend/constants/index.ts",
+    "status": "reviewed",
+    "depth": "automated structural scan only; manual review outstanding",
+    "lines": 3,
+    "bytes": 52,
+    "signals": "",
+    "hash": "bbcae2d3aad8b5f8ce8a6ef6fe6d99b541655e4d52338f8669ec1d96afc433ba"
+  },
+  {
+    "file": "frontend/constants/routes.ts",
+    "status": "reviewed",
+    "depth": "automated structural scan only; manual review outstanding",
+    "lines": 16,
+    "bytes": 475,
+    "signals": "",
+    "hash": "4c79a5c64c46933f7cb82a9072c50c63af506b25828a159e045e16eb4faa7f34"
+  },
+  {
+    "file": "frontend/constants/status.ts",
+    "status": "reviewed",
+    "depth": "automated structural scan only; manual review outstanding",
+    "lines": 32,
+    "bytes": 845,
+    "signals": "",
+    "hash": "b2a5b4eb1663a7ef21710480abc6d7a9a14c5ad657ef719e8d3841cf5f8c0d1b"
+  },
+  {
+    "file": "frontend/eslint.config.mjs",
+    "status": "reviewed",
+    "depth": "automated structural scan only; manual review outstanding",
+    "lines": 27,
+    "bytes": 656,
+    "signals": "explicit-any:1",
+    "hash": "c83b28caf2082f0b3ef387d094ae9091e52c16937c057b6c8146d23b4fea8041"
+  },
+  {
+    "file": "frontend/hooks/use-formattedDate.ts",
+    "status": "reviewed",
+    "depth": "automated structural scan only; manual review outstanding",
+    "lines": 25,
+    "bytes": 724,
+    "signals": "",
+    "hash": "7887043ddf829930a84062415ea488d1a9e81902c30738a21109a26b534026b1"
+  },
+  {
+    "file": "frontend/hooks/use-mobile.ts",
+    "status": "reviewed",
+    "depth": "automated structural scan only; manual review outstanding",
+    "lines": 21,
+    "bytes": 719,
+    "signals": "",
+    "hash": "b5e9a60981cecf8cefed113077f8dcc241eb9b4fcad4181bb23d3f27bb062061"
+  },
+  {
+    "file": "frontend/hooks/use-record-page.ts",
+    "status": "reviewed",
+    "depth": "automated structural scan only; manual review outstanding",
+    "lines": 12,
+    "bytes": 495,
+    "signals": "",
+    "hash": "26938cb9d1c2eb43a8e41d01de09d1caea6e77d89cb5f34d45e26979237e316e"
+  },
+  {
+    "file": "frontend/lib/booking-draft.ts",
+    "status": "reviewed",
+    "depth": "manual targeted review + automated scan",
+    "lines": 45,
+    "bytes": 1281,
+    "signals": "browser-storage:6",
+    "hash": "2935278de9db91c57e63f09b149b5fa61108062fe902d4681e5758924e2fb0e0"
+  },
+  {
+    "file": "frontend/lib/booking-route.ts",
+    "status": "reviewed",
+    "depth": "automated structural scan only; manual review outstanding",
+    "lines": 76,
+    "bytes": 2607,
+    "signals": "",
+    "hash": "08e10c2f09428c3ade179bf08c849afba87b46bae0691908889c59c3ef56310b"
+  },
+  {
+    "file": "frontend/lib/bounded-request.ts",
+    "status": "reviewed",
+    "depth": "automated structural scan only; manual review outstanding",
+    "lines": 29,
+    "bytes": 882,
+    "signals": "",
+    "hash": "0d126544ef10657eca0c21f572fd4f4e6b454ba127b9660a3d01025feed6525f"
+  },
+  {
+    "file": "frontend/lib/charter-pricing.ts",
+    "status": "reviewed",
+    "depth": "automated structural scan only; manual review outstanding",
+    "lines": 284,
+    "bytes": 8797,
+    "signals": "explicit-any:1",
+    "hash": "0a8f6a7f6fea10764a147b5f36c3803ff74a285dd81ff3a99ecb84ca33c55e68"
+  },
+  {
+    "file": "frontend/lib/dispatch-timeline.ts",
+    "status": "reviewed",
+    "depth": "automated structural scan only; manual review outstanding",
+    "lines": 91,
+    "bytes": 2968,
+    "signals": "",
+    "hash": "53bf9e2a7af10c38527680c445201de53c52106ebfd789f3daf7b6ec50e42876"
+  },
+  {
+    "file": "frontend/lib/formatters.ts",
+    "status": "reviewed",
+    "depth": "absent from working tree; see deletion evidence and pre-existing changes"
+  },
+  {
+    "file": "frontend/lib/map-locations.ts",
+    "status": "reviewed",
+    "depth": "automated structural scan only; manual review outstanding",
+    "lines": 20,
+    "bytes": 639,
+    "signals": "",
+    "hash": "74011c078ee2315b2d5fceeba3f5be31667fe8db8fbb10f3da8022e7bfd92298"
+  },
+  {
+    "file": "frontend/lib/mapbox-geocoding.ts",
+    "status": "reviewed",
+    "depth": "automated structural scan only; manual review outstanding",
+    "lines": 145,
+    "bytes": 4466,
+    "signals": "explicit-any:1; network-call:3",
+    "hash": "bc2e35e29e460b0d81850c0bfb4ff465cf056f378e202314c3290534596c06b3"
+  },
+  {
+    "file": "frontend/lib/utils.ts",
+    "status": "reviewed",
+    "depth": "automated structural scan only; manual review outstanding",
+    "lines": 32,
+    "bytes": 1009,
+    "signals": "",
+    "hash": "1baaa3eca15b0e9f6d092abb688eaae3ba062382682daf88aa1a9b2cc4003177"
+  },
+  {
+    "file": "frontend/lib/workflow-api.ts",
+    "status": "reviewed",
+    "depth": "manual targeted review + automated scan",
+    "lines": 102,
+    "bytes": 3778,
+    "signals": "explicit-any:2; network-call:1",
+    "hash": "ae1bf006a8be8cf1c1fc8a1686a15bb3333293e677e82f536f139c9335742a7a"
+  },
+  {
+    "file": "frontend/middleware.ts",
+    "status": "reviewed",
+    "depth": "manual targeted review + automated scan",
+    "lines": 24,
+    "bytes": 606,
+    "signals": "",
+    "hash": "04683d7b1f3756e209b05a70870f42d167b709cc9edb94edb26b43d13ecf525c"
+  },
+  {
+    "file": "frontend/next.config.ts",
+    "status": "reviewed",
+    "depth": "manual targeted review + automated scan",
+    "lines": 36,
+    "bytes": 719,
+    "signals": "",
+    "hash": "ea9a2b2c8931b467a0e1b2c99a5ac23c987d5487659e6f0756bcf265dc87fa2c"
+  },
+  {
+    "file": "frontend/package-lock.json",
+    "status": "reviewed",
+    "depth": "automated structural scan only; manual review outstanding",
+    "lines": 15120,
+    "bytes": 546040,
+    "signals": "",
+    "hash": "b9cc7260143c13b41b1787d48620e51425b944f371faaba2d601fca742b749b9"
+  },
+  {
+    "file": "frontend/package.json",
+    "status": "reviewed",
+    "depth": "manual targeted review + automated scan",
+    "lines": 77,
+    "bytes": 2401,
+    "signals": "",
+    "hash": "b7f64d80d6e8157b9b15b34c80be6933fdd5bc51d39812929acc5aae936702d6"
+  },
+  {
+    "file": "frontend/postcss.config.mjs",
+    "status": "reviewed",
+    "depth": "automated structural scan only; manual review outstanding",
+    "lines": 8,
+    "bytes": 94,
+    "signals": "",
+    "hash": "dfac7ac2d86d326a0e5adb024e7943c181393ed17a5fcb8f0315b24c7da6ddde"
+  },
+  {
+    "file": "frontend/providers/app-provider.tsx",
+    "status": "reviewed",
+    "depth": "manual targeted review + automated scan",
+    "lines": 22,
+    "bytes": 533,
+    "signals": "",
+    "hash": "64b1f8fb9b1e753c8e44fbac3198ce56c3af24271731fda53e5c7cfbf8a3124f"
+  },
+  {
+    "file": "frontend/providers/google-maps-provider.tsx",
+    "status": "reviewed",
+    "depth": "absent from working tree; see deletion evidence and pre-existing changes"
+  },
+  {
+    "file": "frontend/providers/header-provider.tsx",
+    "status": "reviewed",
+    "depth": "automated structural scan only; manual review outstanding",
+    "lines": 60,
+    "bytes": 1471,
+    "signals": "",
+    "hash": "e5205a3aecdd64e8de0a7da79e8f67bd0df932ee0c89aebf0919d53030c25138"
+  },
+  {
+    "file": "frontend/providers/query-provider.tsx",
+    "status": "reviewed",
+    "depth": "absent from working tree; see deletion evidence and pre-existing changes"
+  },
+  {
+    "file": "frontend/providers/store-provider.tsx",
+    "status": "reviewed",
+    "depth": "manual targeted review + automated scan",
+    "lines": 34,
+    "bytes": 968,
+    "signals": "",
+    "hash": "e8de0fdbe86ff3d9993087a6d67ccc72e0a66e4ddcc559ea67adc01957103810"
+  },
+  {
+    "file": "frontend/providers/theme-provider.tsx",
+    "status": "reviewed",
+    "depth": "automated structural scan only; manual review outstanding",
+    "lines": 12,
+    "bytes": 299,
+    "signals": "",
+    "hash": "3e6cde377550aa2dcc325568950b809fb34afe6570605779793903ee7fa135ac"
+  },
+  {
+    "file": "frontend/providers/websocket-provider.tsx",
+    "status": "reviewed",
+    "depth": "manual targeted review + automated scan",
+    "lines": 98,
+    "bytes": 2911,
+    "signals": "",
+    "hash": "c60ff6e752c06a15ca2a1dd3692dd177d7ff79f53d544812493acdfc9487c69d"
+  },
+  {
+    "file": "frontend/public/file.svg",
+    "status": "reviewed",
+    "depth": "absent from working tree; see deletion evidence and pre-existing changes"
+  },
+  {
+    "file": "frontend/public/globe.svg",
+    "status": "reviewed",
+    "depth": "absent from working tree; see deletion evidence and pre-existing changes"
+  },
+  {
+    "file": "frontend/public/next.svg",
+    "status": "reviewed",
+    "depth": "absent from working tree; see deletion evidence and pre-existing changes"
+  },
+  {
+    "file": "frontend/public/vercel.svg",
+    "status": "reviewed",
+    "depth": "absent from working tree; see deletion evidence and pre-existing changes"
+  },
+  {
+    "file": "frontend/public/window.svg",
+    "status": "reviewed",
+    "depth": "absent from working tree; see deletion evidence and pre-existing changes"
+  },
+  {
+    "file": "frontend/services/api/base-query.ts",
+    "status": "reviewed",
+    "depth": "manual targeted review + automated scan",
+    "lines": 15,
+    "bytes": 492,
+    "signals": "explicit-any:1",
+    "hash": "1c1e67fd3dbab334380da08e8c1fb7d1c2f190a2f6469545d2ba394a2ef24ef0"
+  },
+  {
+    "file": "frontend/services/api/bookings.api.ts",
+    "status": "reviewed",
+    "depth": "automated structural scan only; manual review outstanding",
+    "lines": 62,
+    "bytes": 1822,
+    "signals": "",
+    "hash": "8a794cda76234c9e7e067a38dac626fd70ba1c2156a21c413ca1cdbabfad394d"
+  },
+  {
+    "file": "frontend/services/api/customers.api.ts",
+    "status": "reviewed",
+    "depth": "automated structural scan only; manual review outstanding",
+    "lines": 55,
+    "bytes": 1538,
+    "signals": "",
+    "hash": "5d5e0c338d6e6b7b3ce5d2602bacc37ba30aa2571fbf4d1c8e3337b9a568023b"
+  },
+  {
+    "file": "frontend/services/api/depot.api.ts",
+    "status": "reviewed",
+    "depth": "automated structural scan only; manual review outstanding",
+    "lines": 60,
+    "bytes": 1517,
+    "signals": "",
+    "hash": "d5b7cb72355ba376d0fd47c3556a67df969e9c521c54807fbecd0515ac5647f0"
+  },
+  {
+    "file": "frontend/services/api/dispatch.api.ts",
+    "status": "reviewed",
+    "depth": "automated structural scan only; manual review outstanding",
+    "lines": 113,
+    "bytes": 3655,
+    "signals": "explicit-any:13",
+    "hash": "85f6c5b00697bb7182c74e3546f73263196864ab2fe59512f920cb7320c49933"
+  },
+  {
+    "file": "frontend/services/api/employees.api.ts",
+    "status": "reviewed",
+    "depth": "automated structural scan only; manual review outstanding",
+    "lines": 84,
+    "bytes": 2754,
+    "signals": "explicit-any:3",
+    "hash": "cbbb6fa876090e6276f11dda36181f13dc2fa34608685c070d1ca8e61cf15200"
+  },
+  {
+    "file": "frontend/services/api/fleet.api.ts",
+    "status": "reviewed",
+    "depth": "automated structural scan only; manual review outstanding",
+    "lines": 55,
+    "bytes": 1482,
+    "signals": "",
+    "hash": "a0ac3c6b7db6bed06e522b993f922ac4a9c29bbaaac11af3140da105abd521f8"
+  },
+  {
+    "file": "frontend/services/api/index.ts",
+    "status": "reviewed",
+    "depth": "automated structural scan only; manual review outstanding",
+    "lines": 79,
+    "bytes": 1944,
+    "signals": "",
+    "hash": "94867c7e483cdbc282e838284e2e427626434b6cb166a0a18eed93da48a64d9a"
+  },
+  {
+    "file": "frontend/services/api/operations.api.ts",
+    "status": "reviewed",
+    "depth": "automated structural scan only; manual review outstanding",
+    "lines": 75,
+    "bytes": 2175,
+    "signals": "",
+    "hash": "728db31a07e6950e961bc4f2d78e4fc30b1e590f4c87eb14cd23c426c2bbedbe"
+  },
+  {
+    "file": "frontend/services/api/settings.api.ts",
+    "status": "reviewed",
+    "depth": "automated structural scan only; manual review outstanding",
+    "lines": 34,
+    "bytes": 989,
+    "signals": "",
+    "hash": "341417c4eb39f1a4a473d197d903a71bb0f9c901d5a922a0d129e1f98be4c7f7"
+  },
+  {
+    "file": "frontend/services/api/user.api.ts",
+    "status": "reviewed",
+    "depth": "automated structural scan only; manual review outstanding",
+    "lines": 79,
+    "bytes": 2195,
+    "signals": "",
+    "hash": "99e85c86f34c4f356939701185f27c9f8e700b4d9d791e6fc1247148d26c3111"
+  },
+  {
+    "file": "frontend/services/api/workplace.api.ts",
+    "status": "reviewed",
+    "depth": "automated structural scan only; manual review outstanding",
+    "lines": 110,
+    "bytes": 4328,
+    "signals": "explicit-any:8",
+    "hash": "3c7d8299a8640196b423f1ee711fb1c85e23e135a88b31305aaadd2ebc6fe41c"
+  },
+  {
+    "file": "frontend/store/dispatchUI.slice.ts",
+    "status": "reviewed",
+    "depth": "manual targeted review + automated scan",
+    "lines": 93,
+    "bytes": 2405,
+    "signals": "",
+    "hash": "896490b54244cefdb023675a2d8832a8c04301eedfbccabe517be6c51515b429"
+  },
+  {
+    "file": "frontend/store/hooks.ts",
+    "status": "reviewed",
+    "depth": "automated structural scan only; manual review outstanding",
+    "lines": 7,
+    "bytes": 350,
+    "signals": "",
+    "hash": "43133a42ff2c7f8b3f77d033e4f2a8c2a1e1d9e81756f665533cacdd0555d102"
+  },
+  {
+    "file": "frontend/store/index.ts",
+    "status": "reviewed",
+    "depth": "manual targeted review + automated scan",
+    "lines": 86,
+    "bytes": 3095,
+    "signals": "explicit-any:2",
+    "hash": "78de9fe9efd3a25b43c41317bafba044cfc2ae05f125efbfc2b2dab0583e8914"
+  },
+  {
+    "file": "frontend/store/recordChanges.ts",
+    "status": "reviewed",
+    "depth": "manual targeted review + automated scan",
+    "lines": 14,
+    "bytes": 562,
+    "signals": "",
+    "hash": "9dcd81c0d96669593adb492442d5aac59b79fa754c506debfa101cef044d5b9d"
+  },
+  {
+    "file": "frontend/tests/booking-route-map.test.tsx",
+    "status": "reviewed",
+    "depth": "automated structural scan only; manual review outstanding",
+    "lines": 110,
+    "bytes": 3028,
+    "signals": "explicit-any:6",
+    "hash": "6efcf50aba9c995db6116d110670b164628e8b6f3ddd4dd7440f2855599e0b96"
+  },
+  {
+    "file": "frontend/tests/booking-route.test.tsx",
+    "status": "reviewed",
+    "depth": "automated structural scan only; manual review outstanding",
+    "lines": 179,
+    "bytes": 7030,
+    "signals": "explicit-any:6",
+    "hash": "3adb179abe6856235105680f84141f22e3dad70a6542c575f5e5a6493400f520"
+  },
+  {
+    "file": "frontend/tests/bounded-request.test.tsx",
+    "status": "reviewed",
+    "depth": "automated structural scan only; manual review outstanding",
+    "lines": 22,
+    "bytes": 811,
+    "signals": "",
+    "hash": "f21a3f4bc590e9060a598820aa988a7a35c8c19b11ce6c84555e4f129b6b96c2"
+  },
+  {
+    "file": "frontend/tests/dispatch-timeline.test.mjs",
+    "status": "reviewed",
+    "depth": "automated structural scan only; manual review outstanding",
+    "lines": 86,
+    "bytes": 3519,
+    "signals": "",
+    "hash": "def62453a0e941618de959de074b0c364c1538c0e2207b609a16f42073a4920c"
+  },
+  {
+    "file": "frontend/tests/lifecycle-dialog.test.tsx",
+    "status": "reviewed",
+    "depth": "automated structural scan only; manual review outstanding",
+    "lines": 87,
+    "bytes": 3751,
+    "signals": "",
+    "hash": "5a2c179e4687bbfb722e8e2d04c8ceec8dd1661e5a0ac3c4473c6be1ce66569d"
+  },
+  {
+    "file": "frontend/tests/pricing-settings.test.tsx",
+    "status": "reviewed",
+    "depth": "automated structural scan only; manual review outstanding",
+    "lines": 41,
+    "bytes": 1588,
+    "signals": "explicit-any:1",
+    "hash": "640f8ed7939f747954d1bdb5d10ec063ca63f8e27a533a88bb23564db27bf966"
+  },
+  {
+    "file": "frontend/tests/record-page.test.tsx",
+    "status": "reviewed",
+    "depth": "automated structural scan only; manual review outstanding",
+    "lines": 18,
+    "bytes": 678,
+    "signals": "",
+    "hash": "47f9438208a037c8531395dc743bbdc44be6b5ddf003d5acff25e524fc80f095"
+  },
+  {
+    "file": "frontend/tests/record-refresh.test.tsx",
+    "status": "reviewed",
+    "depth": "automated structural scan only; manual review outstanding",
+    "lines": 105,
+    "bytes": 3658,
+    "signals": "explicit-any:1",
+    "hash": "ac35bdffe40e35d84ab6e4f7460bd41b77e5edfc289167e5963b0accb3b5a886"
+  },
+  {
+    "file": "frontend/tests/record-wizards.test.tsx",
+    "status": "reviewed",
+    "depth": "automated structural scan only; manual review outstanding",
+    "lines": 67,
+    "bytes": 3693,
+    "signals": "explicit-any:1",
+    "hash": "3ae0ec5096d06fe315973057ab28c1111b595bc9ed21ab3f1f1b2beeeec7b0e4"
+  },
+  {
+    "file": "frontend/tests/session-isolation.test.tsx",
+    "status": "reviewed",
+    "depth": "automated structural scan only; manual review outstanding",
+    "lines": 70,
+    "bytes": 2707,
+    "signals": "browser-storage:3",
+    "hash": "b40310d5f05797939ac883fa89e3e7952b3c7eed3a82acef0aa8fd8e4801e802"
+  },
+  {
+    "file": "frontend/tests/workplace-access.test.tsx",
+    "status": "reviewed",
+    "depth": "automated structural scan only; manual review outstanding",
+    "lines": 124,
+    "bytes": 4337,
+    "signals": "explicit-any:2",
+    "hash": "869054b328c3afe290b205afb8efea012db8ed031f9b4f46e4c5b2205cf42f57"
+  },
+  {
+    "file": "frontend/tests/workplace-navigation.test.tsx",
+    "status": "reviewed",
+    "depth": "automated structural scan only; manual review outstanding",
+    "lines": 82,
+    "bytes": 3165,
+    "signals": "explicit-any:6",
+    "hash": "541efe64b83f910423474e1e08c49828ef3d04cabab58129d4e38d39f7dfab63"
+  },
+  {
+    "file": "frontend/tests/workplace.test.tsx",
+    "status": "reviewed",
+    "depth": "automated structural scan only; manual review outstanding",
+    "lines": 141,
+    "bytes": 5226,
+    "signals": "explicit-any:1",
+    "hash": "ac36ce90761a46a25afbd0e1ffae6c3ba257b9000e13221d062e0f616f7624c8"
+  },
+  {
+    "file": "frontend/tsconfig.json",
+    "status": "reviewed",
+    "depth": "automated structural scan only; manual review outstanding",
+    "lines": 35,
+    "bytes": 666,
+    "signals": "",
+    "hash": "be18523b23b78b6e1a876ddd107d330f0168bddf09d751b57e0b5edce69c66f3"
+  },
+  {
+    "file": "frontend/types/booking-workflow.ts",
+    "status": "reviewed",
+    "depth": "automated structural scan only; manual review outstanding",
+    "lines": 231,
+    "bytes": 5632,
+    "signals": "explicit-any:1",
+    "hash": "0ddf80cf52715f3bf03b7c9a422933399ae84736f1f1907d24e8dd594ec87587"
+  },
+  {
+    "file": "frontend/types/index.ts",
+    "status": "reviewed",
+    "depth": "automated structural scan only; manual review outstanding",
+    "lines": 284,
+    "bytes": 6459,
+    "signals": "",
+    "hash": "fc64a19918f569897fe896ad916c9b92fddf36846153e6d5955b5ead0073a6fd"
+  },
+  {
+    "file": "frontend/vitest.config.ts",
+    "status": "reviewed",
+    "depth": "automated structural scan only; manual review outstanding",
+    "lines": 8,
+    "bytes": 329,
+    "signals": "",
+    "hash": "4c2925666f207acb8a344d6507f51b30e0142331bc45fd3eca1f678613f2a3fe"
+  },
+  {
+    "file": "scripts/audit-inventory.mjs",
+    "status": "reviewed",
+    "depth": "automated structural scan only; manual review outstanding",
+    "lines": 68,
+    "bytes": 5655,
+    "signals": "explicit-any:1; html-injection-sink:1; browser-storage:2",
+    "hash": "c66df07ce25a264b2894fde0e51bd86c7acfd723b8f19d67ce805c2bd6e3f2bf"
+  },
+  {
+    "file": "scripts/clean-backend-build.mjs",
+    "status": "reviewed",
+    "depth": "automated structural scan only; manual review outstanding",
+    "lines": 11,
+    "bytes": 467,
+    "signals": "",
+    "hash": "e9109f81a73fac8a5a3eb38c9e127492aadeec33ebb7d2bdde03a59c91912d1f"
+  },
+  {
+    "file": "scripts/organize-imports.mjs",
+    "status": "reviewed",
+    "depth": "automated structural scan only; manual review outstanding",
+    "lines": 34,
+    "bytes": 1566,
+    "signals": "",
+    "hash": "fe5398a04105cc7f778f4080f09363a78550d1bde058a2d4aff039728641bb29"
+  }
+]

@@ -1,5 +1,3 @@
-import { prisma } from "../db.js";
-
 /**
  * Migration service to move legacy UserJob and FleetJob records into the new Assignment model.
  */

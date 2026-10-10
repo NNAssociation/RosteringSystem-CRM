@@ -1,13 +1,16 @@
-import WorkOutlineIcon from "@mui/icons-material/WorkOutline";
+import { FEATURES } from "@/config/features";
+import type { NavItem } from "@/types";
+import CalendarMonthIcon from "@mui/icons-material/CalendarMonth";
+import CampaignOutlinedIcon from "@mui/icons-material/CampaignOutlined";
 import DashboardOutlinedIcon from "@mui/icons-material/DashboardOutlined";
 import DirectionsBusOutlinedIcon from "@mui/icons-material/DirectionsBusOutlined";
-import SettingsOutlinedIcon from "@mui/icons-material/SettingsOutlined";
 import PersonIcon from "@mui/icons-material/Person";
-import DriveEtaIcon from "@mui/icons-material/DriveEta";
-import CalendarMonthIcon from "@mui/icons-material/CalendarMonth";
-import FactCheckOutlinedIcon from "@mui/icons-material/FactCheckOutlined";
-import type { NavItem } from "@/types";
-import { FEATURES } from "@/config/features";
+import ReportProblemOutlinedIcon from "@mui/icons-material/ReportProblemOutlined";
+import SettingsOutlinedIcon from "@mui/icons-material/SettingsOutlined";
+import WorkHistoryOutlinedIcon from "@mui/icons-material/WorkHistoryOutlined";
+import WorkOutlineIcon from "@mui/icons-material/WorkOutline";
+
+import AccessTimeOutlinedIcon from "@mui/icons-material/AccessTimeOutlined";
 
 export const mainNavItems: NavItem[] = [
   { name: "Dashboard", icon: DashboardOutlinedIcon, href: "/dashboard" },
@@ -26,12 +29,31 @@ export const mainNavItems: NavItem[] = [
   // Dispatch Board — conditionally shown via feature flag
   ...(FEATURES.DISPATCH_BOARD
     ? [
-      {
-        name: "Dispatch",
-        icon: CalendarMonthIcon,
-        href: "/dashboard/dispatch",
-      } as NavItem,
-    ]
+        {
+          name: "Dispatch",
+          icon: CalendarMonthIcon,
+          href: "/dashboard/dispatch",
+        } as NavItem,
+        {
+          name: "Morning Yard",
+          icon: DirectionsBusOutlinedIcon,
+          href: "/dashboard/yard",
+        } as NavItem,
+        {
+          name: "Driver Timesheets",
+          icon: AccessTimeOutlinedIcon,
+          href: "/dashboard/timesheets",
+        } as NavItem,
+      ]
+    : []),
+  ...(FEATURES.NOTICES
+    ? [{ name: "Notice Board", icon: CampaignOutlinedIcon, href: "/dashboard/notices" }]
+    : []),
+  ...(FEATURES.INCIDENTS
+    ? [{ name: "Incidents", icon: ReportProblemOutlinedIcon, href: "/dashboard/incidents" }]
+    : []),
+  ...(FEATURES.LOST_PROPERTY
+    ? [{ name: "Lost Property", icon: WorkHistoryOutlinedIcon, href: "/dashboard/lost-property" }]
     : []),
 ];
 
@@ -39,7 +61,7 @@ export const secondaryNavItems: NavItem[] = [
   {
     name: "Settings",
     icon: SettingsOutlinedIcon,
-    href: "/dashboard/settings"
+    href: "/dashboard/settings",
   },
   // {
   //   name: "Test Reports",

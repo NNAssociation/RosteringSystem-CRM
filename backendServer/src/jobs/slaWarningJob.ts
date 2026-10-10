@@ -18,20 +18,18 @@ export async function processSLAWarnings(job: any) {
       jobStartDateTime: {
         lte: slaThreshold,
         gte: now, // Don't alert for jobs that have already passed (or handle them differently)
-      }
+      },
     },
     include: {
       booking: {
         select: {
-          customer: { select: { name: true } }
-        }
-      }
-    }
+          customer: { select: { name: true } },
+        },
+      },
+    },
   });
 
   if (upcomingUnassignedJobs.length > 0) {
-
-    
     // Broadcast alert to dispatchers
     const io = getIO();
     io.of("/dispatch").emit("alert.sla_warning", {
@@ -39,11 +37,10 @@ export async function processSLAWarnings(job: any) {
       jobs: upcomingUnassignedJobs.map((j: any) => ({
         id: j.id,
         time: j.jobStartDateTime,
-        customer: j.booking?.customer?.name
-      }))
+        customer: j.booking?.customer?.name,
+      })),
     });
   } else {
-
   }
 
   return { alerted: upcomingUnassignedJobs.length };

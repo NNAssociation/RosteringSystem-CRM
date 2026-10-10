@@ -1,7 +1,7 @@
-import { assertCanDeactivate, changeRecordLifecycle } from "./recordLifecycle.js";
+import { getDepartmentForRole } from "../constants/employee.js";
 import { prisma } from "../db.js";
 import type { CreateUserInput, UpdateUserInput } from "../validators/userSchema.js";
-import { getDepartmentForRole } from "../constants/employee.js";
+import { assertCanDeactivate, changeRecordLifecycle } from "./recordLifecycle.js";
 
 // ── Response Mapper ───────────────────────────────────────
 
@@ -16,7 +16,7 @@ function toDriverResponse(user: any) {
     employeeNumber: user.employeeNumber,
     firstName: user.firstName,
     lastName: user.lastName,
-    name: `${user.firstName || ''} ${user.lastName || ''}`.trim(),
+    name: `${user.firstName || ""} ${user.lastName || ""}`.trim(),
     email: user.email,
     status: user.status,
     joinedDate: user.createdAt?.toISOString().split("T")[0],
@@ -70,13 +70,18 @@ export async function getUserById(id: number, db: any = prisma) {
 export async function createUser(input: CreateUserInput, db: any = prisma) {
   // Build profile data
   const profileData: any = {};
-  if (input.phoneNumber1 !== undefined || input.phone !== undefined) profileData.phoneNumber1 = input.phoneNumber1 ?? input.phone;
+  if (input.phoneNumber1 !== undefined || input.phone !== undefined)
+    profileData.phoneNumber1 = input.phoneNumber1 ?? input.phone;
   if (input.phoneNumber2) profileData.phoneNumber2 = input.phoneNumber2;
-  if (input.driverLicense !== undefined || input.licenseNumber !== undefined) profileData.driverLicense = input.driverLicense ?? input.licenseNumber;
-  if (input.driverLicenseExpiry) profileData.driverLicenseExpiry = new Date(input.driverLicenseExpiry);
+  if (input.driverLicense !== undefined || input.licenseNumber !== undefined)
+    profileData.driverLicense = input.driverLicense ?? input.licenseNumber;
+  if (input.driverLicenseExpiry)
+    profileData.driverLicenseExpiry = new Date(input.driverLicenseExpiry);
   if (input.driverLicenseState) profileData.driverLicenseState = input.driverLicenseState;
   if (input.dateOfBirth) profileData.dateOfBirth = new Date(input.dateOfBirth);
-  if (input.maxfatigueMinutes !== undefined) profileData.maxfatigueMinutes = input.maxfatigueMinutes !== null ? Number(input.maxfatigueMinutes) : null;
+  if (input.maxfatigueMinutes !== undefined)
+    profileData.maxfatigueMinutes =
+      input.maxfatigueMinutes !== null ? Number(input.maxfatigueMinutes) : null;
   if (input.avatarUrl) profileData.avatarUrl = input.avatarUrl;
 
   let employeeNumber = input.employeeNumber;
@@ -90,7 +95,7 @@ export async function createUser(input: CreateUserInput, db: any = prisma) {
   }
 
   // Auto-derive department from role (Role is the source of truth)
-  const role = input.role ?? 'DRIVER';
+  const role = input.role ?? "DRIVER";
   const department = getDepartmentForRole(role);
 
   const newUser = await db.user.create({
@@ -107,8 +112,14 @@ export async function createUser(input: CreateUserInput, db: any = prisma) {
       emergencyContactName: input.emergencyContactName,
       emergencyContactPhone: input.emergencyContactPhone,
       emergencyContactRelation: input.emergencyContactRelation,
-      hireDate: input.hireDate === undefined ? undefined : input.hireDate ? new Date(input.hireDate) : null,
-      terminationDate: input.terminationDate === undefined ? undefined : input.terminationDate ? new Date(input.terminationDate) : null,
+      hireDate:
+        input.hireDate === undefined ? undefined : input.hireDate ? new Date(input.hireDate) : null,
+      terminationDate:
+        input.terminationDate === undefined
+          ? undefined
+          : input.terminationDate
+            ? new Date(input.terminationDate)
+            : null,
       hourlyRate: input.hourlyRate,
       skills: input.skills,
       hrNotes: input.hrNotes,
@@ -123,19 +134,29 @@ export async function createUser(input: CreateUserInput, db: any = prisma) {
 }
 
 export async function updateUser(id: number, input: UpdateUserInput, db: any = prisma) {
-  if (input.status === "INACTIVE" && db === prisma) return prisma.$transaction(async (tx: any) => {
-    await tx.$executeRaw`SELECT pg_advisory_xact_lock(74021)`;
-    await assertCanDeactivate(tx, "users", id);
-    return updateUser(id, input, tx);
-  });
+  if (input.status === "INACTIVE" && db === prisma)
+    return prisma.$transaction(async (tx: any) => {
+      await tx.$executeRaw`SELECT pg_advisory_xact_lock(74021)`;
+      await assertCanDeactivate(tx, "users", id);
+      return updateUser(id, input, tx);
+    });
   const profileData: any = {};
-  if (input.phoneNumber1 !== undefined || input.phone !== undefined) profileData.phoneNumber1 = input.phoneNumber1 ?? input.phone;
+  if (input.phoneNumber1 !== undefined || input.phone !== undefined)
+    profileData.phoneNumber1 = input.phoneNumber1 ?? input.phone;
   if (input.phoneNumber2 !== undefined) profileData.phoneNumber2 = input.phoneNumber2;
-  if (input.driverLicense !== undefined || input.licenseNumber !== undefined) profileData.driverLicense = input.driverLicense ?? input.licenseNumber;
-  if (input.driverLicenseExpiry !== undefined) profileData.driverLicenseExpiry = input.driverLicenseExpiry ? new Date(input.driverLicenseExpiry) : null;
-  if (input.driverLicenseState !== undefined) profileData.driverLicenseState = input.driverLicenseState;
-  if (input.dateOfBirth !== undefined) profileData.dateOfBirth = input.dateOfBirth ? new Date(input.dateOfBirth) : null;
-  if (input.maxfatigueMinutes !== undefined) profileData.maxfatigueMinutes = input.maxfatigueMinutes !== null ? Number(input.maxfatigueMinutes) : null;
+  if (input.driverLicense !== undefined || input.licenseNumber !== undefined)
+    profileData.driverLicense = input.driverLicense ?? input.licenseNumber;
+  if (input.driverLicenseExpiry !== undefined)
+    profileData.driverLicenseExpiry = input.driverLicenseExpiry
+      ? new Date(input.driverLicenseExpiry)
+      : null;
+  if (input.driverLicenseState !== undefined)
+    profileData.driverLicenseState = input.driverLicenseState;
+  if (input.dateOfBirth !== undefined)
+    profileData.dateOfBirth = input.dateOfBirth ? new Date(input.dateOfBirth) : null;
+  if (input.maxfatigueMinutes !== undefined)
+    profileData.maxfatigueMinutes =
+      input.maxfatigueMinutes !== null ? Number(input.maxfatigueMinutes) : null;
   if (input.avatarUrl !== undefined) profileData.avatarUrl = input.avatarUrl;
 
   // Auto-derive department from role when role is updated
@@ -157,14 +178,21 @@ export async function updateUser(id: number, input: UpdateUserInput, db: any = p
       emergencyContactName: input.emergencyContactName,
       emergencyContactPhone: input.emergencyContactPhone,
       emergencyContactRelation: input.emergencyContactRelation,
-      hireDate: input.hireDate === undefined ? undefined : input.hireDate ? new Date(input.hireDate) : null,
-      terminationDate: input.terminationDate === undefined ? undefined : input.terminationDate ? new Date(input.terminationDate) : null,
+      hireDate:
+        input.hireDate === undefined ? undefined : input.hireDate ? new Date(input.hireDate) : null,
+      terminationDate:
+        input.terminationDate === undefined
+          ? undefined
+          : input.terminationDate
+            ? new Date(input.terminationDate)
+            : null,
       hourlyRate: input.hourlyRate,
       skills: input.skills,
       hrNotes: input.hrNotes,
-      profile: Object.keys(profileData).length > 0
-        ? { upsert: { create: profileData, update: profileData } }
-        : undefined,
+      profile:
+        Object.keys(profileData).length > 0
+          ? { upsert: { create: profileData, update: profileData } }
+          : undefined,
     },
     include: {
       profile: true,
@@ -197,7 +225,10 @@ export async function getDriversForDispatch() {
 /**
  * Add a new availability block for a driver
  */
-export async function addDriverAvailability(driverId: number, data: { startTime: string, endTime: string, reason?: string, isBlocked?: boolean }) {
+export async function addDriverAvailability(
+  driverId: number,
+  data: { startTime: string; endTime: string; reason?: string; isBlocked?: boolean },
+) {
   const block = await prisma.driverAvailability.create({
     data: {
       driverId,
@@ -205,7 +236,7 @@ export async function addDriverAvailability(driverId: number, data: { startTime:
       endTime: new Date(data.endTime),
       reason: data.reason || "Blocked time",
       isBlocked: data.isBlocked !== false,
-    }
+    },
   });
   return block;
 }
@@ -216,7 +247,7 @@ export async function addDriverAvailability(driverId: number, data: { startTime:
 export async function getDriverAvailability(driverId: number) {
   const blocks = await prisma.driverAvailability.findMany({
     where: { driverId },
-    orderBy: { startTime: 'asc' }
+    orderBy: { startTime: "asc" },
   });
   return blocks;
 }

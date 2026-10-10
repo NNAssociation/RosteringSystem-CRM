@@ -1,19 +1,31 @@
 import { z } from "zod";
+import { itineraryPointSchema, itinerarySchema } from "../services/bookingRoute.js";
 
 // ── Recurrence Rule Schema ──────────────────────────────────
 
-const recurrenceRuleSchema = z.object({
-  type: z.enum(["daily", "weekly", "monthly"]),
-  days: z.array(z.number().int().min(0).max(6)).optional(), // 0=Sun..6=Sat
-  startDate: z.string().min(1),
-  endDate: z.string().min(1),
-}).optional();
+const recurrenceRuleSchema = z
+  .object({
+    type: z.enum(["daily", "weekly", "monthly"]),
+    days: z.array(z.number().int().min(0).max(6)).optional(), // 0=Sun..6=Sat
+    startDate: z.string().min(1),
+    endDate: z.string().min(1),
+  })
+  .optional();
 
 // ── Booking Schemas ──────────────────────────────────────────
 
 export const createBookingSchema = z.object({
   timeZone: z.string().optional(),
-  stops: z.array(z.object({ address: z.string().min(1), lat: z.number().optional(), lng: z.number().optional(), placeId: z.string().optional() })).max(20).optional(),
+  stops: z.array(itineraryPointSchema).max(20).optional(),
+  outboundItinerary: itinerarySchema.optional(),
+  returnItinerary: z
+    .array(itineraryPointSchema)
+    .max(22)
+    .refine((points) => points.length !== 1, "A return itinerary needs pickup and destination")
+    .optional(),
+  returnItineraryConfirmed: z.boolean().optional(),
+  returnEndDate: z.string().optional(),
+  returnEndTime: z.string().optional(),
   customerEmail: z.string().email("Valid email is required"),
   customerName: z.string().optional(),
   customerId: z.coerce.number().int().optional(),
@@ -36,10 +48,10 @@ export const createBookingSchema = z.object({
   status: z.string().optional().default("Pending"),
   amount: z.number().optional(),
 
-  // NEW: Booking type
+  // Booking type
   bookingType: z.enum(["one_way", "round_trip", "repeatable"]).optional().default("one_way"),
 
-  // NEW: Structured location data
+  // Structured location data
   pickupLat: z.number().nullable().optional(),
   pickupLng: z.number().nullable().optional(),
   pickupPlaceId: z.string().nullable().optional(),
@@ -47,19 +59,28 @@ export const createBookingSchema = z.object({
   dropoffLng: z.number().nullable().optional(),
   dropoffPlaceId: z.string().nullable().optional(),
 
-  // NEW: Round trip
+  // Round trip
   returnDate: z.string().optional(),
   returnTime: z.string().optional(),
   waitingDuration: z.coerce.number().int().min(0).optional(),
 
-  // NEW: Repeatable
+  // Repeatable
   recurrenceRule: recurrenceRuleSchema,
 });
 
 export const updateBookingSchema = z.object({
   revision: z.number().int().positive().optional(),
   timeZone: z.string().optional(),
-  stops: z.array(z.object({ address: z.string().min(1), lat: z.number().optional(), lng: z.number().optional(), placeId: z.string().optional() })).max(20).optional(),
+  stops: z.array(itineraryPointSchema).max(20).optional(),
+  outboundItinerary: itinerarySchema.optional(),
+  returnItinerary: z
+    .array(itineraryPointSchema)
+    .max(22)
+    .refine((points) => points.length !== 1, "A return itinerary needs pickup and destination")
+    .optional(),
+  returnItineraryConfirmed: z.boolean().optional(),
+  returnEndDate: z.string().optional(),
+  returnEndTime: z.string().optional(),
   status: z.string().optional(),
   service: z.string().optional(),
   subject: z.string().optional(),
@@ -79,7 +100,7 @@ export const updateBookingSchema = z.object({
   tripCount: z.coerce.number().int().min(1).optional(),
   amount: z.number().optional(),
 
-  // NEW fields
+  // Booking fields
   bookingType: z.enum(["one_way", "round_trip", "repeatable"]).optional(),
   pickupLat: z.number().nullable().optional(),
   pickupLng: z.number().nullable().optional(),

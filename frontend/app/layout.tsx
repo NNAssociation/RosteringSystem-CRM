@@ -1,8 +1,9 @@
+import { AppProviders } from "@/providers/app-provider";
+import { ClerkProvider } from "@clerk/nextjs";
+import "mapbox-gl/dist/mapbox-gl.css";
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
-import { AppProviders } from "@/providers/app-provider";
-import { ClerkProvider } from "@clerk/nextjs";
 
 const inter = Inter({
   variable: "--font-inter",
@@ -14,11 +15,7 @@ export const metadata: Metadata = {
   description: "Fleet management and rostering system",
 };
 
-export default function RootLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <ClerkProvider publishableKey={process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY}>
       <html lang="en" className="light" style={{ colorScheme: "light" }}>

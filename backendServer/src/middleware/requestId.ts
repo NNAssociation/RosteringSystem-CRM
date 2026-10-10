@@ -1,5 +1,5 @@
-import type { Request, Response, NextFunction } from "express";
 import { randomUUID } from "crypto";
+import type { NextFunction, Request, Response } from "express";
 
 /**
  * Attaches a unique request ID to every incoming request for distributed tracing.

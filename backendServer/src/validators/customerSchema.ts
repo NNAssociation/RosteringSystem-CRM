@@ -9,8 +9,18 @@ export const createCustomerSchema = z.object({
   company: z.string().optional(),
   phone1: z.string().optional(),
   phone2: z.string().optional(),
-  
-  customerType: z.enum(["ORGANIZATION", "CORPORATE", "TRAVEL_AGENT", "SCHOOL", "COMMUNITY_GROUP", "INDIVIDUAL", "OTHER"]).optional(),
+
+  customerType: z
+    .enum([
+      "ORGANIZATION",
+      "CORPORATE",
+      "TRAVEL_AGENT",
+      "SCHOOL",
+      "COMMUNITY_GROUP",
+      "INDIVIDUAL",
+      "OTHER",
+    ])
+    .optional(),
   contactName: z.string().optional(),
   contactRole: z.string().optional(),
   taxId: z.string().optional(),

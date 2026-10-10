@@ -1,6 +1,5 @@
 "use client";
 
-import React from "react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { ChevronLeft, ChevronRight } from "@mui/icons-material";
@@ -28,9 +27,7 @@ export function Pagination({
   const endIndex = Math.min(startIndex + (itemsPerPage || 0), totalItems || 0);
 
   return (
-    <div
-      className={cn("flex items-center justify-between px-2 py-6", className)}
-    >
+    <div className={cn("flex items-center justify-between px-2 py-6", className)}>
       {totalItems !== undefined && itemsPerPage !== undefined && (
         <span className="text-xs font-semibold text-slate-400">
           Showing{" "}
@@ -49,7 +46,7 @@ export function Pagination({
           onClick={() => onPageChange(Math.max(currentPage - 1, 1))}
           disabled={currentPage === 1}
         >
-          <ChevronLeft style={{ fontSize: '18px' }} />
+          <ChevronLeft style={{ fontSize: "18px" }} />
         </Button>
 
         <div className="flex items-center gap-1">
@@ -104,7 +101,7 @@ export function Pagination({
           onClick={() => onPageChange(Math.min(currentPage + 1, totalPages))}
           disabled={currentPage === totalPages}
         >
-          <ChevronRight style={{ fontSize: '18px' }} />
+          <ChevronRight style={{ fontSize: "18px" }} />
         </Button>
       </div>
     </div>

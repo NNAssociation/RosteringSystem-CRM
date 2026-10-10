@@ -1,4 +1,4 @@
-import { beforeEach, afterEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 const db = vi.hoisted(() => ({
   emailDelivery: {
@@ -66,7 +66,7 @@ describe("Email Providers Abstraction", () => {
           Authorization: "Bearer re_test_key",
           "Content-Type": "application/json",
         }),
-      })
+      }),
     );
 
     const call = fetchMock.mock.calls[0];
@@ -105,7 +105,7 @@ describe("Email Providers Abstraction", () => {
           status: "DELIVERED",
           deliveredAt: expect.any(Date),
         }),
-      })
+      }),
     );
   });
 });

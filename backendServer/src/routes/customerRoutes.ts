@@ -1,10 +1,16 @@
 import { Router } from "express";
-import { getCustomers, getCustomerById, createCustomer, updateCustomer, deleteCustomer, searchCustomers } from "../controllers/customerController.js";
-import { requireClerkAuth } from "../middleware/authMiddleware.js";
+import {
+  createCustomer,
+  deleteCustomer,
+  getCustomerById,
+  getCustomers,
+  searchCustomers,
+  updateCustomer,
+} from "../controllers/customerController.js";
 
 const router = Router();
 
-router.get("/search", searchCustomers);  // Must be before /:id
+router.get("/search", searchCustomers); // Must be before /:id
 router.get("/", getCustomers);
 router.get("/:id", getCustomerById);
 router.post("/", createCustomer);

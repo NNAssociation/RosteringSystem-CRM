@@ -1,6 +1,6 @@
 import { prisma } from "../db.js";
-import { changeRecordLifecycle } from "./recordLifecycle.js";
 import type { CreateCustomerInput, UpdateCustomerInput } from "../validators/customerSchema.js";
+import { changeRecordLifecycle } from "./recordLifecycle.js";
 
 // ── Response Mapper ───────────────────────────────────────
 

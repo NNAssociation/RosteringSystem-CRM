@@ -1,10 +1,11 @@
 import type { Request, Response } from "express";
 import { prisma } from "../db.js";
+import { createDepotSchema, depotIdSchema, updateDepotSchema } from "../validators/depotSchema.js";
 
 export const getDepots = async (req: Request, res: Response) => {
   try {
     const depots = await prisma.depot.findMany({
-      orderBy: { name: 'asc' }
+      orderBy: { name: "asc" },
     });
     res.json(depots);
   } catch (error) {
@@ -15,9 +16,13 @@ export const getDepots = async (req: Request, res: Response) => {
 
 export const getDepotById = async (req: Request, res: Response) => {
   try {
-    const { id } = req.params;
+    const parsedId = depotIdSchema.safeParse(req.params.id);
+    if (!parsedId.success) {
+      return res.status(400).json({ error: "Invalid depot ID" });
+    }
+
     const depot = await prisma.depot.findUnique({
-      where: { id: parseInt(id as string, 10) },
+      where: { id: parsedId.data },
     });
     if (!depot) {
       return res.status(404).json({ error: "Depot not found" });
@@ -31,19 +36,19 @@ export const getDepotById = async (req: Request, res: Response) => {
 
 export const createDepot = async (req: Request, res: Response) => {
   try {
-    const { name, address, lat, lng } = req.body;
-    
-    if (!name || lat === undefined || lng === undefined) {
-      return res.status(400).json({ error: "Missing required fields" });
+    const parsed = createDepotSchema.safeParse(req.body);
+    if (!parsed.success) {
+      const msg = parsed.error.issues.map((i) => i.message).join(", ");
+      return res.status(400).json({ error: msg });
     }
 
     const newDepot = await prisma.depot.create({
       data: {
-        name,
-        address,
-        lat: parseFloat(lat),
-        lng: parseFloat(lng),
-      }
+        name: parsed.data.name,
+        address: parsed.data.address || null,
+        lat: parsed.data.lat,
+        lng: parsed.data.lng,
+      },
     });
 
     res.status(201).json(newDepot);
@@ -55,21 +60,27 @@ export const createDepot = async (req: Request, res: Response) => {
 
 export const updateDepot = async (req: Request, res: Response) => {
   try {
-    const { id } = req.params;
-    const { name, address, lat, lng } = req.body;
+    const parsedId = depotIdSchema.safeParse(req.params.id);
+    if (!parsedId.success) {
+      return res.status(400).json({ error: "Invalid depot ID" });
+    }
+
+    const parsed = updateDepotSchema.safeParse(req.body);
+    if (!parsed.success) {
+      const msg = parsed.error.issues.map((i) => i.message).join(", ");
+      return res.status(400).json({ error: msg });
+    }
 
     const updatedDepot = await prisma.depot.update({
-      where: { id: parseInt(id as string, 10) },
-      data: {
-        ...(name !== undefined && { name }),
-        ...(address !== undefined && { address }),
-        ...(lat !== undefined && { lat: parseFloat(lat) }),
-        ...(lng !== undefined && { lng: parseFloat(lng) }),
-      },
+      where: { id: parsedId.data },
+      data: parsed.data,
     });
 
     res.json(updatedDepot);
-  } catch (error) {
+  } catch (error: any) {
+    if (error?.code === "P2025") {
+      return res.status(404).json({ error: "Depot not found" });
+    }
     console.error("Error updating depot:", error);
     res.status(500).json({ error: "Failed to update depot" });
   }
@@ -77,24 +88,36 @@ export const updateDepot = async (req: Request, res: Response) => {
 
 export const deleteDepot = async (req: Request, res: Response) => {
   try {
-    const { id } = req.params;
-    
+    const parsedId = depotIdSchema.safeParse(req.params.id);
+    if (!parsedId.success) {
+      return res.status(400).json({ error: "Invalid depot ID" });
+    }
+
+    const id = parsedId.data;
+
     // Check if there are any associated users or vehicles
-    const usersCount = await prisma.user.count({ where: { homeDepotId: parseInt(id as string, 10) }});
-    const vehiclesCount = await prisma.fleetVehicle.count({ where: { homeDepotId: parseInt(id as string, 10) }});
+    const usersCount = await prisma.user.count({
+      where: { homeDepotId: id },
+    });
+    const vehiclesCount = await prisma.fleetVehicle.count({
+      where: { homeDepotId: id },
+    });
 
     if (usersCount > 0 || vehiclesCount > 0) {
-      return res.status(400).json({ 
-        error: `Cannot delete depot because it is assigned to ${usersCount} driver(s) and ${vehiclesCount} vehicle(s). Please reassign them first.` 
+      return res.status(400).json({
+        error: `Cannot delete depot because it is assigned to ${usersCount} driver(s) and ${vehiclesCount} vehicle(s). Please reassign them first.`,
       });
     }
 
     await prisma.depot.delete({
-      where: { id: parseInt(id as string, 10) },
+      where: { id },
     });
 
     res.json({ message: "Depot deleted successfully" });
-  } catch (error) {
+  } catch (error: any) {
+    if (error?.code === "P2025") {
+      return res.status(404).json({ error: "Depot not found" });
+    }
     console.error("Error deleting depot:", error);
     res.status(500).json({ error: "Failed to delete depot" });
   }

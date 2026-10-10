@@ -1,122 +1,288 @@
 "use client";
-import "./booking-workspace.css";
-import { useCallback, useEffect, useState } from "react";
-import { useAuth } from "@clerk/nextjs";
-import { RecordLifecycleActions } from "@/components/shared/record-lifecycle-actions";
-import { RecordStatusBadge, InactiveRecordNotice } from "@/components/shared/record-status";
-import Link from "next/link";
-import { useRouter } from "next/navigation";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { LocationPicker } from "./add-booking/sections/LocationPicker";
-import { CustomerSelector } from "./add-booking/sections/CustomerSelector";
-import { RoutePreviewMap } from "./RoutePreviewMap";
-import { BookingRecordView } from "./BookingRecordView";
-import { BookingOverview, BookingSectionTitle, WorkflowStatus, bookingStepIcons } from "./BookingVisuals";
-import { ClipboardList, ReceiptText, Send, FileCheck2, UserRound, CalendarDays, Download, Mail, AlertCircle } from "lucide-react";
-import { QuotationPreview } from "./QuotationPreview";
-import { useWorkflowApi, workflowBase, dateParts, formatMoney, formatTripDate, downloadPdf } from "@/lib/workflow-api";
-import type { StructuredLocation } from "@/types";
 
-const steps = ["Basic details", "Locations", "Quotation", "Preview & send", "Customer response"];
-const fieldClass = "w-full rounded-lg border border-slate-200 bg-white p-2.5 text-sm";
-const blank = { subject: "", customerName: "", customerEmail: "", customerId: undefined as number | undefined, bookingType: "one_way", date: "", startTime: "09:00", endDate: "", endTime: "11:00", returnDate: "", returnTime: "14:00", passengerCount: 1, noOfVehicles: 1, bookingDetails: "", timeZone: "Australia/Sydney", pickup: { address: "" } as StructuredLocation, dropoff: { address: "" } as StructuredLocation, stops: [] as StructuredLocation[], recurrenceRule: { type: "weekly", days: [1, 2, 3, 4, 5], startDate: "", endDate: "" } };
-type Trip = typeof blank;
-type Line = { description: string; quantity: number; unitPriceMinor: number };
+import { RecordLifecycleActions } from "@/components/shared/record-lifecycle-actions";
+import { InactiveRecordNotice, RecordStatusBadge } from "@/components/shared/record-status";
+import { Button } from "@/components/ui/button";
+import { downloadPdf, workflowBase } from "@/lib/workflow-api";
+import type { QuotationDelivery } from "@/types/booking-workflow";
+import { AlertCircle, FileCheck2, Send } from "lucide-react";
+import Link from "next/link";
+import { useRouter, useSearchParams } from "next/navigation";
+import { useCallback, useEffect, useState } from "react";
+import { BookingRecordView } from "./BookingRecordView";
+import { BookingOverview, BookingSectionTitle, bookingStepIcons } from "./BookingVisuals";
+import { WORKSPACE_STEPS } from "./config/booking-workflow.config";
+import { useBookingWorkflow } from "./hooks/useBookingWorkflow";
+import { useQuotationEditor } from "./hooks/useQuotationEditor";
+import { BookingStep0BasicDetails } from "./steps/BookingStep0BasicDetails";
+import { BookingStep1Locations } from "./steps/BookingStep1Locations";
+import { BookingStep2Quotation } from "./steps/BookingStep2Quotation";
+import { BookingStep3PreviewSend } from "./steps/BookingStep3PreviewSend";
+import { BookingStep4Response } from "./steps/BookingStep4Response";
+
 export function BookingWorkspace({ bookingId }: { bookingId?: string }) {
-  const { isLoaded, isSignedIn } = useAuth();
-  const [editing, setEditing] = useState(!bookingId);
-  const api = useWorkflowApi(), router = useRouter();
-  const [reloadKey, setReloadKey] = useState(0);
-  const [step, setStep] = useState(0), [trip, setTrip] = useState<Trip>(blank), [booking, setBooking] = useState<any>(null);
-  const [quotes, setQuotes] = useState<any[]>([]), [activity, setActivity] = useState<any[]>([]), [config, setConfig] = useState<any>(null);
-  const [loading, setLoading] = useState(true), [busy, setBusy] = useState(false), [error, setError] = useState(""), [notice, setNotice] = useState("");
-  const [tripDirty, setTripDirty] = useState(false), [quoteDirty, setQuoteDirty] = useState(false);
-  const [items, setItems] = useState<Line[]>([{ description: "Transport service", quantity: 1, unitPriceMinor: 0 }]);
-  const [discount, setDiscount] = useState(0), [tax, setTax] = useState(0), [currency, setCurrency] = useState("AUD"), [expires, setExpires] = useState("");
-  const [terms, setTerms] = useState(""), [message, setMessage] = useState("Thank you for your enquiry. Please review your trip details and quotation below.");
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const editParam = searchParams?.get("edit");
+  const stepParam = searchParams?.get("step");
+
+  const [editing, setEditing] = useState(editParam === "true" || !bookingId);
+  const [step, setStep] = useState(
+    stepParam !== null && !isNaN(Number(stepParam)) ? Number(stepParam) : 0,
+  );
   const [previewId, setPreviewId] = useState<number | null>(null);
-  const [estimate, setEstimate] = useState<{ durationMinutes: number; distanceKm: number } | null>(null);
-  const current = quotes[0], preview = quotes.find(q => q.id === previewId) || current;
-  const locked = ["CONFIRMED", "CANCELLED", "SUPERSEDED"].includes(booking?.status);
-  function hydrateQuote(q: any) {
-    setItems(q.items.map((i: Line) => ({ description: i.description, quantity: i.quantity, unitPriceMinor: i.unitPriceMinor })));
-    setDiscount(q.discountMinor); setTax(q.taxBasisPoints); setCurrency(q.currency); setExpires(new Date(q.expiresAt).toISOString().slice(0, 10)); setTerms(q.terms); setMessage(q.message); setPreviewId(q.id); setQuoteDirty(false);
-  }
-  const refresh = useCallback(async () => {
-    if (!bookingId) return;
-    const [b, qs, a] = await Promise.all([
-      api(`bookings/${bookingId}`),
-      api(`quotations/booking/${bookingId}`).catch(err => {
-        console.warn("Could not load quotations for booking", err);
-        return [];
-      }),
-      api(`quotations/booking/${bookingId}/activity`).catch(err => {
-        console.warn("Could not load quotation activity for booking", err);
-        return [];
-      })
-    ]);
-    setBooking(b); setQuotes(qs || []); setActivity(a || []); return { b, qs: qs || [] };
-  }, [api, bookingId]);
+
+  const workflow = useBookingWorkflow(bookingId);
+  const [routeReview, setRouteReview] = useState<
+    import("@/types/booking-workflow").RouteReview | undefined
+  >();
+  const quoteEditor = useQuotationEditor(workflow.config);
+
+  const {
+    isLoaded,
+    isSignedIn,
+    api,
+    trip,
+    changeTrip,
+    batchChangeTrip,
+    booking,
+    quotes,
+    activity,
+    config,
+    loading,
+    busy,
+    error,
+    setError,
+    notice,
+    setNotice,
+    tripDirty,
+    setTripDirty,
+    setReloadKey,
+    locked,
+    refresh,
+    saveTrip,
+    runAsync,
+  } = workflow;
+
+  const {
+    items,
+    setItems,
+    discount,
+    tax,
+    currency,
+    expires,
+    terms,
+    message,
+    quoteDirty,
+    setQuoteDirty,
+    addItem,
+    removeItem,
+    updateItem,
+    setDiscount,
+    setTax,
+    setCurrency,
+    setExpires,
+    setTerms,
+    setMessage,
+    hydrateQuote,
+    initFromConfig,
+    subtotal,
+    taxAmount,
+    total,
+  } = quoteEditor;
+
+  const current = quotes[0];
+  const preview = quotes.find((q) => q.id === previewId) || current;
+
+  // Sync quotation editor when config loads
   useEffect(() => {
-    if (!isLoaded) return;
-    let cancelled = false;
-    (async () => {
-      setLoading(true); setError("");
-      try {
-        const [c, result] = await Promise.all([
-          api("quotations/config"),
-          bookingId ? refresh() : Promise.resolve(null)
-        ]);
-        if (cancelled) return;
-        setConfig(c); setCurrency(c.currency); setTax(c.taxBasisPoints);
-        setExpires(new Date(Date.now() + c.validityDays * 86400000).toISOString().slice(0, 10));
-        if (bookingId && result) {
-          const { b, qs } = result, start = dateParts(b.startTime, b.timeZone), end = dateParts(b.endTime, b.timeZone), ret = b.returnTime ? dateParts(b.returnTime, b.timeZone) : null;
-          setTrip({ ...blank, ...b, ...start, startTime: start.time, endDate: end.date, endTime: end.time, returnDate: ret?.date || "", returnTime: ret?.time || "14:00", pickup: { address: b.pickupLocation === "TBD" ? "" : b.pickupLocation, lat: b.pickupLat ?? undefined, lng: b.pickupLng ?? undefined, placeId: b.pickupPlaceId ?? undefined }, dropoff: { address: b.dropoffLocation === "TBD" ? "" : b.dropoffLocation, lat: b.dropoffLat ?? undefined, lng: b.dropoffLng ?? undefined, placeId: b.dropoffPlaceId ?? undefined }, stops: b.stops || [], recurrenceRule: b.recurrenceRule || blank.recurrenceRule });
-          if (qs[0]) { hydrateQuote(qs[0]); setStep(0); }
-          else setStep(0);
-        } else if (!bookingId) {
-          const stored = sessionStorage.getItem("booking-workspace-draft");
-          setTrip(stored ? JSON.parse(stored) : { ...blank, timeZone: c.timeZone, date: dateParts(new Date().toISOString(), c.timeZone).date });
-        }
-      } catch (e: any) { if (!cancelled) setError(e.message); } finally { if (!cancelled) setLoading(false); }
-    })(); return () => { cancelled = true; };
-  }, [api, bookingId, refresh, reloadKey, isLoaded]);
-  useEffect(() => { if (!bookingId && !loading) sessionStorage.setItem("booking-workspace-draft", JSON.stringify(trip)); }, [trip, bookingId, loading]);
+    if (config) {
+      initFromConfig(config);
+    }
+  }, [config, initFromConfig]);
+
+  const [loadedQuotation, setLoadedQuotation] = useState(current);
+  if (current !== loadedQuotation) {
+    setLoadedQuotation(current);
+    if (quotes[0] && !quoteDirty) {
+      hydrateQuote(quotes[0]);
+      setPreviewId(quotes[0].id);
+    }
+  }
+
+  // Auto-refresh on step 4 (polling for customer response / email delivery)
   useEffect(() => {
     if (!bookingId || step !== 4) return;
-    const timer = setInterval(() => { refresh().catch(() => setError("Could not refresh status. Check your connection.")); }, 10000); return () => clearInterval(timer);
-  }, [bookingId, step, refresh]);
-  useEffect(() => { const handler = (e: BeforeUnloadEvent) => { if (tripDirty || quoteDirty) { e.preventDefault(); e.returnValue = ""; } }; window.addEventListener("beforeunload", handler); return () => window.removeEventListener("beforeunload", handler); }, [tripDirty, quoteDirty]);
-  function change<K extends keyof Trip>(key: K, value: Trip[K]) { setTrip(t => ({ ...t, [key]: value })); setTripDirty(true); }
-  async function run(fn: () => Promise<void>) { setError(""); setNotice(""); setBusy(true); try { await fn(); } catch (e: any) { setError(e.message); } finally { setBusy(false); } }
-  async function saveTrip(next?: number) {
-    if (!trip.customerEmail?.trim()) {
-      throw new Error("Customer email is required. Please check that a customer with an email is selected, or enter their email in Step 1.");
+    const timer = setInterval(() => {
+      refresh().catch(() => setError("Could not refresh status. Check your connection."));
+    }, 10000);
+    return () => clearInterval(timer);
+  }, [bookingId, step, refresh, setError]);
+
+  // Warn if unloading with unsaved changes
+  useEffect(() => {
+    const handler = (e: BeforeUnloadEvent) => {
+      if (tripDirty || quoteDirty) {
+        e.preventDefault();
+        e.returnValue = "";
+      }
+    };
+    window.addEventListener("beforeunload", handler);
+    return () => window.removeEventListener("beforeunload", handler);
+  }, [tripDirty, quoteDirty]);
+
+  const [loadedParams, setLoadedParams] = useState({ editParam, stepParam });
+  if (loadedParams.editParam !== editParam || loadedParams.stepParam !== stepParam) {
+    setLoadedParams({ editParam, stepParam });
+    if (editParam === "true") {
+      setEditing(true);
     }
-    if (!trip.date) {
-      throw new Error("Departure date is required. Please select a date in Step 1.");
+    if (stepParam !== null && !isNaN(Number(stepParam))) {
+      setStep(Number(stepParam));
     }
-    const effectiveSubject = trip.subject?.trim() || (trip.customerName ? `Trip for ${trip.customerName}` : trip.pickup?.address ? `Trip to ${trip.dropoff?.address || "Destination"}` : "New Trip");
-    if (!trip.subject?.trim()) {
-      setTrip(t => ({ ...t, subject: effectiveSubject }));
-    }
-    if (locked) { if (next !== undefined) setStep(next); return; }
-    if (!tripDirty && bookingId) { if (next !== undefined) setStep(next); return; }
-    const body = { ...trip, subject: effectiveSubject, revision: booking?.revision, pickupLocation: trip.pickup.address || "TBD", dropoffLocation: trip.dropoff.address || "TBD", pickupLat: trip.pickup.lat ?? null, pickupLng: trip.pickup.lng ?? null, pickupPlaceId: trip.pickup.placeId ?? null, dropoffLat: trip.dropoff.lat ?? null, dropoffLng: trip.dropoff.lng ?? null, dropoffPlaceId: trip.dropoff.placeId ?? null, endDate: trip.endDate || trip.date, returnDate: trip.returnDate || trip.date, status: "DRAFT" };
-    const result = await api(bookingId ? `bookings/${bookingId}` : "bookings", bookingId ? "PATCH" : "POST", { ...body, recurrenceRule: trip.bookingType === "repeatable" ? trip.recurrenceRule : undefined });
-    setBooking(result); setTripDirty(false); setNotice("Draft saved.");
-    if (!bookingId) { sessionStorage.removeItem("booking-workspace-draft"); router.replace(`/dashboard/bookings/${result.id}`); }
-    else { await refresh(); if (next !== undefined) setStep(next); }
   }
-  async function saveQuote() {
-    if (!bookingId) throw new Error("Save trip details first.");
-    if (tripDirty) throw new Error("Save trip changes before preparing the quotation.");
-    const q = await api(`quotations/booking/${bookingId}`, "POST", { bookingRevision: booking.revision, previousQuotationId: current?.id || null, items, discountMinor: discount, taxBasisPoints: tax, currency, expiresAt: new Date(`${expires}T12:00:00Z`).toISOString(), terms, message });
-    await refresh(); hydrateQuote(q); setStep(3); setNotice("Quotation revision saved. Review it before sending.");
+
+  const [loadedStatus, setLoadedStatus] = useState(booking?.status);
+  if (loadedStatus !== booking?.status) {
+    setLoadedStatus(booking?.status);
+    if (booking?.status === "DRAFT" && !locked) {
+      setEditing(true);
+    }
   }
-  const subtotal = items.reduce((n, i) => n + i.quantity * i.unitPriceMinor, 0), total = subtotal - discount + Math.round((subtotal - discount) * tax / 10000);
+
+  const handleSaveTrip = useCallback(
+    async (nextStep?: number) => {
+      await runAsync(async () => {
+        await saveTrip(nextStep, (s) => {
+          setEditing(true);
+          setStep(s);
+        });
+      });
+    },
+    [runAsync, saveTrip],
+  );
+
+  const handleSaveQuote = useCallback(async () => {
+    if (!bookingId) {
+      setError("Save trip details first.");
+      return;
+    }
+    if (tripDirty) {
+      setError("Save trip changes before preparing the quotation.");
+      return;
+    }
+
+    await runAsync(async () => {
+      const q = await api(`quotations/booking/${bookingId}`, "POST", {
+        routeReview,
+        bookingRevision: booking?.revision,
+        previousQuotationId: current?.id || null,
+        items,
+        discountMinor: discount,
+        taxBasisPoints: tax,
+        currency,
+        expiresAt: new Date(`${expires}T12:00:00Z`).toISOString(),
+        terms,
+        message,
+      });
+      await refresh();
+      hydrateQuote(q);
+      setPreviewId(q.id);
+      setEditing(true);
+      setStep(3);
+      setNotice("Quotation revision saved. Review it before sending.");
+    });
+  }, [
+    routeReview,
+    api,
+    booking?.revision,
+    bookingId,
+    current?.id,
+    discount,
+    expires,
+    hydrateQuote,
+    items,
+    message,
+    refresh,
+    runAsync,
+    setError,
+    setNotice,
+    tax,
+    terms,
+    currency,
+    tripDirty,
+  ]);
+
+  const handleDownloadPdf = useCallback(
+    (id: number) => {
+      void runAsync(async () => {
+        const pdfData = await api(`quotations/${id}/pdf`, "GET", undefined, true);
+        downloadPdf(pdfData, `quotation-${id}.pdf`);
+      });
+    },
+    [api, runAsync],
+  );
+
+  const handleSendQuotation = useCallback(
+    (id: number) => {
+      void runAsync(async () => {
+        await api(`quotations/${id}/send`, "POST");
+        await refresh();
+        setStep(4);
+        setNotice("Quotation queued. Delivery status appears below.");
+      });
+    },
+    [api, refresh, runAsync, setNotice],
+  );
+
+  const handleRetryDelivery = useCallback(
+    (delivery: QuotationDelivery) => {
+      void runAsync(async () => {
+        if (
+          delivery.status === "UNKNOWN" &&
+          !window.confirm(
+            "Check this delivery in Brevo logs first. Confirm only if Brevo did not send it. Queue another attempt?",
+          )
+        ) {
+          return;
+        }
+        await api(`quotations/deliveries/${delivery.id}/retry`, "POST", {
+          confirmedNotSent: delivery.status === "UNKNOWN",
+        });
+        await refresh();
+      });
+    },
+    [api, refresh, runAsync],
+  );
+
+  const handleResendQuotationEmail = useCallback(
+    (quotationId: number) => {
+      void runAsync(async () => {
+        await api(`quotations/${quotationId}/send`, "POST");
+        await refresh();
+      });
+    },
+    [api, refresh, runAsync],
+  );
+
+  const handleRecordAcceptance = useCallback(
+    async (quotationId: number) => {
+      await runAsync(async () => {
+        await api(`quotations/${quotationId}/record-acceptance`, "POST", {
+          name: trip.customerName || "Customer Direct Approval",
+          reason: "Direct confirmation received",
+        });
+        await refresh();
+        setStep(4);
+        setNotice(
+          "Quotation accepted! Executable jobs have been created and are ready for dispatch.",
+        );
+      });
+    },
+    [api, refresh, runAsync, setNotice, trip.customerName],
+  );
+
+  // Loading state
   if (!isLoaded || loading) {
     return (
       <div className="mx-auto max-w-7xl p-6 sm:p-10 space-y-6" role="status">
@@ -125,80 +291,401 @@ export function BookingWorkspace({ bookingId }: { bookingId?: string }) {
           <span className="text-sm font-medium">Loading booking workspace…</span>
         </div>
         <div className="animate-pulse space-y-6">
-          <div className="h-9 bg-slate-200/80 rounded-xl w-1/4"></div>
-          <div className="h-12 bg-slate-100 rounded-xl"></div>
-          <div className="h-80 bg-slate-100 rounded-2xl"></div>
+          <div className="h-9 bg-slate-200/80 rounded-xl w-1/4" />
+          <div className="h-12 bg-slate-100 rounded-xl" />
+          <div className="h-80 bg-slate-100 rounded-2xl" />
         </div>
       </div>
     );
   }
+
+  // Not signed in
   if (isLoaded && !isSignedIn) {
     return (
       <div role="alert" className="m-6 rounded-xl border border-blue-200 bg-blue-50 p-6 space-y-3">
         <h2 className="font-semibold text-blue-900">Sign in to continue</h2>
-        <p className="text-sm text-blue-800">You must be signed in with an authorized staff account to access the booking workspace.</p>
+        <p className="text-sm text-blue-800">
+          You must be signed in with an authorized staff account to access the booking workspace.
+        </p>
         <Button onClick={() => router.push("/sign-in")}>Sign In</Button>
       </div>
     );
   }
+
+  // Configuration unavailable
   if (!config) {
-    const isAuthError = error === "Sign in to continue" || error.toLowerCase().includes("sign in") || error.toLowerCase().includes("unauthorized") || error.toLowerCase().includes("staff role");
+    const isAuthError =
+      error === "Sign in to continue" ||
+      error.toLowerCase().includes("sign in") ||
+      error.toLowerCase().includes("unauthorized") ||
+      error.toLowerCase().includes("staff role");
     return (
-      <div role="alert" className="m-6 rounded-xl border border-amber-200 bg-amber-50 p-6 space-y-3">
-        <h2 className="font-semibold">{isAuthError ? "Sign in to continue" : "Booking service unavailable"}</h2>
+      <div
+        role="alert"
+        className="m-6 rounded-xl border border-amber-200 bg-amber-50 p-6 space-y-3"
+      >
+        <h2 className="font-semibold">
+          {isAuthError ? "Sign in to continue" : "Booking service unavailable"}
+        </h2>
         <p className="text-sm">{error || "Could not load quotation settings."}</p>
         {isAuthError ? (
           <div className="flex gap-2 pt-1">
             <Button onClick={() => router.push("/sign-in")}>Sign In</Button>
-            <Button variant="outline" onClick={() => setReloadKey(k => k + 1)}>Retry connection</Button>
+            <Button variant="outline" onClick={() => setReloadKey((k) => k + 1)}>
+              Retry connection
+            </Button>
           </div>
         ) : (
           <>
-            <p className="text-xs text-slate-600">The frontend called <code className="bg-amber-100 px-1 rounded">{workflowBase}/quotations/config</code>. Check that the backend is running, rebuilt after the latest migration, and reachable at this address.</p>
-            <Button variant="outline" onClick={() => setReloadKey(k => k + 1)}>Retry connection</Button>
+            <p className="text-xs text-slate-600">
+              The frontend called{" "}
+              <code className="bg-amber-100 px-1 rounded">{workflowBase}/quotations/config</code>.
+              Check that the backend is running, rebuilt after the latest migration, and reachable
+              at this address.
+            </p>
+            <Button variant="outline" onClick={() => setReloadKey((k) => k + 1)}>
+              Retry connection
+            </Button>
           </>
         )}
       </div>
     );
   }
+
+  // Booking not found
   if (bookingId && !booking) {
     return (
-      <div role="alert" className="mx-auto max-w-lg m-12 p-8 bg-white border border-slate-200 rounded-2xl shadow-sm text-center space-y-4">
+      <div
+        role="alert"
+        className="mx-auto max-w-lg m-12 p-8 bg-white border border-slate-200 rounded-2xl shadow-sm text-center space-y-4"
+      >
         <div className="w-12 h-12 mx-auto rounded-full bg-amber-50 border border-amber-200 flex items-center justify-center text-amber-600">
           <AlertCircle size={24} />
         </div>
         <h2 className="text-lg font-semibold text-slate-900">Booking not found or inaccessible</h2>
-        <p className="text-sm text-slate-600">{error || "The booking you requested could not be retrieved. It may have been removed or you do not have permission to view it."}</p>
+        <p className="text-sm text-slate-600">
+          {error ||
+            "The booking you requested could not be retrieved. It may have been removed or you do not have permission to view it."}
+        </p>
         <div className="flex items-center justify-center gap-3 pt-2">
-          <Link href="/dashboard/bookings" className="inline-flex items-center justify-center rounded-xl bg-slate-100 hover:bg-slate-200 px-4 py-2 text-sm font-medium text-slate-800 transition-colors">
+          <Link
+            href="/dashboard/bookings"
+            className="inline-flex items-center justify-center rounded-xl bg-slate-100 hover:bg-slate-200 px-4 py-2 text-sm font-medium text-slate-800 transition-colors"
+          >
             Back to bookings
           </Link>
-          <Button onClick={() => setReloadKey(k => k + 1)}>Retry</Button>
+          <Button onClick={() => setReloadKey((k) => k + 1)}>Retry</Button>
         </div>
       </div>
     );
   }
-  return <div className="mx-auto max-w-7xl p-4 sm:p-8 space-y-6 booking-workspace">
-    <header className="flex flex-wrap items-center justify-between gap-4"><div><Link href="/dashboard/bookings" className="text-sm text-slate-500 hover:underline">← All bookings</Link><h1 className="mt-2 text-2xl font-semibold">{bookingId ? `Booking #${bookingId}` : "New booking"}</h1><p className="text-sm text-slate-500 mt-1">{booking?.amendsBookingId ? `Amendment to booking #${booking.amendsBookingId}. The original stays active until acceptance.` : "Prepare the trip, send a quotation and track the customer’s response."}</p></div><div className="flex flex-wrap gap-2">{booking && <RecordLifecycleActions resource="bookings" id={booking.id} inactive={booking.status === "CANCELLED"} onChanged={refresh} onDeleted={() => router.push("/dashboard/bookings")} />}{booking && <RecordStatusBadge status={booking.status} />}{!locked && !editing && <Button onClick={() => setEditing(true)}>Edit booking</Button>}{editing && bookingId && <Button variant="outline" disabled={busy} onClick={() => { if ((tripDirty || quoteDirty) && !window.confirm("Discard unsaved changes?")) return; setTripDirty(false); setQuoteDirty(false); setEditing(false); setReloadKey(k => k + 1); }}>Cancel editing</Button>}{!locked && editing && <Button variant="outline" disabled={busy} onClick={() => run(() => step === 2 ? saveQuote() : saveTrip())}>Save draft</Button>}{booking?.status === "CONFIRMED" && <Button onClick={() => run(async () => { const b = await api(`quotations/booking/${bookingId}/amend`, "POST"); router.push(`/dashboard/bookings/${b.id}`); })} disabled={busy}>Create amendment</Button>}</div></header>
-    {booking?.status === "CANCELLED" && <InactiveRecordNotice cancelled />}<nav aria-label="Booking progress" className="grid grid-cols-2 gap-2 sm:grid-cols-5">{steps.map((label, i) => { const Icon = bookingStepIcons[i]; return <button key={label} onClick={() => setStep(i)} disabled={!bookingId && i > 1} aria-current={step === i ? "step" : undefined} className={`flex items-center gap-3 rounded-xl border p-3 text-left transition-colors disabled:opacity-40 focus-visible:outline-2 focus-visible:outline-blue-500 ${step === i ? "border-blue-200 bg-blue-50 text-blue-800 shadow-sm" : "border-slate-200 bg-white text-slate-500 hover:border-blue-200 hover:bg-slate-50"}`}><span className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-lg ${step === i ? "bg-blue-600 text-white" : "bg-slate-100 text-slate-500"}`}><Icon size={18} aria-hidden="true" /></span><span><span className="block text-[10px] font-medium uppercase tracking-wider opacity-70">Step {i + 1}</span><span className="text-xs font-semibold">{label}</span></span></button>; })}</nav>
-    {error && <div role="alert" className="rounded-xl bg-red-50 border border-red-200 p-4 text-red-800 flex flex-wrap items-center justify-between gap-3"><div><span className="font-semibold text-red-900 mr-2">Notice:</span>{error}</div>{step !== 0 && (!trip.customerEmail || !trip.date) && <Button size="sm" variant="outline" className="border-red-300 text-red-900 bg-white hover:bg-red-50 text-xs shrink-0" onClick={() => setStep(0)}>Go to Step 1: Basic details</Button>}</div>}{notice && <p role="status" className="rounded-xl bg-emerald-50 p-4 text-emerald-800">{notice}</p>}
-    <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_300px]"><section className="min-w-0">{bookingId && !editing && booking ? <BookingRecordView booking={booking} quotes={quotes} activity={activity} step={step} busy={busy} emailConfigured={!!config?.emailConfigured} download={id => run(async () => downloadPdf(await api(`quotations/${id}/pdf`, "GET", undefined, true), `quotation-${id}.pdf`))} send={id => run(async () => { await api(`quotations/${id}/send`, "POST"); await refresh(); setStep(4); })} /> : <>
-      {step === 0 && <div className="rounded-2xl border bg-white p-6 space-y-5"><BookingSectionTitle title="Basic trip details" description="Who is travelling, and when? Start with the essentials." icon={ClipboardList} /><fieldset disabled={locked || busy} className="space-y-5">
-        <div className="flex items-center gap-2 border-b border-slate-100 pb-3 text-sm font-semibold text-slate-700"><UserRound size={16} className="text-blue-500" />Customer information</div>{!bookingId && <CustomerSelector customerName={trip.customerName} customerEmail={trip.customerEmail} customerId={trip.customerId} onSelect={(id, name, email) => { setTrip(t => ({ ...t, customerId: Number(id), customerName: name, customerEmail: email || "", subject: t.subject?.trim() ? t.subject : `Trip for ${name}` })); setTripDirty(true); }} onClear={() => { change("customerId", undefined); change("customerName", ""); change("customerEmail", ""); }} onAddNew={() => { setTrip(t => ({ ...t, customerId: undefined, customerName: "", customerEmail: "" })); setTripDirty(true); setNotice("Enter the new customer’s name and email below."); }} />}
-        <div className="grid gap-4 sm:grid-cols-2"><Field label="Customer name"><Input value={trip.customerName} disabled={!!bookingId || !!trip.customerId} onChange={e => change("customerName", e.target.value)} placeholder="Full name or company" /></Field><Field label="Customer email"><Input type="email" value={trip.customerEmail} disabled={!!bookingId || !!trip.customerId} onChange={e => change("customerEmail", e.target.value)} placeholder="client@example.com" /></Field></div>
-        <Field label="Trip subject"><Input value={trip.subject} onChange={e => change("subject", e.target.value)} placeholder="e.g. Airport transfer for conference guests (optional, will auto-fill if left blank)" /></Field>
-        <div className="grid gap-4 sm:grid-cols-2"><Field label="Trip type"><select className={fieldClass} value={trip.bookingType} onChange={e => change("bookingType", e.target.value)}><option value="one_way">One way</option><option value="round_trip">Round trip</option><option value="repeatable">Recurring</option></select></Field><Field label="Timezone"><select className={fieldClass} value={trip.timeZone} onChange={e => change("timeZone", e.target.value)}>{["Australia/Sydney", "Australia/Melbourne", "Australia/Brisbane", "Australia/Adelaide", "Australia/Perth", "Australia/Darwin", "Australia/Hobart"].map(z => <option key={z}>{z}</option>)}</select></Field></div>
-        <div className="flex items-center gap-2 border-b border-slate-100 pb-3 pt-3 text-sm font-semibold text-slate-700"><CalendarDays size={16} className="text-blue-500" />Trip schedule</div><div className="grid grid-cols-2 gap-4"><Field label="Departure date"><Input type="date" value={trip.date} onChange={e => change("date", e.target.value)} /></Field><Field label="Departure time"><Input type="time" value={trip.startTime} onChange={e => change("startTime", e.target.value)} /></Field><Field label="Arrival date"><Input type="date" value={trip.endDate || trip.date} onChange={e => change("endDate", e.target.value)} /></Field><Field label="Arrival time"><Input type="time" value={trip.endTime} onChange={e => change("endTime", e.target.value)} /></Field></div>
-        {trip.bookingType === "round_trip" && <div className="grid grid-cols-2 gap-4"><Field label="Return departure date"><Input type="date" value={trip.returnDate || trip.date} onChange={e => change("returnDate", e.target.value)} /></Field><Field label="Return departure time"><Input type="time" value={trip.returnTime} onChange={e => change("returnTime", e.target.value)} /></Field></div>}
-        {trip.bookingType === "repeatable" && <div className="rounded-xl bg-slate-50 p-4 space-y-3"><Field label="Repeat"><select className={fieldClass} value={trip.recurrenceRule.type} onChange={e => change("recurrenceRule", { ...trip.recurrenceRule, type: e.target.value })}>{["daily", "weekly", "monthly"].map(t => <option key={t}>{t}</option>)}</select></Field><div className="grid grid-cols-2 gap-3"><Field label="First date"><Input type="date" value={trip.recurrenceRule.startDate} onChange={e => change("recurrenceRule", { ...trip.recurrenceRule, startDate: e.target.value })} /></Field><Field label="Last date"><Input type="date" value={trip.recurrenceRule.endDate} onChange={e => change("recurrenceRule", { ...trip.recurrenceRule, endDate: e.target.value })} /></Field></div>{trip.recurrenceRule.type === "weekly" && <div className="flex flex-wrap gap-3">{["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].map((day, i) => <label key={day} className="text-sm flex gap-1"><input type="checkbox" checked={trip.recurrenceRule.days.includes(i)} onChange={e => change("recurrenceRule", { ...trip.recurrenceRule, days: e.target.checked ? [...trip.recurrenceRule.days, i] : trip.recurrenceRule.days.filter(d => d !== i) })} />{day}</label>)}</div>}</div>}
-        <div className="grid grid-cols-2 gap-4"><Field label="Passengers"><Input type="number" min={1} value={trip.passengerCount} onChange={e => change("passengerCount", Number(e.target.value))} /></Field><Field label="Vehicles required"><Input type="number" min={1} value={trip.noOfVehicles} onChange={e => change("noOfVehicles", Number(e.target.value))} /></Field></div><Field label="Internal notes (not shown to customer)"><textarea className={fieldClass} value={trip.bookingDetails} onChange={e => change("bookingDetails", e.target.value)} /></Field></fieldset><Button disabled={busy} onClick={() => run(() => saveTrip(1))}>Save & continue</Button></div>}
-      {step === 1 && <div className="rounded-2xl border bg-white p-6 space-y-6"><h2 className="text-xl font-semibold">Trip locations</h2><fieldset disabled={locked || busy} className="space-y-5"><LocationPicker label="Pickup" value={trip.pickup} onChange={v => change("pickup", v)} />{trip.stops.map((stop, i) => <div key={i} className="flex items-end gap-3"><div className="flex-1"><LocationPicker label={`Stop ${i + 1}`} value={stop} onChange={v => change("stops", trip.stops.map((s, n) => n === i ? v : s))} /></div><Button variant="ghost" onClick={() => change("stops", trip.stops.filter((_, n) => n !== i))}>Remove</Button></div>)}<Button variant="outline" onClick={() => change("stops", [...trip.stops, { address: "" }])} disabled={trip.stops.length >= 20}>+ Add stop</Button><LocationPicker label="Destination" value={trip.dropoff} onChange={v => change("dropoff", v)} /></fieldset><RoutePreviewMap pickup={trip.pickup} dropoff={trip.dropoff} stops={trip.stops} /><div className="pt-2"><Button disabled={busy} onClick={() => run(() => saveTrip(2))}>Save & prepare quotation</Button></div></div>}
-      {step === 2 && <div className="rounded-2xl border bg-white p-6 space-y-5"><BookingSectionTitle title="Build quotation" description="Set the price, validity and terms for this journey." icon={ReceiptText} />{current && <p className="text-sm text-slate-500">Saving creates a new revision. Previous customer links will stop accepting responses.</p>}<fieldset disabled={locked || busy} onChange={() => setQuoteDirty(true)} className="space-y-5">{items.map((item, i) => <div key={i} className="grid gap-3 rounded-xl border border-slate-100 bg-slate-50/60 p-4 sm:grid-cols-[1fr_70px_110px_40px]"><Field label="Description"><Input value={item.description} onChange={e => setItems(items.map((l, n) => n === i ? { ...l, description: e.target.value } : l))} /></Field><Field label="Quantity"><Input type="number" min={1} value={item.quantity} onChange={e => setItems(items.map((l, n) => n === i ? { ...l, quantity: Number(e.target.value) } : l))} /></Field><Field label="Unit price"><Input type="number" min={0} step="0.01" value={item.unitPriceMinor / 100} onChange={e => setItems(items.map((l, n) => n === i ? { ...l, unitPriceMinor: Math.round(Number(e.target.value) * 100) } : l))} /></Field><Button aria-label={`Remove line ${i + 1}`} className="self-end" variant="ghost" disabled={items.length === 1} onClick={() => { setItems(items.filter((_, n) => n !== i)); setQuoteDirty(true); }}>×</Button></div>)}<Button variant="outline" onClick={() => { setItems([...items, { description: "", quantity: 1, unitPriceMinor: 0 }]); setQuoteDirty(true); }}>+ Add line item</Button><div className="grid gap-4 sm:grid-cols-2"><Field label="Currency"><select className={fieldClass} value={currency} onChange={e => setCurrency(e.target.value)}>{["AUD", "NZD", "USD", "GBP", "EUR"].map(c => <option key={c}>{c}</option>)}</select></Field><Field label="Valid until"><Input type="date" value={expires} onChange={e => setExpires(e.target.value)} /></Field><Field label="Discount amount"><Input type="number" min={0} step="0.01" value={discount / 100} onChange={e => setDiscount(Math.round(Number(e.target.value) * 100))} /></Field><Field label="Tax rate (%)"><Input type="number" min={0} max={100} step="0.01" value={tax / 100} onChange={e => setTax(Math.round(Number(e.target.value) * 100))} /></Field></div><Field label="Customer message"><textarea className={fieldClass} rows={3} value={message} onChange={e => setMessage(e.target.value)} /></Field><Field label="Terms & conditions"><textarea className={fieldClass} rows={5} value={terms} onChange={e => setTerms(e.target.value)} /></Field></fieldset><div className="flex flex-wrap justify-between items-center gap-4 border-t pt-4"><dl className="w-full space-y-2 rounded-xl border border-blue-100 bg-blue-50/50 p-4 text-sm"><div className="flex justify-between text-slate-600"><dt>Subtotal</dt><dd>{formatMoney(subtotal, currency)}</dd></div><div className="flex justify-between text-slate-600"><dt>Discount</dt><dd>−{formatMoney(discount, currency)}</dd></div><div className="flex justify-between text-slate-600"><dt>Tax ({tax / 100}%)</dt><dd>{formatMoney(total - subtotal + discount, currency)}</dd></div><div className="flex justify-between border-t border-blue-100 pt-3 text-lg font-semibold text-blue-950"><dt>Total {currency}</dt><dd>{formatMoney(total, currency)}</dd></div></dl><Button disabled={locked || busy} onClick={() => run(saveQuote)}>Save & preview quotation</Button></div></div>}
-      {step === 3 && preview && <div className="space-y-4"><BookingSectionTitle title="Review & send" description="Check the saved quotation and recipient before sending." icon={Send} /><div className="flex flex-wrap justify-between gap-3"><select aria-label="Quotation revision" className="rounded-lg border p-2 text-sm" value={preview.id} onChange={e => setPreviewId(Number(e.target.value))}>{quotes.map(q => <option value={q.id} key={q.id}>Revision {q.revision} · {q.status.replaceAll("_", " ")}</option>)}</select><Button variant="outline" disabled={busy} onClick={() => run(async () => downloadPdf(await api(`quotations/${preview.id}/pdf`, "GET", undefined, true), `quotation-${preview.id}.pdf`))}><Download size={16} />Download PDF</Button></div><QuotationPreview quotation={preview} />{!config?.emailConfigured && <p className="rounded-xl bg-amber-50 p-4 text-sm">Email sending needs Brevo configuration. You can save and download quotations now.</p>}<div className="rounded-xl border bg-white p-5 space-y-3">{preview.snapshot.customerEmail ? <p className="flex flex-wrap items-center gap-2 text-sm"><Mail size={16} className="text-blue-500" />Send to <strong>{preview.snapshot.customerEmail}</strong></p> : <p className="text-sm text-amber-700 font-medium">No customer email on this quotation. Add an email address to the customer before sending.</p>}<Button disabled={busy || !config?.emailConfigured || !preview.snapshot.customerEmail || preview.id !== current.id || !["DRAFT", "SENT"].includes(preview.status) || quoteDirty || tripDirty} onClick={() => run(async () => { await api(`quotations/${preview.id}/send`, "POST"); await refresh(); setStep(4); setNotice("Quotation queued. Delivery status appears below."); })}><Send size={16} />Send quotation to customer</Button>{(tripDirty || quoteDirty) && <p className="text-sm text-amber-700">Save and preview your changes before sending.</p>}</div></div>}
-      {step === 4 && current && <div className="rounded-2xl border bg-white p-6 space-y-6"><BookingSectionTitle title="Customer response & delivery" description="Follow delivery, the customer’s decision and dispatch readiness." icon={FileCheck2} /><div className="grid sm:grid-cols-3 gap-3"><WorkflowStatus label="Email delivery" value={current.deliveries?.[0]?.status || "NOT_SENT"} /><Status label="Quotation" value={current.status} /><Status label="Dispatch" value={booking?.dispatchStatus || "NOT_READY"} /></div>{current.respondedAt && <p>{current.respondentName} {current.status.toLowerCase()} on {formatTripDate(current.respondedAt, trip.timeZone)}{current.responseReason ? ` — ${current.responseReason}` : ""}</p>}{booking?.status === "CONFIRMED" && <Link className="inline-block underline text-sm" href="/dashboard/dispatch">Open dispatch board →</Link>}<section><h3 className="font-semibold mb-3">Email history</h3>{!current.deliveries?.length && <p className="text-sm text-slate-500">Quotation has not been sent.</p>}{current.deliveries?.map((d: any) => <div className="border-b py-3 text-sm" key={d.id}><div className="flex justify-between gap-3"><span>{d.kind === "RESPONSE" ? "Response confirmation" : "Quotation"} to {d.recipient}</span><strong>{d.status}</strong></div><p className="text-slate-500">{formatTripDate(d.createdAt, trip.timeZone)}</p>{d.lastError && <p className="text-red-700 mt-1">{d.lastError}</p>}{["UNKNOWN", "FAILED", "BOUNCED", "BLOCKED"].includes(d.status) && (d.kind === "RESPONSE" || current.status === "SENT") && <Button size="sm" variant="outline" className="mt-2" disabled={busy} onClick={() => run(async () => { if (d.status === "UNKNOWN" && !window.confirm("Check this delivery in Brevo logs first. Confirm only if Brevo did not send it. Queue another attempt?")) return; await api(`quotations/deliveries/${d.id}/retry`, "POST", { confirmedNotSent: d.status === "UNKNOWN" }); await refresh(); })}>{d.status === "UNKNOWN" ? "Reconcile & retry" : "Retry email"}</Button>}</div>)}</section>{["FAILED", "BOUNCED", "BLOCKED"].includes(current.deliveries?.[0]?.status) && current.status === "SENT" && <Button disabled={busy} onClick={() => run(async () => { await api(`quotations/${current.id}/send`, "POST"); await refresh(); })}>Retry quotation email</Button>}<section><h3 className="font-semibold">Activity</h3>{activity.map(a => <p key={a.id} className="border-b py-3 text-sm"><span className="text-slate-500 mr-3">{formatTripDate(a.timestamp, trip.timeZone)}</span>{a.action.replaceAll("_", " ")}</p>)}</section></div>}
-      {((step === 3 && !preview) || (step === 4 && !current)) && <div className="rounded-2xl border border-dashed border-slate-200 bg-white p-8"><BookingSectionTitle title={step === 3 ? "Your preview will appear here" : "No customer response yet"} description="Prepare and save a quotation to continue this journey." icon={step === 3 ? Send : FileCheck2} /><Button variant="outline" className="mt-5" onClick={() => setStep(2)}>Go to quotation</Button></div>}
-    </>}</section><BookingOverview trip={trip} booking={booking} total={total} currency={currency} hasQuotation={!!current} dirty={tripDirty || quoteDirty}>{step === 1 && editing && !locked && <div className="space-y-2"><Button variant="outline" disabled={busy || !trip.pickup.address || !trip.dropoff.address} onClick={() => run(async () => { const result = await api("quotations/estimate-route", "POST", { points: [trip.pickup, ...trip.stops, trip.dropoff], date: trip.date, time: trip.startTime, timeZone: trip.timeZone }); setEstimate(result); const arrival = dateParts(result.estimatedEnd, trip.timeZone); change("endDate", arrival.date); change("endTime", arrival.time); setNotice("Estimated arrival added. Review it and include any required stop or waiting time before saving."); })}>Estimate travel time</Button>{estimate && <p className="text-xs text-slate-500">Estimated {estimate.durationMinutes} min · {estimate.distanceKm} km. Allow extra time for stops and traffic.</p>}</div>}</BookingOverview></div>
-  </div>;
+
+  return (
+    <div className="mx-auto max-w-7xl p-4 sm:p-8 space-y-6 booking-workspace">
+      {/* Workspace Header */}
+      <header className="flex flex-wrap items-center justify-between gap-4">
+        <div>
+          <Link href="/dashboard/bookings" className="text-sm text-slate-500 hover:underline">
+            ← All bookings
+          </Link>
+          <h1 className="mt-2 text-2xl font-semibold">
+            {bookingId ? `Booking #${bookingId}` : "New booking"}
+          </h1>
+          <p className="text-sm text-slate-500 mt-1">
+            {booking?.amendsBookingId
+              ? `Amendment to booking #${booking.amendsBookingId}. The original stays active until acceptance.`
+              : "Prepare the trip, send a quotation and track the customer’s response."}
+          </p>
+        </div>
+
+        <div className="flex flex-wrap gap-2">
+          {booking && (
+            <RecordLifecycleActions
+              resource="bookings"
+              id={booking.id}
+              inactive={booking.status === "CANCELLED"}
+              onChanged={refresh}
+              onDeleted={() => router.push("/dashboard/bookings")}
+            />
+          )}
+
+          {booking && <RecordStatusBadge status={booking.status} />}
+
+          {!locked && !editing && <Button onClick={() => setEditing(true)}>Edit booking</Button>}
+
+          {editing && bookingId && (
+            <Button
+              variant="outline"
+              disabled={busy}
+              onClick={() => {
+                if ((tripDirty || quoteDirty) && !window.confirm("Discard unsaved changes?")) {
+                  return;
+                }
+                setTripDirty(false);
+                setQuoteDirty(false);
+                setEditing(false);
+                setReloadKey((k) => k + 1);
+              }}
+            >
+              Cancel editing
+            </Button>
+          )}
+
+          {!locked && editing && (
+            <Button
+              variant="outline"
+              disabled={busy}
+              onClick={() => (step === 2 ? handleSaveQuote() : handleSaveTrip())}
+            >
+              Save draft
+            </Button>
+          )}
+
+          {booking?.status === "CONFIRMED" && (
+            <Button
+              onClick={() =>
+                runAsync(async () => {
+                  const b = await api(`quotations/booking/${bookingId}/amend`, "POST");
+                  router.push(`/dashboard/bookings/${b.id}`);
+                })
+              }
+              disabled={busy}
+            >
+              Create amendment
+            </Button>
+          )}
+        </div>
+      </header>
+
+      {booking?.status === "CANCELLED" && <InactiveRecordNotice cancelled />}
+
+      {/* Progress navigation */}
+      <nav aria-label="Booking progress" className="grid grid-cols-2 gap-2 sm:grid-cols-5">
+        {WORKSPACE_STEPS.map((label, i) => {
+          const Icon = bookingStepIcons[i];
+          const isCurrent = step === i;
+          return (
+            <button
+              key={label}
+              onClick={() => {
+                if (
+                  !locked &&
+                  i >= 2 &&
+                  (tripDirty || booking?.routeCalculation?.status === "OUTDATED")
+                ) {
+                  setError(
+                    "Save trip changes and calculate a valid route before preparing a quotation.",
+                  );
+                  return;
+                }
+                if (!locked) setEditing(true);
+                setStep(i);
+              }}
+              disabled={!bookingId && i > 1}
+              aria-current={isCurrent ? "step" : undefined}
+              className={`flex items-center gap-3 rounded-xl border p-3 text-left transition-colors disabled:opacity-40 focus-visible:outline-2 focus-visible:outline-blue-500 ${
+                isCurrent
+                  ? "border-blue-200 bg-blue-50 text-blue-800 shadow-sm"
+                  : "border-slate-200 bg-white text-slate-500 hover:border-blue-200 hover:bg-slate-50"
+              }`}
+            >
+              <span
+                className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-lg ${
+                  isCurrent ? "bg-blue-600 text-white" : "bg-slate-100 text-slate-500"
+                }`}
+              >
+                <Icon size={18} aria-hidden="true" />
+              </span>
+              <span>
+                <span className="block text-[10px] font-medium uppercase tracking-wider opacity-70">
+                  Step {i + 1}
+                </span>
+                <span className="text-xs font-semibold">{label}</span>
+              </span>
+            </button>
+          );
+        })}
+      </nav>
+
+      {/* Error & Notice banners */}
+      {error && (
+        <div
+          role="alert"
+          className="rounded-xl bg-red-50 border border-red-200 p-4 text-red-800 flex flex-wrap items-center justify-between gap-3"
+        >
+          <div>
+            <span className="font-semibold text-red-900 mr-2">Notice:</span>
+            {error}
+          </div>
+          {step !== 0 && (!trip.customerEmail || !trip.date) && (
+            <Button
+              size="sm"
+              variant="outline"
+              className="border-red-300 text-red-900 bg-white hover:bg-red-50 text-xs shrink-0"
+              onClick={() => setStep(0)}
+            >
+              Go to Step 1: Basic details
+            </Button>
+          )}
+        </div>
+      )}
+
+      {notice && (
+        <p role="status" className="rounded-xl bg-emerald-50 p-4 text-emerald-800">
+          {notice}
+        </p>
+      )}
+
+      {/* Main workspace layout */}
+      <div className={step === 1 ? "grid gap-6" : "grid gap-6 lg:grid-cols-[minmax(0,1fr)_300px]"}>
+        <section className="min-w-0">
+          {bookingId && !editing && booking ? (
+            <BookingRecordView
+              onEdit={!locked ? () => setEditing(true) : undefined}
+              booking={booking}
+              quotes={quotes}
+              activity={activity}
+              step={step}
+              busy={busy}
+              emailConfigured={!!config?.emailConfigured}
+              download={handleDownloadPdf}
+              send={handleSendQuotation}
+            />
+          ) : (
+            <>
+              {step === 0 && (
+                <BookingStep0BasicDetails
+                  trip={trip}
+                  bookingId={bookingId}
+                  locked={locked}
+                  busy={busy}
+                  onChange={changeTrip}
+                  onBatchChange={batchChangeTrip}
+                  onSaveContinue={() => handleSaveTrip(1)}
+                  setNotice={setNotice}
+                />
+              )}
+
+              {step === 1 && (
+                <BookingStep1Locations
+                  onPreview={(calculation) =>
+                    workflow.setTrip((t) => ({
+                      ...t,
+                      routeCalculation: calculation,
+                      estimatedDistanceKm:
+                        ((calculation.outbound?.distanceMeters || 0) +
+                          (calculation.return?.distanceMeters || 0)) /
+                        1000,
+                      estimatedDurationMinutes:
+                        ((calculation.outbound?.serviceSeconds || 0) +
+                          (calculation.return?.serviceSeconds || 0)) /
+                        60,
+                    }))
+                  }
+                  trip={trip}
+                  bookingId={bookingId}
+                  locked={locked}
+                  busy={busy}
+                  onChange={changeTrip}
+                  onBatchChange={batchChangeTrip}
+                  onSaveContinue={() => handleSaveTrip(2)}
+                  onBack={() => setStep(0)}
+                  setNotice={setNotice}
+                />
+              )}
+
+              {step === 2 && (
+                <div className="space-y-4">
+                  <BookingStep2Quotation
+                    routeCalculation={booking?.routeCalculation}
+                    routeReview={routeReview}
+                    onRouteReview={setRouteReview}
+                    trip={trip}
+                    currentQuotation={current}
+                    items={items}
+                    discount={discount}
+                    tax={tax}
+                    currency={currency}
+                    expires={expires}
+                    terms={terms}
+                    message={message}
+                    subtotal={subtotal}
+                    taxAmount={taxAmount}
+                    total={total}
+                    locked={locked}
+                    busy={busy}
+                    onAddItem={addItem}
+                    onRemoveItem={removeItem}
+                    onUpdateItem={updateItem}
+                    onSetItems={setItems}
+                    onDiscountChange={setDiscount}
+                    onTaxChange={setTax}
+                    onCurrencyChange={setCurrency}
+                    onExpiresChange={setExpires}
+                    onTermsChange={setTerms}
+                    onMessageChange={setMessage}
+                    onSaveQuote={handleSaveQuote}
+                  />
+                </div>
+              )}
+
+              {step === 3 && preview && (
+                <BookingStep3PreviewSend
+                  preview={preview}
+                  current={current}
+                  quotes={quotes}
+                  config={config}
+                  busy={busy}
+                  tripDirty={tripDirty}
+                  quoteDirty={quoteDirty}
+                  onSelectPreviewId={setPreviewId}
+                  onDownloadPdf={handleDownloadPdf}
+                  onSendQuotation={handleSendQuotation}
+                  onRecordAcceptance={handleRecordAcceptance}
+                />
+              )}
+
+              {step === 4 && current && (
+                <BookingStep4Response
+                  current={current}
+                  booking={booking}
+                  activity={activity}
+                  timeZone={trip.timeZone}
+                  busy={busy}
+                  onRetryDelivery={handleRetryDelivery}
+                  onResendQuotationEmail={handleResendQuotationEmail}
+                  onRecordAcceptance={handleRecordAcceptance}
+                />
+              )}
+
+              {((step === 3 && !preview) || (step === 4 && !current)) && (
+                <div className="rounded-2xl border border-dashed border-slate-200 bg-white p-8">
+                  <BookingSectionTitle
+                    title={
+                      step === 3 ? "Your preview will appear here" : "No customer response yet"
+                    }
+                    description="Prepare and save a quotation to continue this journey."
+                    icon={step === 3 ? Send : FileCheck2}
+                  />
+                  <Button variant="outline" className="mt-5" onClick={() => setStep(2)}>
+                    Go to quotation
+                  </Button>
+                </div>
+              )}
+            </>
+          )}
+        </section>
+
+        {/* Sidebar Summary */}
+        <BookingOverview
+          trip={trip}
+          booking={booking}
+          total={total}
+          currency={currency}
+          hasQuotation={!!current}
+          dirty={tripDirty || quoteDirty}
+        />
+      </div>
+    </div>
+  );
 }
-function Field({ label, children }: { label: string; children: React.ReactNode }) { return <label className="block text-sm text-slate-600 space-y-2"><span>{label}</span>{children}</label>; }
-function Status({ label, value }: { label: string; value: string }) { return <WorkflowStatus label={label} value={value} />; }

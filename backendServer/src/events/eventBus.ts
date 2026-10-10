@@ -19,7 +19,11 @@ class EventBus {
   /**
    * Publish a domain event to all subscribers.
    */
-  publish<T>(type: EventType, payload: T, meta?: { userId?: number | undefined; requestId?: string | undefined }): void {
+  publish<T>(
+    type: EventType,
+    payload: T,
+    meta?: { userId?: number | undefined; requestId?: string | undefined },
+  ): void {
     const event: DomainEvent<T> = {
       type,
       payload,
@@ -27,7 +31,6 @@ class EventBus {
       userId: meta?.userId,
       requestId: meta?.requestId,
     };
-
 
     this.emitter.emit(type, event);
   }

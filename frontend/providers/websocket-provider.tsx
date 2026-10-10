@@ -1,11 +1,11 @@
 "use client";
 
-import React, { createContext, useContext, useEffect, useState } from "react";
-import { io, Socket } from "socket.io-client";
-import { useDispatch } from "react-redux";
 import { dispatchApi } from "@/services/api";
 import { useAuth } from "@clerk/nextjs";
 import { usePathname } from "next/navigation";
+import React, { createContext, useContext, useEffect, useState } from "react";
+import { useDispatch } from "react-redux";
+import { io, Socket } from "socket.io-client";
 
 interface WebSocketContextType {
   socket: Socket | null;
@@ -23,29 +23,38 @@ export const WebSocketProvider = ({ children }: { children: React.ReactNode }) =
   const [socket, setSocket] = useState<Socket | null>(null);
   const [isConnected, setIsConnected] = useState(false);
   const dispatch = useDispatch();
-  const { isSignedIn, getToken } = useAuth();
+  const { isSignedIn, userId, getToken } = useAuth();
   const pathname = usePathname();
 
   useEffect(() => {
     // Only connect if dispatch feature is enabled
-    if (!isSignedIn || !pathname.startsWith("/dashboard") || process.env.NEXT_PUBLIC_DISPATCH_ENABLED === "false") {
+    if (
+      !isSignedIn ||
+      !pathname.startsWith("/dashboard") ||
+      process.env.NEXT_PUBLIC_DISPATCH_ENABLED === "false"
+    ) {
       return;
     }
 
     const socketUrl = process.env.NEXT_PUBLIC_WS_URL || "http://localhost:8000/dispatch";
     const socketInstance = io(socketUrl, {
-      auth: async (callback) => callback({ token: await getToken() }),
+      auth: async (callback) => {
+        try {
+          callback({ token: await getToken() });
+        } catch {
+          callback({ token: null });
+        }
+      },
       withCredentials: true,
       transports: ["websocket", "polling"],
     });
 
     socketInstance.on("connect", () => {
-
       setIsConnected(true);
+      dispatch(dispatchApi.util.invalidateTags(["Board", "Assignment"]));
     });
 
     socketInstance.on("disconnect", (reason) => {
-
       setIsConnected(false);
       if (reason === "io server disconnect") socketInstance.connect();
     });
@@ -75,9 +84,10 @@ export const WebSocketProvider = ({ children }: { children: React.ReactNode }) =
     setSocket(socketInstance);
 
     return () => {
+      socketInstance.removeAllListeners();
       socketInstance.disconnect();
     };
-  }, [dispatch, getToken, isSignedIn, pathname]);
+  }, [dispatch, getToken, isSignedIn, userId, pathname]);
 
   return (
     <WebSocketContext.Provider value={{ socket, isConnected }}>

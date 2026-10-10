@@ -1,6 +1,11 @@
 "use client";
 
-import React from "react";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import {
   Sidebar,
   SidebarContent,
@@ -12,26 +17,32 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
   SidebarMenuSub,
-  SidebarMenuSubItem,
   SidebarMenuSubButton,
+  SidebarMenuSubItem,
 } from "@/components/ui/sidebar";
-import { usePathname } from "next/navigation";
+import { featureEnabled, useEmployeeAccess } from "@/components/workplace/access";
 import { mainNavItems, secondaryNavItems } from "@/config/navigation";
-import Link from "next/link";
+import { useClerk, useUser } from "@clerk/nextjs";
 import DirectionsBusOutlinedIcon from "@mui/icons-material/DirectionsBusOutlined";
-import { useUser, useClerk } from "@clerk/nextjs";
-import Image from "next/image";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
+import LogoutIcon from "@mui/icons-material/Logout";
 import PeopleIcon from "@mui/icons-material/Person";
 import SettingsIcon from "@mui/icons-material/Settings";
-import LogoutIcon from "@mui/icons-material/Logout";
+import Image from "next/image";
+import Link from "next/link";
+import { usePathname } from "next/navigation";
 
 export function AppSidebar() {
+  const access = useEmployeeAccess();
+  const visibleNav = mainNavItems.filter((item) => {
+    const key = item.href.includes("/notices")
+      ? "notices"
+      : item.href.includes("/incidents")
+        ? "incidents"
+        : item.href.includes("/lost-property")
+          ? "lostProperty"
+          : null;
+    return key ? featureEnabled(access, key) : access.office;
+  });
   const pathname = usePathname();
   const { user, isLoaded } = useUser();
   const { signOut } = useClerk();
@@ -43,10 +54,12 @@ export function AppSidebar() {
   };
 
   const userInitials = user
-    ? (`${user.firstName?.[0] ?? ""}${user.lastName?.[0] ?? ""}`.trim() ||
-      user.username?.[0] ||
-      user.primaryEmailAddress?.emailAddress?.[0] ||
-      "U").toUpperCase()
+    ? (
+        `${user.firstName?.[0] ?? ""}${user.lastName?.[0] ?? ""}`.trim() ||
+        user.username?.[0] ||
+        user.primaryEmailAddress?.emailAddress?.[0] ||
+        "U"
+      ).toUpperCase()
     : "...";
 
   return (
@@ -61,7 +74,7 @@ export function AppSidebar() {
               City Transit Co.
             </h1>
             <span className="truncate text-xs text-sidebar-foreground/70">
-              Dispatcher Admin
+              {access.employee.role.toLowerCase().replaceAll("_", " ")}
             </span>
           </div>
         </Link>
@@ -70,7 +83,7 @@ export function AppSidebar() {
         <SidebarGroup>
           <SidebarGroupContent>
             <SidebarMenu className="gap-2 px-4">
-              {mainNavItems.map((item) => (
+              {visibleNav.map((item) => (
                 <SidebarMenuItem key={item.name}>
                   <SidebarMenuButton
                     asChild
@@ -110,7 +123,7 @@ export function AppSidebar() {
         <SidebarGroup>
           <SidebarGroupContent>
             <SidebarMenu className="gap-2 px-4  ">
-              {secondaryNavItems.map((item) => (
+              {(access.office ? secondaryNavItems : []).map((item) => (
                 <SidebarMenuItem key={item.name}>
                   <SidebarMenuButton
                     asChild
@@ -143,19 +156,28 @@ export function AppSidebar() {
                   >
                     <div className="h-10 w-10 rounded-full border border-slate-100 bg-red-50 text-red-600 flex items-center justify-center font-bold text-sm overflow-hidden shrink-0">
                       {user?.imageUrl ? (
-                        <Image src={user.imageUrl} alt="Profile" width={40} height={40} className="h-full w-full object-cover" />
+                        <Image
+                          src={user.imageUrl}
+                          alt="Profile"
+                          width={40}
+                          height={40}
+                          className="h-full w-full object-cover"
+                        />
                       ) : (
                         userInitials
                       )}
                     </div>
                     <div className="grid flex-1 text-left text-sm leading-tight group-data-[collapsible=icon]:hidden ml-2">
                       <span className="truncate font-bold text-slate-900">
-                        {isLoaded ? (user?.fullName || user?.username || user?.primaryEmailAddress?.emailAddress?.split('@')[0] || "User") : "Loading..."}
+                        {isLoaded
+                          ? user?.fullName ||
+                            user?.username ||
+                            user?.primaryEmailAddress?.emailAddress?.split("@")[0] ||
+                            "User"
+                          : "Loading..."}
                       </span>
                       <span className="truncate text-xs text-slate-400">
-                        {isLoaded
-                          ? (user?.primaryEmailAddress?.emailAddress ?? "")
-                          : ""}
+                        {isLoaded ? (user?.primaryEmailAddress?.emailAddress ?? "") : ""}
                       </span>
                     </div>
                   </SidebarMenuButton>
@@ -171,20 +193,14 @@ export function AppSidebar() {
                     Profile
                   </DropdownMenuItem>
                   <DropdownMenuItem className="rounded-lg" disabled>
-                    <SettingsIcon
-                      className="mr-2 size-4"
-                      sx={{ fontSize: 18 }}
-                    />
+                    <SettingsIcon className="mr-2 size-4" sx={{ fontSize: 18 }} />
                     Settings
                   </DropdownMenuItem>
                   <DropdownMenuItem
                     className="text-destructive focus:bg-destructive/10 rounded-lg cursor-pointer"
-                    onClick={() => signOut({ redirectUrl: '/' })}
+                    onClick={() => signOut({ redirectUrl: "/" })}
                   >
-                    <LogoutIcon
-                      className="mr-2 size-4"
-                      sx={{ fontSize: 18 }}
-                    />
+                    <LogoutIcon className="mr-2 size-4" sx={{ fontSize: 18 }} />
                     Log out
                   </DropdownMenuItem>
                 </DropdownMenuContent>

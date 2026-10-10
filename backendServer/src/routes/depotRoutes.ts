@@ -1,12 +1,12 @@
 import { Router } from "express";
-import { requireClerkAuth as requireAuth } from "../middleware/authMiddleware.js";
 import {
-  getDepots,
-  getDepotById,
   createDepot,
-  updateDepot,
   deleteDepot,
+  getDepotById,
+  getDepots,
+  updateDepot,
 } from "../controllers/depotController.js";
+import { requireClerkAuth as requireAuth } from "../middleware/authMiddleware.js";
 
 const router = Router();
 

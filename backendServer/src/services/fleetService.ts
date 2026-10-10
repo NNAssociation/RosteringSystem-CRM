@@ -1,12 +1,15 @@
-import { assertCanDeactivate, changeRecordLifecycle } from "./recordLifecycle.js";
 import { prisma } from "../db.js";
 import { eventBus } from "../events/eventBus.js";
 import { EventTypes } from "../events/eventTypes.js";
 import type { CreateVehicleInput, UpdateVehicleInput } from "../validators/fleetSchema.js";
+import { assertCanDeactivate, changeRecordLifecycle } from "./recordLifecycle.js";
 
 // ── Service Methods ───────────────────────────────────────
 
-const relations = { homeDepot: true, assignedDriver: { select: { id: true, firstName: true, lastName: true, email: true } } };
+const relations = {
+  homeDepot: true,
+  assignedDriver: { select: { id: true, firstName: true, lastName: true, email: true } },
+};
 
 export async function getAllVehicles(db: any = prisma) {
   const vehicles = await db.fleetVehicle.findMany({
@@ -34,6 +37,7 @@ export async function createVehicle(input: CreateVehicleInput, db: any = prisma)
   const newVehicle = await db.fleetVehicle.create({
     data: {
       make: input.make,
+      facilities: input.facilities || [],
       model: input.model,
       year: Number(input.year),
       licensePlate: input.licensePlate,
@@ -54,12 +58,14 @@ export async function createVehicle(input: CreateVehicleInput, db: any = prisma)
 
 export async function updateVehicle(id: number, input: UpdateVehicleInput, db: any = prisma) {
   if (input.status) input = { ...input, status: input.status.toUpperCase().replaceAll(" ", "_") };
-  if (input.status === "INACTIVE" && db === prisma) return prisma.$transaction(async (tx: any) => {
-    await tx.$executeRaw`SELECT pg_advisory_xact_lock(74021)`;
-    await assertCanDeactivate(tx, "fleet", id);
-    return updateVehicle(id, input, tx);
-  });
+  if (input.status === "INACTIVE" && db === prisma)
+    return prisma.$transaction(async (tx: any) => {
+      await tx.$executeRaw`SELECT pg_advisory_xact_lock(74021)`;
+      await assertCanDeactivate(tx, "fleet", id);
+      return updateVehicle(id, input, tx);
+    });
   const updateData: any = {};
+  if (input.facilities !== undefined) updateData.facilities = input.facilities;
   if (input.make) updateData.make = input.make;
   if (input.model) updateData.model = input.model;
   if (input.year) updateData.year = Number(input.year);
@@ -68,12 +74,15 @@ export async function updateVehicle(id: number, input: UpdateVehicleInput, db: a
   if (input.vin) updateData.vin = input.vin;
   if (input.status) {
     updateData.status = input.status;
-
   }
-  if (input.maxPassengers !== undefined) updateData.maxPassengers = input.maxPassengers == null ? null : Number(input.maxPassengers);
-  if (input.maxCargoVolume !== undefined) updateData.maxCargoVolume = input.maxCargoVolume == null ? null : Number(input.maxCargoVolume);
-  if (input.availableFrom !== undefined) updateData.availableFrom = input.availableFrom ? new Date(input.availableFrom) : null;
-  if (input.availableTo !== undefined) updateData.availableTo = input.availableTo ? new Date(input.availableTo) : null;
+  if (input.maxPassengers !== undefined)
+    updateData.maxPassengers = input.maxPassengers == null ? null : Number(input.maxPassengers);
+  if (input.maxCargoVolume !== undefined)
+    updateData.maxCargoVolume = input.maxCargoVolume == null ? null : Number(input.maxCargoVolume);
+  if (input.availableFrom !== undefined)
+    updateData.availableFrom = input.availableFrom ? new Date(input.availableFrom) : null;
+  if (input.availableTo !== undefined)
+    updateData.availableTo = input.availableTo ? new Date(input.availableTo) : null;
   if (input.homeDepotId !== undefined) updateData.homeDepotId = input.homeDepotId;
   if (input.assignedDriverId !== undefined) updateData.assignedDriverId = input.assignedDriverId;
 
@@ -82,7 +91,8 @@ export async function updateVehicle(id: number, input: UpdateVehicleInput, db: a
     data: updateData,
     include: relations,
   });
-  if (input.status) eventBus.publish(EventTypes.VEHICLE_STATUS_CHANGED, { vehicleId: id, status: input.status });
+  if (input.status)
+    eventBus.publish(EventTypes.VEHICLE_STATUS_CHANGED, { vehicleId: id, status: input.status });
   return updatedVehicle;
 }
 
