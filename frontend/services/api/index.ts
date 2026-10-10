@@ -1,30 +1,78 @@
 // Barrel export for all API slices
-export { bookingsApi, useGetBookingsQuery, useGetBookingByIdQuery, useCreateBookingMutation, useUpdateBookingMutation, useDeleteBookingMutation, useLazySearchCustomersQuery } from "./bookings.api";
-export { customersApi, useGetCustomersQuery, useGetCustomerByIdQuery, useCreateCustomerMutation, useUpdateCustomerMutation, useDeleteCustomerMutation } from "./customers.api";
-export {
-    employeesApi,
-    useGetEmployeesQuery,
-    useGetEmployeeByIdQuery,
-    useCreateEmployeeMutation,
-    useUpdateEmployeeMutation,
-    useDeleteEmployeeMutation,
-    useGetEmployeeAvailabilityQuery,
-    useAddEmployeeAvailabilityMutation,
-    // Backward compatibility aliases
-    driversApi,
-    useGetDriversQuery,
-    useGetDriverByIdQuery,
-    useCreateDriverMutation,
-    useUpdateDriverMutation,
-    useDeleteDriverMutation,
-    useGetDriverAvailabilityQuery,
-    useAddDriverAvailabilityMutation,
-} from "./employees.api";
-export { fleetApi, useGetVehiclesQuery, useGetVehicleByIdQuery, useCreateVehicleMutation, useUpdateVehicleMutation, useDeleteVehicleMutation } from "./fleet.api";
-export { userApi, useGetUsersQuery, useGetUserByIdQuery, useCreateUserMutation, useUpdateUserMutation, useDeleteUserMutation } from "./user.api";
 export { API_BASE_URL, baseQuery } from "./base-query";
-export { dispatchApi, useGetBoardDataQuery, useCreateAssignmentMutation, useUpdateAssignmentMutation, useDeleteAssignmentMutation, useAcquireLockMutation, useReleaseLockMutation } from "./dispatch.api";
-export { depotsApi, useGetDepotsQuery, useGetDepotByIdQuery, useCreateDepotMutation, useUpdateDepotMutation, useDeleteDepotMutation } from "./depot.api";
-export { settingsApi, useGetSchedulingSettingsQuery, useUpdateSchedulingSettingsMutation } from "./settings.api";
+export {
+  bookingsApi,
+  useCreateBookingMutation,
+  useDeleteBookingMutation,
+  useGetBookingByIdQuery,
+  useGetBookingsQuery,
+  useLazySearchCustomersQuery,
+  useUpdateBookingMutation,
+} from "./bookings.api";
+export {
+  customersApi,
+  useCreateCustomerMutation,
+  useDeleteCustomerMutation,
+  useGetCustomerByIdQuery,
+  useGetCustomersQuery,
+  useUpdateCustomerMutation,
+} from "./customers.api";
+export {
+  depotsApi,
+  useCreateDepotMutation,
+  useDeleteDepotMutation,
+  useGetDepotByIdQuery,
+  useGetDepotsQuery,
+  useUpdateDepotMutation,
+} from "./depot.api";
 export type { Depot } from "./depot.api";
+export {
+  dispatchApi,
+  useAcquireLockMutation,
+  useCreateAssignmentMutation,
+  useDeleteAssignmentMutation,
+  useGetBoardDataQuery,
+  useReleaseLockMutation,
+  useUpdateAssignmentMutation,
+} from "./dispatch.api";
+export {
+  // Backward compatibility aliases
+  driversApi,
+  employeesApi,
+  useAddDriverAvailabilityMutation,
+  useAddEmployeeAvailabilityMutation,
+  useCreateDriverMutation,
+  useCreateEmployeeMutation,
+  useDeleteDriverMutation,
+  useDeleteEmployeeMutation,
+  useGetDriverAvailabilityQuery,
+  useGetDriverByIdQuery,
+  useGetDriversQuery,
+  useGetEmployeeAvailabilityQuery,
+  useGetEmployeeByIdQuery,
+  useGetEmployeesQuery,
+  useUpdateDriverMutation,
+  useUpdateEmployeeMutation,
+} from "./employees.api";
+export {
+  fleetApi,
+  useCreateVehicleMutation,
+  useDeleteVehicleMutation,
+  useGetVehicleByIdQuery,
+  useGetVehiclesQuery,
+  useUpdateVehicleMutation,
+} from "./fleet.api";
+export {
+  settingsApi,
+  useGetSchedulingSettingsQuery,
+  useUpdateSchedulingSettingsMutation,
+} from "./settings.api";
 export type { SchedulingSettings } from "./settings.api";
+export {
+  useCreateUserMutation,
+  useDeleteUserMutation,
+  useGetUserByIdQuery,
+  useGetUsersQuery,
+  useUpdateUserMutation,
+  userApi,
+} from "./user.api";

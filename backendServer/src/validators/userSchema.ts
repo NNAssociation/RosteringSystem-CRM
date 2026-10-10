@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { ROLES, EMPLOYMENT_TYPES, STATUSES, ROLE_DEPARTMENT_MAP } from "../constants/employee.js";
+import { EMPLOYMENT_TYPES, ROLE_DEPARTMENT_MAP, ROLES, STATUSES } from "../constants/employee.js";
 
 // ── User / Employee Schemas ─────────────────────────────────
 
@@ -39,28 +39,36 @@ const baseUserFields = {
 
 const baseUserSchema = z.object(baseUserFields);
 
-export const createUserSchema = baseUserSchema.refine((data) => {
-  // If both role and department are explicitly sent, validate they match the map
-  if (data.role && data.department) {
-    const expected = ROLE_DEPARTMENT_MAP[data.role];
-    return data.department === expected;
-  }
-  return true;
-}, {
-  message: "Department does not match the selected role. Department is auto-assigned based on role.",
-  path: ["department"],
-});
+export const createUserSchema = baseUserSchema.refine(
+  (data) => {
+    // If both role and department are explicitly sent, validate they match the map
+    if (data.role && data.department) {
+      const expected = ROLE_DEPARTMENT_MAP[data.role];
+      return data.department === expected;
+    }
+    return true;
+  },
+  {
+    message:
+      "Department does not match the selected role. Department is auto-assigned based on role.",
+    path: ["department"],
+  },
+);
 
-export const updateUserSchema = baseUserSchema.partial().refine((data) => {
-  if (data.role && data.department) {
-    const expected = ROLE_DEPARTMENT_MAP[data.role];
-    return data.department === expected;
-  }
-  return true;
-}, {
-  message: "Department does not match the selected role. Department is auto-assigned based on role.",
-  path: ["department"],
-});
+export const updateUserSchema = baseUserSchema.partial().refine(
+  (data) => {
+    if (data.role && data.department) {
+      const expected = ROLE_DEPARTMENT_MAP[data.role];
+      return data.department === expected;
+    }
+    return true;
+  },
+  {
+    message:
+      "Department does not match the selected role. Department is auto-assigned based on role.",
+    path: ["department"],
+  },
+);
 
 export type CreateUserInput = z.infer<typeof createUserSchema>;
 export type UpdateUserInput = z.infer<typeof updateUserSchema>;

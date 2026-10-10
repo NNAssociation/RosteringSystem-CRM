@@ -23,5 +23,7 @@
   overflow-wrap: anywhere;
 }
 @media (prefers-reduced-motion: reduce) {
-  .booking-workspace * { transition: none !important; }
+  .booking-workspace * {
+    transition: none !important;
+  }
 }

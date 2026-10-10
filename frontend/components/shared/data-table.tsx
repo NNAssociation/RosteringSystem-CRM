@@ -1,7 +1,6 @@
 "use client";
 
-import React from "react";
-import { cn } from "@/lib/utils";
+import { Skeleton } from "@/components/ui/skeleton";
 import {
   Table,
   TableBody,
@@ -10,7 +9,8 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Skeleton } from "@/components/ui/skeleton";
+import { cn } from "@/lib/utils";
+import React from "react";
 
 export interface Column<T> {
   key: string;
@@ -75,7 +75,7 @@ export function DataTable<T>({
   if (data.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center py-12 text-center rounded-xl border border-dashed bg-muted/10">
-        {typeof emptyMessage === 'string' ? (
+        {typeof emptyMessage === "string" ? (
           <p className="text-muted-foreground font-medium">{emptyMessage}</p>
         ) : (
           emptyMessage
@@ -109,7 +109,7 @@ export function DataTable<T>({
               onClick={() => onRowClick?.(item)}
               className={cn(
                 "transition-colors hover:bg-muted/50 group cursor-pointer",
-                rowClassName?.(item)
+                rowClassName?.(item),
               )}
             >
               {columns.map((col) => (

@@ -1,18 +1,22 @@
-import { Server as SocketIOServer } from "socket.io";
-import type { Server as HTTPServer } from "http";
-import { setupDispatchNamespace } from "./dispatchNamespace.js";
 import { createAdapter } from "@socket.io/redis-adapter";
+import type { Server as HTTPServer } from "http";
 import { Redis } from "ioredis";
+import { Server as SocketIOServer } from "socket.io";
+import { originAllowed, trustedOrigins } from "../config/trustedOrigins.js";
+import { setupDispatchNamespace } from "./dispatchNamespace.js";
 
 let io: SocketIOServer;
 
 export function initializeSocket(httpServer: HTTPServer) {
+  const origins = trustedOrigins();
   io = new SocketIOServer(httpServer, {
+    allowRequest: (request, callback) =>
+      callback(null, originAllowed(request.headers.origin, origins)),
     cors: {
-      origin: "*", // Or specific allowed origins
+      origin: (origin, callback) => callback(null, originAllowed(origin, origins)),
       methods: ["GET", "POST"],
-      credentials: true
-    }
+      credentials: true,
+    },
   });
 
   if (process.env.REDIS_URL) {

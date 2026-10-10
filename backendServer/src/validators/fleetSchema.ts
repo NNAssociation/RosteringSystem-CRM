@@ -3,6 +3,7 @@ import { z } from "zod";
 // ── Fleet Vehicle Schemas ──────────────────────────────────
 
 export const createVehicleSchema = z.object({
+  facilities: z.array(z.string().trim().min(1).max(80)).max(20).optional(),
   make: z.string().min(1, "Make is required"),
   model: z.string().min(1, "Model is required"),
   year: z.coerce.number().int().min(1900).max(2100),

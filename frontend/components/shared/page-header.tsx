@@ -1,6 +1,5 @@
 "use client";
 
-import React from "react";
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -11,6 +10,7 @@ import {
 } from "@/components/ui/breadcrumb";
 import { cn } from "@/lib/utils";
 import { motion } from "framer-motion";
+import React from "react";
 
 interface BreadcrumbItem {
   label: string;
@@ -71,13 +71,9 @@ export function PageHeader({
           </Breadcrumb>
         )}
         <div className="space-y-1">
-          <h1 className="text-2xl font-bold text-slate-900 tracking-tight">
-            {title}
-          </h1>
+          <h1 className="text-2xl font-bold text-slate-900 tracking-tight">{title}</h1>
           {description && (
-            <p className="text-slate-500 font-normal text-sm tracking-tight">
-              {description}
-            </p>
+            <p className="text-slate-500 font-normal text-sm tracking-tight">{description}</p>
           )}
         </div>
       </div>

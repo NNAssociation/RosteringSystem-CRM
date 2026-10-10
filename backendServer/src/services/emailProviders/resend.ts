@@ -1,5 +1,5 @@
-import type { TransactionalEmailProvider, SendEmailPayload, SendEmailResult } from "./types.js";
 import { prisma } from "../../db.js";
+import type { SendEmailPayload, SendEmailResult, TransactionalEmailProvider } from "./types.js";
 
 export class ResendProvider implements TransactionalEmailProvider {
   readonly name = "Resend";
@@ -7,16 +7,13 @@ export class ResendProvider implements TransactionalEmailProvider {
   isConfigured(): boolean {
     return Boolean(
       process.env.RESEND_API_KEY &&
-      (process.env.RESEND_SENDER_EMAIL || process.env.BREVO_SENDER_EMAIL)
+      (process.env.RESEND_SENDER_EMAIL || process.env.BREVO_SENDER_EMAIL),
     );
   }
 
   async send(payload: SendEmailPayload): Promise<SendEmailResult> {
-    const fromAddress =
-      process.env.RESEND_SENDER_EMAIL || payload.sender.email;
-    const from = payload.sender.name
-      ? `${payload.sender.name} <${fromAddress}>`
-      : fromAddress;
+    const fromAddress = process.env.RESEND_SENDER_EMAIL || payload.sender.email;
+    const from = payload.sender.name ? `${payload.sender.name} <${fromAddress}>` : fromAddress;
 
     const resendBody: any = {
       from,
@@ -78,9 +75,7 @@ export class ResendProvider implements TransactionalEmailProvider {
 
     const match = await prisma.emailDelivery.findFirst({
       where: {
-        OR: [
-          ...(providerMessageId ? [{ providerMessageId }] : []),
-        ],
+        OR: [...(providerMessageId ? [{ providerMessageId }] : [])],
       },
     });
 

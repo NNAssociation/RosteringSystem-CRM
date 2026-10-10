@@ -1,6 +1,6 @@
 "use client";
-import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
 import { anchoredTimelineScroll, clampTimelineZoom } from "@/lib/dispatch-timeline";
+import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
 
 export function useTimelineZoom(ready: boolean, labelWidth: number, baseWidth: number) {
   const viewport = useRef<HTMLDivElement>(null);
@@ -12,21 +12,24 @@ export function useTimelineZoom(ready: boolean, labelWidth: number, baseWidth: n
   const current = useRef(1);
   const pendingScroll = useRef<number | null>(null);
 
-  const changeZoom = useCallback((value: number, pointerX?: number) => {
-    const element = viewport.current;
-    const next = clampTimelineZoom(value, minimumZoom, maximumZoom);
-    if (!element || Math.abs(next - current.current) < 0.001) return;
-    const anchor = Math.max(labelWidth, pointerX ?? (element.clientWidth + labelWidth) / 2);
-    pendingScroll.current = anchoredTimelineScroll(
-      pendingScroll.current ?? element.scrollLeft,
-      anchor,
-      labelWidth,
-      current.current,
-      next
-    );
-    current.current = next;
-    setZoom(next);
-  }, [labelWidth, minimumZoom, maximumZoom]);
+  const changeZoom = useCallback(
+    (value: number, pointerX?: number) => {
+      const element = viewport.current;
+      const next = clampTimelineZoom(value, minimumZoom, maximumZoom);
+      if (!element || Math.abs(next - current.current) < 0.001) return;
+      const anchor = Math.max(labelWidth, pointerX ?? (element.clientWidth + labelWidth) / 2);
+      pendingScroll.current = anchoredTimelineScroll(
+        pendingScroll.current ?? element.scrollLeft,
+        anchor,
+        labelWidth,
+        current.current,
+        next,
+      );
+      current.current = next;
+      setZoom(next);
+    },
+    [labelWidth, minimumZoom, maximumZoom],
+  );
 
   useLayoutEffect(() => {
     const element = viewport.current;
@@ -60,7 +63,9 @@ export function useTimelineZoom(ready: boolean, labelWidth: number, baseWidth: n
       if (!event.ctrlKey && !event.metaKey && !event.altKey) return;
       event.preventDefault();
 
-      const delta = event.deltaY * (event.deltaMode === 1 ? 16 : event.deltaMode === 2 ? element.clientHeight : 1);
+      const delta =
+        event.deltaY *
+        (event.deltaMode === 1 ? 16 : event.deltaMode === 2 ? element.clientHeight : 1);
       // Smooth logarithmic scale: negative delta = expand/zoom in, positive delta = pinch/zoom out
       const clampedDelta = Math.max(-80, Math.min(80, delta));
       const factor = Math.exp(-clampedDelta * 0.006);
@@ -91,7 +96,9 @@ export function useTimelineZoom(ready: boolean, labelWidth: number, baseWidth: n
         const dx = event.touches[0].clientX - event.touches[1].clientX;
         const dy = event.touches[0].clientY - event.touches[1].clientY;
         initialTouchDist = Math.hypot(dx, dy);
-        touchAnchorX = (event.touches[0].clientX + event.touches[1].clientX) / 2 - element.getBoundingClientRect().left;
+        touchAnchorX =
+          (event.touches[0].clientX + event.touches[1].clientX) / 2 -
+          element.getBoundingClientRect().left;
         initialTouchZoom = current.current;
       }
     };

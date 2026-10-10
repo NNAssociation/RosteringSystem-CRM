@@ -1,22 +1,20 @@
 "use client";
 
-import React, { useState } from "react";
-import { usePathname } from "next/navigation";
-import SearchIcon from "@mui/icons-material/Search";
+import { Button } from "@/components/ui/button";
+import { Calendar } from "@/components/ui/calendar";
+import { Input } from "@/components/ui/input";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Separator } from "@/components/ui/separator";
+import { SidebarTrigger } from "@/components/ui/sidebar";
+import { WorkplaceNotifications } from "@/components/workplace/notifications";
+import { useFormattedDate } from "@/hooks/use-formattedDate";
+import { useHeader } from "@/providers/header-provider";
+import { UserButton } from "@clerk/nextjs";
 import CalendarTodayIcon from "@mui/icons-material/CalendarToday";
 import FileDownloadIcon from "@mui/icons-material/FileDownload";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Separator } from "@/components/ui/separator";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
-import { Calendar } from "@/components/ui/calendar";
-import { useHeader } from "@/providers/header-provider";
-import { useFormattedDate } from "@/hooks/use-formattedDate";
-import { UserButton } from "@clerk/nextjs";
+import SearchIcon from "@mui/icons-material/Search";
+import { usePathname } from "next/navigation";
+import { useState } from "react";
 
 export function Header() {
   const { config } = useHeader();
@@ -49,18 +47,14 @@ export function Header() {
   return (
     <header className="sticky top-0 z-30 h-20 border-b bg-background/80 backdrop-blur-md flex items-center justify-between px-6 transition-all duration-300">
       <div className="flex items-center gap-4 flex-1">
+        <SidebarTrigger className="md:hidden" />
         <div className="flex flex-col">
           <div className="flex items-center gap-3">
-            <h2 className="text-xl font-bold tracking-tight text-slate-900">
-              {config.title}
-            </h2>
+            <h2 className="text-xl font-bold tracking-tight text-slate-900">{config.title}</h2>
 
             {!isDashboard && config.date && (
               <div className="flex items-center gap-3">
-                <Separator
-                  orientation="vertical"
-                  className="h-6 bg-slate-200 hidden sm:block"
-                />
+                <Separator orientation="vertical" className="h-6 bg-slate-200 hidden sm:block" />
                 <Popover open={isCalendarOpen} onOpenChange={setIsCalendarOpen}>
                   <PopoverTrigger asChild>
                     <Button
@@ -69,9 +63,7 @@ export function Header() {
                     >
                       <CalendarTodayIcon sx={{ fontSize: 18 }} />
                       <span className="text-sm">
-                        {typeof config.date === "string"
-                          ? config.date
-                          : formattedDate}
+                        {typeof config.date === "string" ? config.date : formattedDate}
                       </span>
                     </Button>
                   </PopoverTrigger>
@@ -88,9 +80,7 @@ export function Header() {
             )}
           </div>
           {config.description && (
-            <p className="text-xs font-medium text-slate-400 mt-0.5">
-              {config.description}
-            </p>
+            <p className="text-xs font-medium text-slate-400 mt-0.5">{config.description}</p>
           )}
         </div>
 
@@ -120,12 +110,8 @@ export function Header() {
               onClick={config.secondaryAction.onClick}
               className="h-10 px-4 gap-2 border-slate-200 text-slate-600 hover:bg-slate-50 rounded-xl"
             >
-              {config.secondaryAction.icon || (
-                <FileDownloadIcon sx={{ fontSize: 18 }} />
-              )}
-              <span className="font-medium">
-                {config.secondaryAction.label}
-              </span>
+              {config.secondaryAction.icon || <FileDownloadIcon sx={{ fontSize: 18 }} />}
+              <span className="font-medium">{config.secondaryAction.label}</span>
             </Button>
           )}
 
@@ -141,6 +127,7 @@ export function Header() {
 
           {config.children}
         </div>
+        <WorkplaceNotifications />
         <UserButton
           appearance={{
             elements: {

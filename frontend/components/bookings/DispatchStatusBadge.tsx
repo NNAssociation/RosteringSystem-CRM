@@ -8,5 +8,12 @@ const styles: Record<string, string> = {
   CANCELLED: "bg-rose-100 text-rose-800 border-rose-200",
 };
 export function DispatchStatusBadge({ status = "NOT_READY" }: { status?: string }) {
-  return <Badge variant="outline" className={styles[status] || styles.NOT_READY}>{status.replaceAll("_", " ").toLowerCase().replace(/^./, c => c.toUpperCase())}</Badge>;
+  return (
+    <Badge variant="outline" className={styles[status] || styles.NOT_READY}>
+      {status
+        .replaceAll("_", " ")
+        .toLowerCase()
+        .replace(/^./, (c) => c.toUpperCase())}
+    </Badge>
+  );
 }

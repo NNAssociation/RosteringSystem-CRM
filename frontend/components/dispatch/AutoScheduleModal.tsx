@@ -1,35 +1,38 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
-import { format, addDays, parseISO, startOfWeek } from "date-fns";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
   DialogHeader,
   DialogTitle,
-  DialogDescription,
 } from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { ScrollArea } from "@/components/ui/scroll-area";
 import { Input } from "@/components/ui/input";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { cn } from "@/lib/utils";
 import {
-  Zap,
-  CheckCircle2,
-  XCircle,
+  usePreviewAutoScheduleQuery,
+  useRunAutoScheduleMutation,
+} from "@/services/api/dispatch.api";
+import { addDays, format, parseISO } from "date-fns";
+import {
   AlertTriangle,
-  Loader2,
-  User,
-  Clock,
-  Car,
-  ChevronRight,
-  RefreshCcw,
-  CalendarCheck2,
   ArrowRight,
   Calendar,
+  CalendarCheck2,
+  Car,
+  CheckCircle2,
+  ChevronRight,
+  Clock,
+  Loader2,
+  RefreshCcw,
+  User,
+  XCircle,
+  Zap,
 } from "lucide-react";
-import { cn } from "@/lib/utils";
-import { usePreviewAutoScheduleQuery, useRunAutoScheduleMutation } from "@/services/api/dispatch.api";
+import React, { useEffect, useState } from "react";
 
 interface AutoScheduleModalProps {
   isOpen: boolean;
@@ -79,7 +82,7 @@ export function AutoScheduleModal({ isOpen, onClose, date }: AutoScheduleModalPr
     refetch: refetchPreview,
   } = usePreviewAutoScheduleQuery(
     { startDate: activeStartDate, endDate: activeEndDate },
-    { skip: !isOpen || !activeStartDate || !activeEndDate, refetchOnMountOrArgChange: true }
+    { skip: !isOpen || !activeStartDate || !activeEndDate, refetchOnMountOrArgChange: true },
   );
 
   // Re-fetch preview automatically when date range or modal visibility changes
@@ -140,7 +143,8 @@ export function AutoScheduleModal({ isOpen, onClose, date }: AutoScheduleModalPr
                     Auto-Schedule Jobs
                   </DialogTitle>
                   <DialogDescription className="text-xs text-slate-400 font-medium">
-                    Schedule trips automatically with Punchbowl depot travel buffers & fatigue checks
+                    Schedule trips automatically with Punchbowl depot travel buffers & fatigue
+                    checks
                   </DialogDescription>
                 </div>
               </div>
@@ -161,7 +165,7 @@ export function AutoScheduleModal({ isOpen, onClose, date }: AutoScheduleModalPr
                     "px-3 py-1 text-xs font-bold rounded-md transition-all",
                     preset === "3days"
                       ? "bg-white text-violet-700 shadow-sm"
-                      : "text-slate-600 hover:text-slate-900"
+                      : "text-slate-600 hover:text-slate-900",
                   )}
                 >
                   3 Days
@@ -173,7 +177,7 @@ export function AutoScheduleModal({ isOpen, onClose, date }: AutoScheduleModalPr
                     "px-3 py-1 text-xs font-bold rounded-md transition-all",
                     preset === "2weeks"
                       ? "bg-white text-violet-700 shadow-sm"
-                      : "text-slate-600 hover:text-slate-900"
+                      : "text-slate-600 hover:text-slate-900",
                   )}
                 >
                   2 Weeks
@@ -185,7 +189,7 @@ export function AutoScheduleModal({ isOpen, onClose, date }: AutoScheduleModalPr
                     "px-3 py-1 text-xs font-bold rounded-md transition-all",
                     preset === "custom"
                       ? "bg-white text-violet-700 shadow-sm"
-                      : "text-slate-600 hover:text-slate-900"
+                      : "text-slate-600 hover:text-slate-900",
                   )}
                 >
                   Custom Range
@@ -197,7 +201,9 @@ export function AutoScheduleModal({ isOpen, onClose, date }: AutoScheduleModalPr
             {preset === "custom" ? (
               <div className="flex items-center gap-3 pt-1">
                 <div className="flex-1">
-                  <label className="text-[10px] font-bold text-slate-400 uppercase">Start Date</label>
+                  <label className="text-[10px] font-bold text-slate-400 uppercase">
+                    Start Date
+                  </label>
                   <Input
                     type="date"
                     value={customStartDate || activeStartDate}
@@ -232,7 +238,10 @@ export function AutoScheduleModal({ isOpen, onClose, date }: AutoScheduleModalPr
                     ? `${format(parseISO(activeStartDate), "MMM d, yyyy")} – ${format(parseISO(activeEndDate), "MMM d, yyyy")}`
                     : "Loading..."}
                 </span>
-                <Badge variant="secondary" className="ml-auto text-[10px] font-black bg-violet-100 text-violet-700">
+                <Badge
+                  variant="secondary"
+                  className="ml-auto text-[10px] font-black bg-violet-100 text-violet-700"
+                >
                   {preset === "3days" ? "3 Days" : "14 Days"}
                 </Badge>
               </div>
@@ -246,7 +255,9 @@ export function AutoScheduleModal({ isOpen, onClose, date }: AutoScheduleModalPr
             {previewLoading && (
               <div className="flex flex-col items-center justify-center py-16 gap-3">
                 <Loader2 className="h-8 w-8 animate-spin text-violet-500" />
-                <p className="text-sm font-semibold text-slate-400">Analysing unassigned jobs & driver loads for selected range…</p>
+                <p className="text-sm font-semibold text-slate-400">
+                  Analysing unassigned jobs & driver loads for selected range…
+                </p>
               </div>
             )}
 
@@ -256,7 +267,12 @@ export function AutoScheduleModal({ isOpen, onClose, date }: AutoScheduleModalPr
                 <p className="text-sm font-semibold text-slate-500 text-center">
                   Could not load preview for selected range. Check backend connection.
                 </p>
-                <Button variant="outline" size="sm" onClick={() => refetchPreview()} className="gap-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => refetchPreview()}
+                  className="gap-2"
+                >
                   <RefreshCcw className="h-3.5 w-3.5" /> Retry
                 </Button>
               </div>
@@ -292,8 +308,13 @@ export function AutoScheduleModal({ isOpen, onClose, date }: AutoScheduleModalPr
                 {totalJobs === 0 ? (
                   <div className="flex flex-col items-center py-10 gap-2 text-center px-6">
                     <CalendarCheck2 className="h-10 w-10 text-slate-200" />
-                    <p className="text-sm font-bold text-slate-400">No unassigned jobs found for period ({activeStartDate} to {activeEndDate}).</p>
-                    <p className="text-xs text-slate-300">Try switching presets or picking a custom date range containing unassigned trips.</p>
+                    <p className="text-sm font-bold text-slate-400">
+                      No unassigned jobs found for period ({activeStartDate} to {activeEndDate}).
+                    </p>
+                    <p className="text-xs text-slate-300">
+                      Try switching presets or picking a custom date range containing unassigned
+                      trips.
+                    </p>
                   </div>
                 ) : (
                   <ScrollArea className="h-[280px] px-6">
@@ -319,7 +340,9 @@ export function AutoScheduleModal({ isOpen, onClose, date }: AutoScheduleModalPr
                                 {item.jobStartLocation && (
                                   <p className="text-[10px] text-slate-400 truncate font-medium">
                                     {item.jobStartLocation?.split(",")[0]}
-                                    {item.jobEndLocation ? ` → ${item.jobEndLocation?.split(",")[0]}` : ""}
+                                    {item.jobEndLocation
+                                      ? ` → ${item.jobEndLocation?.split(",")[0]}`
+                                      : ""}
                                   </p>
                                 )}
                                 <div className="flex items-center gap-2 mt-0.5 flex-wrap">
@@ -346,7 +369,9 @@ export function AutoScheduleModal({ isOpen, onClose, date }: AutoScheduleModalPr
                                 {item.vehicleName && (
                                   <div className="flex items-center gap-1 justify-end mt-0.5">
                                     <Car className="h-3 w-3 text-slate-300" />
-                                    <span className="text-[10px] text-slate-400 font-medium">{item.vehicleName}</span>
+                                    <span className="text-[10px] text-slate-400 font-medium">
+                                      {item.vehicleName}
+                                    </span>
                                   </div>
                                 )}
                               </div>
@@ -369,12 +394,18 @@ export function AutoScheduleModal({ isOpen, onClose, date }: AutoScheduleModalPr
                               className="flex items-center gap-3 bg-amber-50/60 border border-amber-100 rounded-xl p-3"
                             >
                               <div className="flex-shrink-0 w-16 h-8 rounded-lg bg-amber-100 border border-amber-200 flex items-center justify-center">
-                                <span className="text-[10px] font-black text-amber-600">#{item.jobId}</span>
+                                <span className="text-[10px] font-black text-amber-600">
+                                  #{item.jobId}
+                                </span>
                               </div>
                               <div className="flex-1 min-w-0">
-                                <p className="text-[11px] font-bold text-amber-700 truncate">{item.reason}</p>
+                                <p className="text-[11px] font-bold text-amber-700 truncate">
+                                  {item.reason}
+                                </p>
                                 {item.jobStartLocation && (
-                                  <p className="text-[10px] text-amber-400 truncate">{item.jobStartLocation?.split(",")[0]}</p>
+                                  <p className="text-[10px] text-amber-400 truncate">
+                                    {item.jobStartLocation?.split(",")[0]}
+                                  </p>
                                 )}
                               </div>
                               <AlertTriangle className="h-4 w-4 text-amber-400 flex-shrink-0" />
@@ -392,14 +423,14 @@ export function AutoScheduleModal({ isOpen, onClose, date }: AutoScheduleModalPr
                     <div
                       className={cn(
                         "relative w-8 h-4 rounded-full transition-colors cursor-pointer",
-                        forceRun ? "bg-violet-500" : "bg-slate-200"
+                        forceRun ? "bg-violet-500" : "bg-slate-200",
                       )}
                       onClick={() => setForceRun((v) => !v)}
                     >
                       <div
                         className={cn(
                           "absolute top-0.5 w-3 h-3 rounded-full bg-white shadow transition-all",
-                          forceRun ? "left-[18px]" : "left-0.5"
+                          forceRun ? "left-[18px]" : "left-0.5",
                         )}
                       />
                     </div>
@@ -407,7 +438,11 @@ export function AutoScheduleModal({ isOpen, onClose, date }: AutoScheduleModalPr
                   </label>
 
                   <div className="flex gap-2">
-                    <Button variant="ghost" onClick={handleClose} className="rounded-xl text-xs font-bold h-9">
+                    <Button
+                      variant="ghost"
+                      onClick={handleClose}
+                      className="rounded-xl text-xs font-bold h-9"
+                    >
                       Cancel
                     </Button>
                     <Button
@@ -437,7 +472,8 @@ export function AutoScheduleModal({ isOpen, onClose, date }: AutoScheduleModalPr
             <div className="text-center">
               <p className="text-base font-black text-slate-800">Scheduling in progress…</p>
               <p className="text-xs text-slate-400 font-medium mt-1">
-                Checking travel times, fatigue limits, and conflicts for period {activeStartDate} to {activeEndDate}
+                Checking travel times, fatigue limits, and conflicts for period {activeStartDate} to{" "}
+                {activeEndDate}
               </p>
             </div>
           </div>
@@ -458,10 +494,23 @@ export function AutoScheduleModal({ isOpen, onClose, date }: AutoScheduleModalPr
                   </p>
                 </div>
                 <div className="flex gap-2">
-                  <Button variant="outline" className="rounded-xl text-xs font-bold h-9" onClick={() => { setPhase("preview"); setRunError(null); }}>
+                  <Button
+                    variant="outline"
+                    className="rounded-xl text-xs font-bold h-9"
+                    onClick={() => {
+                      setPhase("preview");
+                      setRunError(null);
+                    }}
+                  >
                     Back to Preview
                   </Button>
-                  <Button className="h-9 px-5 rounded-xl text-xs font-black bg-violet-600 hover:bg-violet-700 text-white gap-2" onClick={() => { setForceRun(true); handleRun(); }}>
+                  <Button
+                    className="h-9 px-5 rounded-xl text-xs font-black bg-violet-600 hover:bg-violet-700 text-white gap-2"
+                    onClick={() => {
+                      setForceRun(true);
+                      handleRun();
+                    }}
+                  >
                     <Zap className="h-3.5 w-3.5 fill-white" /> Force Run
                   </Button>
                 </div>
@@ -474,15 +523,23 @@ export function AutoScheduleModal({ isOpen, onClose, date }: AutoScheduleModalPr
                 <div className="text-center">
                   <p className="text-base font-black text-slate-800">Schedule Complete!</p>
                   <p className="text-sm text-slate-500 font-medium mt-1">
-                    <span className="text-emerald-600 font-black">{runResult?.assignedJobsCount}</span> job
+                    <span className="text-emerald-600 font-black">
+                      {runResult?.assignedJobsCount}
+                    </span>{" "}
+                    job
                     {runResult?.assignedJobsCount !== 1 ? "s" : ""} successfully assigned
                     {runResult?.skippedCount > 0 && (
-                      <>, <span className="text-amber-600 font-black">{runResult.skippedCount}</span> skipped</>
+                      <>
+                        ,{" "}
+                        <span className="text-amber-600 font-black">{runResult.skippedCount}</span>{" "}
+                        skipped
+                      </>
                     )}
                   </p>
                 </div>
                 <p className="text-xs text-slate-400 text-center max-w-xs">
-                  The timeline has been updated for {activeStartDate} to {activeEndDate}. Duty spans were automatically calculated including depot travel times.
+                  The timeline has been updated for {activeStartDate} to {activeEndDate}. Duty spans
+                  were automatically calculated including depot travel times.
                 </p>
                 <Button
                   className="h-9 px-6 rounded-xl text-xs font-black bg-emerald-600 hover:bg-emerald-700 text-white gap-2"

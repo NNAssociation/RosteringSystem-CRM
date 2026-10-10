@@ -1,10 +1,10 @@
 "use client";
 
-import React from "react";
 import { Button } from "@/components/ui/button";
-import Close from "@mui/icons-material/Close";
 import { cn } from "@/lib/utils";
+import Close from "@mui/icons-material/Close";
 import { motion } from "framer-motion";
+import React from "react";
 
 interface SidePanelProps {
   isOpen: boolean;
@@ -72,12 +72,7 @@ export function SidePanel({
       </div>
 
       {/* Scrollable Content */}
-      <div
-        className={cn(
-          "flex-1 overflow-y-auto custom-scrollbar p-6",
-          contentClassName,
-        )}
-      >
+      <div className={cn("flex-1 overflow-y-auto custom-scrollbar p-6", contentClassName)}>
         {children}
       </div>
 

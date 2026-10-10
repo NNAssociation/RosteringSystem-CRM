@@ -1,6 +1,5 @@
-import React from "react";
-import { PageHeader } from "@/components/shared/page-header";
 import { DispatchBoardPage } from "@/components/dispatch/DispatchBoardPage";
+import { PageHeader } from "@/components/shared/page-header";
 
 export default function DispatchPage() {
   return (
@@ -8,10 +7,7 @@ export default function DispatchPage() {
       <PageHeader
         title="Dispatch & Scheduling"
         description="Manage driver assignments, vehicle availability, and job statuses in real-time."
-        breadcrumbs={[
-          { label: "Dashboard", href: "/dashboard" },
-          { label: "Dispatch" },
-        ]}
+        breadcrumbs={[{ label: "Dashboard", href: "/dashboard" }, { label: "Dispatch" }]}
         className="px-0 py-0 border-none"
       />
       <DispatchBoardPage />

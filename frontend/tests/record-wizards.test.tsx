@@ -1,16 +1,23 @@
-import React from "react";
-import { afterEach, beforeEach, expect, it, vi } from "vitest";
-import { cleanup, render, screen, waitFor, fireEvent } from "@testing-library/react";
+import { cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-const calls = vi.hoisted(() => ({ employee: vi.fn(), customer: vi.fn() }));
-vi.mock("@/services/api", () => ({ useCreateUserMutation: () => [calls.employee, { isLoading: false }], useCreateCustomerMutation: () => [calls.customer, { isLoading: false }] }));
-vi.mock("react-hot-toast", () => ({ toast: { success: vi.fn(), error: vi.fn() } }));
-import { AddEmployeeDialog } from "../components/employees/add-employee-dialog";
+import { afterEach, beforeEach, expect, it, vi } from "vitest";
 import { AddCustomerDialog } from "../components/customers/add-customer-dialog";
-beforeEach(() => { vi.clearAllMocks(); calls.employee.mockReturnValue({ unwrap: () => Promise.resolve({ id: 1 }) }); calls.customer.mockReturnValue({ unwrap: () => Promise.resolve({ id: 2 }) }); });
+import { AddEmployeeDialog } from "../components/employees/add-employee-dialog";
+const calls = vi.hoisted(() => ({ employee: vi.fn(), customer: vi.fn() }));
+vi.mock("@/services/api", () => ({
+  useCreateUserMutation: () => [calls.employee, { isLoading: false }],
+  useCreateCustomerMutation: () => [calls.customer, { isLoading: false }],
+}));
+vi.mock("react-hot-toast", () => ({ toast: { success: vi.fn(), error: vi.fn() } }));
+beforeEach(() => {
+  vi.clearAllMocks();
+  calls.employee.mockReturnValue({ unwrap: () => Promise.resolve({ id: 1 }) });
+  calls.customer.mockReturnValue({ unwrap: () => Promise.resolve({ id: 2 }) });
+});
 afterEach(cleanup);
 it("Employee Next reaches HR without saving; the final action includes HR data", async () => {
-  const user = userEvent.setup(); render(<AddEmployeeDialog />);
+  const user = userEvent.setup();
+  render(<AddEmployeeDialog />);
   await user.click(screen.getByRole("button", { name: "Add Employee" }));
   await user.type(screen.getByPlaceholderText("e.g. John"), "Test");
   await user.type(screen.getByPlaceholderText("e.g. Doe"), "Employee");
@@ -24,10 +31,15 @@ it("Employee Next reaches HR without saving; the final action includes HR data",
   await user.type(screen.getByPlaceholderText("Any notes..."), "Test HR note");
   await user.click(screen.getByRole("button", { name: "Register Employee" }));
   await waitFor(() => expect(calls.employee).toHaveBeenCalledTimes(1));
-  expect(calls.employee.mock.calls[0][0]).toMatchObject({ firstName: "Test", emergencyContactName: "Emergency Person", hrNotes: "Test HR note" });
+  expect(calls.employee.mock.calls[0][0]).toMatchObject({
+    firstName: "Test",
+    emergencyContactName: "Emergency Person",
+    hrNotes: "Test HR note",
+  });
 });
 it("Customer Next reaches Billing without saving and preserves earlier entries", async () => {
-  const user = userEvent.setup(); render(<AddCustomerDialog />);
+  const user = userEvent.setup();
+  render(<AddCustomerDialog />);
   await user.click(screen.getByRole("button", { name: "Add Customer" }));
   await user.type(screen.getByPlaceholderText("e.g. Emily Watson / Acme Corp"), "Test Customer");
   await user.click(screen.getByRole("button", { name: "Next" }));
@@ -39,10 +51,15 @@ it("Customer Next reaches Billing without saving and preserves earlier entries",
   await user.type(notes, "Billing note");
   await user.click(screen.getByRole("button", { name: "Register Customer" }));
   await waitFor(() => expect(calls.customer).toHaveBeenCalledTimes(1));
-  expect(calls.customer.mock.calls[0][0]).toMatchObject({ name: "Test Customer", email: "customer@example.test", internalNotes: "Billing note" });
+  expect(calls.customer.mock.calls[0][0]).toMatchObject({
+    name: "Test Customer",
+    email: "customer@example.test",
+    internalNotes: "Billing note",
+  });
 });
 it("An early employee form submission cannot create a record", async () => {
-  const user = userEvent.setup(); render(<AddEmployeeDialog />);
+  const user = userEvent.setup();
+  render(<AddEmployeeDialog />);
   await user.click(screen.getByRole("button", { name: "Add Employee" }));
   fireEvent.submit(document.querySelector("form")!);
   expect(calls.employee).not.toHaveBeenCalled();

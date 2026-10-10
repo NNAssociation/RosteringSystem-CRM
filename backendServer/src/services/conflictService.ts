@@ -1,11 +1,13 @@
-import { dayWindow, localDate } from "./businessTime.js";
-import { availabilityWindows } from "./availabilityWindows.js";
+import { differenceInMinutes } from "date-fns";
 import { prisma } from "../db.js";
-import { endOfDay, startOfDay, subHours, differenceInMinutes } from "date-fns";
-import { getTravelTime, DEPOT_LOCATION } from "./googleMapsService.js";
+import { availabilityWindows } from "./availabilityWindows.js";
+import { dayWindow, localDate } from "./businessTime.js";
+import { getTravelTime, jobPoint, vehicleDepot } from "./googleMapsService.js";
 import { getSchedulingRules, type SchedulingRules } from "./settingsService.js";
 
 export interface ConflictResult {
+  positioningRouteIds?: number[];
+  travelTo?: { durationMinutes: number; distanceKm: number; origin: string };
   hasConflict: boolean;
   reason?: string;
   conflictingEntityId?: number;
@@ -21,9 +23,10 @@ export async function checkDriverConflict(
   excludeAssignmentId?: number,
   jobId?: number,
   rules?: SchedulingRules,
-  db: any = prisma
+  db: any = prisma,
+  vehicleId?: number,
 ): Promise<ConflictResult> {
-  const schedulingRules = rules ?? await getSchedulingRules();
+  const schedulingRules = rules ?? (await getSchedulingRules());
   // Check driver availability (blocked blocks)
   const blocks = await db.driverAvailability.findMany({
     where: {
@@ -35,7 +38,9 @@ export async function checkDriverConflict(
       ],
     },
   });
-  const availabilityBlock = availabilityWindows(blocks, start, end).find(w => w.start < end && w.end > start)?.block;
+  const availabilityBlock = availabilityWindows(blocks, start, end).find(
+    (w) => w.start < end && w.end > start,
+  )?.block;
 
   if (availabilityBlock) {
     return {
@@ -78,13 +83,15 @@ export async function checkDriverConflict(
     end,
     excludeAssignmentId,
     jobId,
-    schedulingRules, db
+    schedulingRules,
+    db,
+    vehicleId,
   );
   if (shiftRulesResult.hasConflict) {
     return shiftRulesResult;
   }
 
-  return { hasConflict: false };
+  return shiftRulesResult;
 }
 
 /**
@@ -99,9 +106,12 @@ export async function checkDriverShiftRules(
   excludeAssignmentId?: number,
   jobId?: number,
   rules?: SchedulingRules,
-  db: any = prisma
+  db: any = prisma,
+  vehicleId?: number,
 ): Promise<ConflictResult> {
-  const schedulingRules = rules ?? await getSchedulingRules();
+  const schedulingRules = rules ?? (await getSchedulingRules());
+  const positioningRouteIds: number[] = [];
+  let travelTo: ConflictResult["travelTo"];
 
   // Fetch the job being assigned if jobId is provided
   let newJob: any = null;
@@ -112,11 +122,6 @@ export async function checkDriverShiftRules(
     });
   }
 
-  // Find driver's assigned vehicle to get depot location, fallback to driver's depot, then DEPOT_LOCATION
-  const driverDepotLat = DEPOT_LOCATION.lat;
-  const driverDepotLng = DEPOT_LOCATION.lng;
-  const driverDepotAddress = DEPOT_LOCATION.address;
-
   // Get all existing assignments for the driver on this day
   const { start: dayStart, end: dayEnd } = dayWindow(localDate(date));
 
@@ -124,7 +129,8 @@ export async function checkDriverShiftRules(
     where: {
       driverId,
       status: { in: ["PENDING", "CONFIRMED", "IN_PROGRESS", "COMPLETED"] },
-      scheduledStart: { lt: dayEnd }, scheduledEnd: { gt: dayStart },
+      scheduledStart: { lt: dayEnd },
+      scheduledEnd: { gt: dayStart },
       id: excludeAssignmentId ? { not: excludeAssignmentId } : undefined,
     },
     include: {
@@ -136,6 +142,7 @@ export async function checkDriverShiftRules(
 
   // Combine and sort assignments
   const list: Array<{
+    vehicleId: number;
     id?: number;
     scheduledStart: Date;
     scheduledEnd: Date;
@@ -150,27 +157,29 @@ export async function checkDriverShiftRules(
   for (const a of existingAssignments) {
     const job = a.job;
     list.push({
+      vehicleId: a.vehicleId,
       id: a.id,
       scheduledStart: new Date(a.scheduledStart),
       scheduledEnd: new Date(a.scheduledEnd || new Date(a.scheduledStart.getTime() + 2 * 3600000)),
       jobId: a.jobId,
-      jobStartLat: job?.jobStartLat ?? job?.booking?.pickupLat ?? null,
-      jobStartLng: job?.jobStartLng ?? job?.booking?.pickupLng ?? null,
-      jobEndLat: job?.jobEndLat ?? job?.booking?.dropoffLat ?? null,
-      jobEndLng: job?.jobEndLng ?? job?.booking?.dropoffLng ?? null,
+      jobStartLat: jobPoint(job).lat,
+      jobStartLng: jobPoint(job).lng,
+      jobEndLat: jobPoint(job, true).lat,
+      jobEndLng: jobPoint(job, true).lng,
       durationHours: job?.durationHours ? Number(job.durationHours) : 2,
     });
   }
 
   if (newJob) {
     list.push({
+      vehicleId: vehicleId!,
       scheduledStart: start,
       scheduledEnd: end,
       jobId: newJob.id,
-      jobStartLat: newJob.jobStartLat ?? newJob.booking?.pickupLat ?? null,
-      jobStartLng: newJob.jobStartLng ?? newJob.booking?.pickupLng ?? null,
-      jobEndLat: newJob.jobEndLat ?? newJob.booking?.dropoffLat ?? null,
-      jobEndLng: newJob.jobEndLng ?? newJob.booking?.dropoffLng ?? null,
+      jobStartLat: jobPoint(newJob).lat,
+      jobStartLng: jobPoint(newJob).lng,
+      jobEndLat: jobPoint(newJob, true).lat,
+      jobEndLng: jobPoint(newJob, true).lng,
       durationHours: newJob.durationHours ? Number(newJob.durationHours) : 2,
     });
   }
@@ -184,30 +193,46 @@ export async function checkDriverShiftRules(
 
   // 1. First Assignment: Travel time from Depot (Punchbowl Bus Company SB)
   const first = list[0]!;
-  const firstOrigin = (first.jobStartLat && first.jobStartLng)
-    ? { lat: first.jobStartLat, lng: first.jobStartLng }
-    : driverDepotAddress;
-  
+  const firstDepot = await vehicleDepot(first.vehicleId, db);
+  const firstOrigin =
+    first.jobStartLat != null && first.jobStartLng != null
+      ? { lat: first.jobStartLat, lng: first.jobStartLng }
+      : "Missing pickup coordinates";
+
   const depotToFirst = await getTravelTime(
-    { lat: driverDepotLat, lng: driverDepotLng },
-    firstOrigin
+    { lat: firstDepot.lat, lng: firstDepot.lng },
+    firstOrigin,
+    { vehicleId: first.vehicleId, at: first.scheduledStart, timing: "ARRIVE_BY", db },
   );
-  
+
   const travelFromDepotBuffer = depotToFirst.durationMinutes + 10;
-  const shiftStartTime = new Date(first.scheduledStart.getTime() - travelFromDepotBuffer * 60 * 1000);
+  if (first.jobId === jobId)
+    travelTo = {
+      durationMinutes: depotToFirst.durationMinutes,
+      distanceKm: depotToFirst.distanceKm,
+      origin: `${firstDepot.lat},${firstDepot.lng}`,
+    };
+  const shiftStartTime = new Date(
+    first.scheduledStart.getTime() - travelFromDepotBuffer * 60 * 1000,
+  );
 
   // 2. Last Assignment: Travel time back to Depot
   const last = list[list.length - 1]!;
-  const lastDest = (last.jobEndLat && last.jobEndLng)
-    ? { lat: last.jobEndLat, lng: last.jobEndLng }
-    : driverDepotAddress;
-  
+  const lastDepot = await vehicleDepot(last.vehicleId, db);
+  const lastDest =
+    last.jobEndLat != null && last.jobEndLng != null
+      ? { lat: last.jobEndLat, lng: last.jobEndLng }
+      : "Missing destination coordinates";
+
   const lastToDepot = await getTravelTime(
     lastDest,
-    { lat: driverDepotLat, lng: driverDepotLng }
+    { lat: lastDepot.lat, lng: lastDepot.lng },
+    { vehicleId: last.vehicleId, at: last.scheduledEnd, timing: "DEPART_AT", db },
   );
-  
-  const shiftEndTime = new Date(last.scheduledEnd.getTime() + (lastToDepot.durationMinutes + 10) * 60 * 1000);
+
+  const shiftEndTime = new Date(
+    last.scheduledEnd.getTime() + (lastToDepot.durationMinutes + 10) * 60 * 1000,
+  );
 
   // 3. Shift Duration Rule
   const shiftDurationMinutes = differenceInMinutes(shiftEndTime, shiftStartTime);
@@ -219,7 +244,7 @@ export async function checkDriverShiftRules(
   }
 
   // 4. Consecutive Travel and Continuous Driving checks
-  let currentContinuousDrivingMinutes = 0;
+  let currentContinuousDrivingMinutes = depotToFirst.durationMinutes;
 
   for (let i = 0; i < list.length; i++) {
     const current = list[i]!;
@@ -246,15 +271,30 @@ export async function checkDriverShiftRules(
       const gapMins = differenceInMinutes(next.scheduledStart, current.scheduledEnd);
 
       // Travel Time check between current and next
-      const currentDest = (current.jobEndLat && current.jobEndLng)
-        ? { lat: current.jobEndLat, lng: current.jobEndLng }
-        : null;
-      const nextOrigin = (next.jobStartLat && next.jobStartLng)
-        ? { lat: next.jobStartLat, lng: next.jobStartLng }
-        : null;
+      const currentDest =
+        current.jobEndLat != null && current.jobEndLng != null
+          ? { lat: current.jobEndLat, lng: current.jobEndLng }
+          : null;
+      const nextOrigin =
+        next.jobStartLat != null && next.jobStartLng != null
+          ? { lat: next.jobStartLat, lng: next.jobStartLng }
+          : null;
 
+      let positioningMinutes = 0;
       if (currentDest && nextOrigin) {
-        const interJobTravel = await getTravelTime(currentDest, nextOrigin);
+        const interJobTravel = await getTravelTime(currentDest, nextOrigin, {
+          vehicleId: next.vehicleId,
+          at: current.scheduledEnd,
+          timing: "DEPART_AT",
+          db,
+        });
+        positioningMinutes = interJobTravel.durationMinutes;
+        if (next.jobId === jobId)
+          travelTo = {
+            durationMinutes: interJobTravel.durationMinutes,
+            distanceKm: interJobTravel.distanceKm,
+            origin: `${currentDest.lat},${currentDest.lng}`,
+          };
         if (gapMins < interJobTravel.durationMinutes) {
           return {
             hasConflict: true,
@@ -264,13 +304,28 @@ export async function checkDriverShiftRules(
       }
 
       // Continuous Driving Break Rule: Reset counter if gap >= minBreakDurationMinutes
-      if (gapMins >= schedulingRules.minBreakDurationMinutes) {
+      if (gapMins - positioningMinutes >= schedulingRules.minBreakDurationMinutes) {
         currentContinuousDrivingMinutes = 0;
+      } else {
+        currentContinuousDrivingMinutes += positioningMinutes;
+        if (currentContinuousDrivingMinutes > schedulingRules.maxContinuousDrivingMinutes)
+          return {
+            hasConflict: true,
+            reason: "Positioning travel exceeds the continuous driving limit",
+          };
       }
     }
   }
 
-  return { hasConflict: false };
+  if (
+    currentContinuousDrivingMinutes + lastToDepot.durationMinutes >
+    schedulingRules.maxContinuousDrivingMinutes
+  )
+    return {
+      hasConflict: true,
+      reason: "Return-to-depot travel exceeds the continuous driving limit",
+    };
+  return { hasConflict: false, positioningRouteIds, ...(travelTo ? { travelTo } : {}) };
 }
 
 /**
@@ -281,7 +336,7 @@ export async function checkVehicleConflict(
   start: Date,
   end: Date,
   excludeAssignmentId?: number,
-  db: any = prisma
+  db: any = prisma,
 ): Promise<ConflictResult> {
   // Check vehicle status (e.g. MAINTENANCE)
   const vehicle = await db.fleetVehicle.findUnique({ where: { id: vehicleId } });
@@ -336,15 +391,18 @@ export async function checkDriverFatigue(
   date: Date,
   newJobDurationHours: number,
   excludeAssignmentId?: number,
-  db: any = prisma
+  db: any = prisma,
+  rules?: SchedulingRules,
 ): Promise<ConflictResult> {
-  // Get driver's fatigue limit from their profile
+  const schedulingRules = rules ?? (await getSchedulingRules());
+
+  // Get driver's fatigue limit from their profile or fallback to system maxShiftDurationMinutes setting
   const profile = await db.userProfile.findUnique({
     where: { userId: driverId },
     select: { maxfatigueMinutes: true },
   });
 
-  const maxMinutes = profile?.maxfatigueMinutes || 600; // Default 10 hours if not set
+  const maxMinutes = profile?.maxfatigueMinutes || schedulingRules.maxShiftDurationMinutes || 720;
   const maxHours = maxMinutes / 60;
 
   // Calculate total hours already assigned on this day
@@ -353,7 +411,8 @@ export async function checkDriverFatigue(
   const assignmentsWhere: any = {
     driverId,
     status: { in: ["PENDING", "CONFIRMED", "IN_PROGRESS", "COMPLETED"] },
-    scheduledStart: { lt: dayEnd }, scheduledEnd: { gt: dayStart },
+    scheduledStart: { lt: dayEnd },
+    scheduledEnd: { gt: dayStart },
   };
 
   if (excludeAssignmentId) {
@@ -368,7 +427,12 @@ export async function checkDriverFatigue(
   // Calculate duration of existing assignments. If no duration provided on job, assume 2 hours default.
   let currentHours = 0;
   for (const assignment of dailyAssignments) {
-    const hours = Math.max(0, Math.min(new Date(assignment.scheduledEnd).getTime(), dayEnd.getTime()) - Math.max(new Date(assignment.scheduledStart).getTime(), dayStart.getTime())) / 3600000;
+    const hours =
+      Math.max(
+        0,
+        Math.min(new Date(assignment.scheduledEnd).getTime(), dayEnd.getTime()) -
+          Math.max(new Date(assignment.scheduledStart).getTime(), dayStart.getTime()),
+      ) / 3600000;
     currentHours += hours;
   }
 
@@ -385,17 +449,21 @@ export async function checkDriverFatigue(
 export async function checkVehicleCapacity(
   vehicleId: number,
   passengerCount: number,
-  db: any = prisma
+  db: any = prisma,
 ): Promise<ConflictResult> {
   const vehicle = await db.fleetVehicle.findUnique({ where: { id: vehicleId } });
   if (!vehicle) return { hasConflict: true, reason: "Vehicle not found" };
-  
-  if (vehicle.maxPassengers !== null && vehicle.maxPassengers !== undefined && passengerCount > vehicle.maxPassengers) {
+
+  if (
+    vehicle.maxPassengers !== null &&
+    vehicle.maxPassengers !== undefined &&
+    passengerCount > vehicle.maxPassengers
+  ) {
     return {
       hasConflict: true,
       reason: `Vehicle has ${vehicle.maxPassengers} seats but booking requires ${passengerCount} passengers`,
     };
   }
-  
+
   return { hasConflict: false };
 }

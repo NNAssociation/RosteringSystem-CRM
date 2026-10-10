@@ -1,6 +1,13 @@
 import { Router } from "express";
-import { getUsers, getUserById, createUser, updateUser, deleteUser, addAvailability, getAvailability } from "../controllers/userController.js";
-import { requireClerkAuth } from "../middleware/authMiddleware.js";
+import {
+  addAvailability,
+  createUser,
+  deleteUser,
+  getAvailability,
+  getUserById,
+  getUsers,
+  updateUser,
+} from "../controllers/userController.js";
 
 const router = Router();
 

@@ -1,0 +1,10 @@
+**/node_modules/**
+**/generated/**
+**/dist/**
+**/.next/**
+**/coverage/**
+**/package-lock.json
+**/prisma/migrations/**
+**/*.tsbuildinfo
+**/next-env.d.ts
+.local-backups/**

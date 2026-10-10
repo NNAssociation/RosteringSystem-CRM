@@ -1,6 +1,6 @@
-import type { TransactionalEmailProvider } from "./types.js";
 import { BrevoProvider } from "./brevo.js";
 import { ResendProvider } from "./resend.js";
+import type { TransactionalEmailProvider } from "./types.js";
 
 const brevo = new BrevoProvider();
 const resend = new ResendProvider();
@@ -13,6 +13,6 @@ export function getEmailProvider(): TransactionalEmailProvider {
   return brevo;
 }
 
-export * from "./types.js";
 export * from "./brevo.js";
 export * from "./resend.js";
+export * from "./types.js";

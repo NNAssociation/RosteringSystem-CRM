@@ -1,14 +1,23 @@
 "use client";
 
-import React, { useState } from "react";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { useAddEmployeeAvailabilityMutation, useGetEmployeeAvailabilityQuery } from "@/services/api";
+import {
+  useAddEmployeeAvailabilityMutation,
+  useGetEmployeeAvailabilityQuery,
+} from "@/services/api";
 import { format } from "date-fns";
-import toast from "react-hot-toast";
 import { CalendarClock, Plus, Trash2 } from "lucide-react";
+import React, { useState } from "react";
+import toast from "react-hot-toast";
 
 interface EmployeeAvailabilityDialogProps {
   employeeId?: number;
@@ -21,7 +30,7 @@ export function EmployeeAvailabilityDialog({
   employeeId: empId,
   employeeName: empName,
   driverId: dId,
-  driverName: dName
+  driverName: dName,
 }: EmployeeAvailabilityDialogProps) {
   const id = (empId ?? dId) as number;
   const name = empName ?? dName ?? "Employee";
@@ -46,7 +55,7 @@ export function EmployeeAvailabilityDialog({
           endTime: new Date(endTime).toISOString(),
           reason,
           isBlocked: true,
-        }
+        },
       }).unwrap();
       toast.success("Availability blocked added");
       setStartTime("");
@@ -69,21 +78,35 @@ export function EmployeeAvailabilityDialog({
         <DialogHeader>
           <DialogTitle>Manage Availability: {name}</DialogTitle>
         </DialogHeader>
-        
+
         <form onSubmit={handleAdd} className="space-y-4 pt-4">
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label>Start Time</Label>
-              <Input type="datetime-local" required value={startTime} onChange={(e) => setStartTime(e.target.value)} />
+              <Input
+                type="datetime-local"
+                required
+                value={startTime}
+                onChange={(e) => setStartTime(e.target.value)}
+              />
             </div>
             <div className="space-y-2">
               <Label>End Time</Label>
-              <Input type="datetime-local" required value={endTime} onChange={(e) => setEndTime(e.target.value)} />
+              <Input
+                type="datetime-local"
+                required
+                value={endTime}
+                onChange={(e) => setEndTime(e.target.value)}
+              />
             </div>
           </div>
           <div className="space-y-2">
             <Label>Reason</Label>
-            <Input placeholder="e.g. Sick leave, vacation" value={reason} onChange={(e) => setReason(e.target.value)} />
+            <Input
+              placeholder="e.g. Sick leave, vacation"
+              value={reason}
+              onChange={(e) => setReason(e.target.value)}
+            />
           </div>
           <Button type="submit" disabled={isAdding} className="w-full gap-2">
             <Plus className="h-4 w-4" /> Add Block
@@ -99,11 +122,15 @@ export function EmployeeAvailabilityDialog({
           ) : (
             <div className="space-y-2 max-h-48 overflow-y-auto pr-2">
               {blocks?.map((block: any) => (
-                <div key={block.id} className="flex justify-between items-center bg-muted/30 p-2 rounded-md border text-sm">
+                <div
+                  key={block.id}
+                  className="flex justify-between items-center bg-muted/30 p-2 rounded-md border text-sm"
+                >
                   <div>
                     <div className="font-medium">{block.reason || "Blocked"}</div>
                     <div className="text-xs text-muted-foreground">
-                      {format(new Date(block.startTime), "MMM d, HH:mm")} - {format(new Date(block.endTime), "HH:mm")}
+                      {format(new Date(block.startTime), "MMM d, HH:mm")} -{" "}
+                      {format(new Date(block.endTime), "HH:mm")}
                     </div>
                   </div>
                   <Button variant="ghost" size="icon" className="text-destructive h-6 w-6">
@@ -121,4 +148,3 @@ export function EmployeeAvailabilityDialog({
 
 // Backward compatibility alias
 export const DriverAvailabilityDialog = EmployeeAvailabilityDialog;
-

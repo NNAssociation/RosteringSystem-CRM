@@ -1,5 +1,5 @@
+import { createApi } from "@reduxjs/toolkit/query/react";
 import { baseQuery } from "./base-query";
-import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
 
 export const dispatchApi = createApi({
   reducerPath: "dispatchApi",
@@ -53,14 +53,17 @@ export const dispatchApi = createApi({
       invalidatesTags: ["Lock"],
     }),
     getAnalytics: builder.query<any, string | void>({
-      query: (date) => `/dispatch/analytics${date ? `?date=${date}` : ''}`,
+      query: (date) => `/dispatch/analytics${date ? `?date=${date}` : ""}`,
       providesTags: ["Board"], // Invalidate/refetch when board changes
     }),
     getDutySpans: builder.query<any, string>({
       query: (date) => `/dispatch/duty-span?date=${date}`,
       providesTags: ["Board"],
     }),
-    setDutySpan: builder.mutation<any, { driverIds: number[]; date: string; startTime: string; endTime: string }>({
+    setDutySpan: builder.mutation<
+      any,
+      { driverIds: number[]; date: string; spans: { startTime: string; endTime: string }[] }
+    >({
       query: (body) => ({
         url: "/dispatch/duty-span",
         method: "POST",
@@ -75,7 +78,10 @@ export const dispatchApi = createApi({
       },
       providesTags: ["AutoSchedule"],
     }),
-    runAutoSchedule: builder.mutation<any, { startDate?: string; endDate?: string; date?: string; force?: boolean }>({
+    runAutoSchedule: builder.mutation<
+      any,
+      { startDate?: string; endDate?: string; date?: string; force?: boolean }
+    >({
       query: (body) => {
         const s = body.startDate || body.date;
         const e = body.endDate || body.date;

@@ -1,20 +1,18 @@
-import { Queue, Worker, QueueEvents, Job } from "bullmq";
-import { EventEmitter } from "events";
+import { Job, Queue, QueueEvents, Worker } from "bullmq";
+import "dotenv/config";
+import { Redis } from "ioredis";
 
-const redisOptions = process.env.REDIS_URL ? {
-  connection: {
-    url: process.env.REDIS_URL
-  }
-} : undefined;
+const redisOptions = process.env.REDIS_URL
+  ? {
+      connection: new Redis(process.env.REDIS_URL, { maxRetriesPerRequest: null }),
+    }
+  : undefined;
 
-// We use an in-memory fallback if Redis is not configured, primarily for development without Redis.
-// In production, REDIS_URL should always be defined.
+// Without Redis the scheduler is disabled; jobs are not persisted or simulated.
 
 const DISPATCH_QUEUE_NAME = "dispatch-queue";
 
-export const dispatchQueue = redisOptions
-  ? new Queue(DISPATCH_QUEUE_NAME, redisOptions)
-  : null;
+export const dispatchQueue = redisOptions ? new Queue(DISPATCH_QUEUE_NAME, redisOptions) : null;
 
 if (!redisOptions) {
   console.warn("BullMQ: REDIS_URL not provided. Background jobs will not be processed!");
@@ -46,7 +44,7 @@ export const dispatchWorker = redisOptions
           console.warn(`No processor found for job: ${job.name}`);
         }
       },
-      redisOptions
+      redisOptions,
     )
   : null;
 
@@ -68,7 +66,7 @@ export async function enqueueJob(name: string, data: any, opts?: any) {
   if (dispatchQueue) {
     return await dispatchQueue.add(name, data, opts);
   } else {
-    console.warn(`Simulating job ${name} (Redis disabled)`);
+    console.warn(`Not enqueuing job ${name}: Redis is disabled`);
   }
 }
 
@@ -79,18 +77,26 @@ export async function setupRecurringJobs() {
   if (!dispatchQueue) return;
 
   // Run SLA check every 5 minutes
-  await dispatchQueue.add("sla-warning", { slaMinutes: 60 }, {
-    repeat: {
-      pattern: "*/5 * * * *"
-    }
-  });
+  await dispatchQueue.add(
+    "sla-warning",
+    { slaMinutes: 60 },
+    {
+      repeat: {
+        pattern: "*/5 * * * *",
+      },
+    },
+  );
 
   // Run Auto-Scheduling weekly on Mondays at midnight
-  await dispatchQueue.add("auto-schedule", {}, {
-    repeat: {
-      pattern: "0 0 * * 1"
-    }
-  });
-  
+  await dispatchQueue.add(
+    "auto-schedule",
+    {},
+    {
+      repeat: {
+        pattern: "0 0 * * 1",
+      },
+    },
+  );
+
   console.log("Registered recurring jobs");
 }

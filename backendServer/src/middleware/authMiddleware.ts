@@ -1,5 +1,5 @@
-import { clerkMiddleware, requireAuth, getAuth } from "@clerk/express";
-import type { Request, Response, NextFunction } from "express";
+import { clerkMiddleware, getAuth, requireAuth } from "@clerk/express";
+import type { NextFunction, Request, Response } from "express";
 import HttpError from "../models/errorModel.js";
 
 /**

@@ -20,7 +20,7 @@ export interface User {
   department?: string;
   role?: string;
   employmentType?: string;
-  status: 'ACTIVE' | 'INACTIVE' | 'ON_LEAVE' | string;
+  status: "ACTIVE" | "INACTIVE" | "ON_LEAVE" | string;
   emergencyContactName?: string;
   emergencyContactPhone?: string;
   emergencyContactRelation?: string;
@@ -108,7 +108,7 @@ export interface Booking {
   startTime: string;
   endTime?: string;
   endDate?: string;
-  status: 'Confirmed' | 'Cancelled' | 'Pending' | string;
+  status: "Confirmed" | "Cancelled" | "Pending" | string;
   createdAt: string;
   updatedAt: string;
 }
@@ -123,7 +123,7 @@ export interface Employee {
   department?: string;
   role?: string;
   employmentType?: string;
-  status?: 'ACTIVE' | 'INACTIVE' | 'ON_LEAVE' | string;
+  status?: "ACTIVE" | "INACTIVE" | "ON_LEAVE" | string;
   phoneNumber1?: string;
   phoneNumber2?: string;
   driverLicense?: string;
@@ -154,8 +154,8 @@ export interface Employee {
 /** @deprecated Use Employee instead — kept for backward compatibility in dispatch module */
 export type Driver = Employee;
 
-
 export interface Vehicle {
+  facilities?: string[];
   id: number | string;
   make: string;
   model: string;
@@ -165,12 +165,18 @@ export interface Vehicle {
   vin?: string;
   maxPassengers: number | null;
   maxCargoVolume?: number | null;
-  status: 'Available' | 'Maintenance' | 'On Trip' | string;
+  status: "Available" | "Maintenance" | "On Trip" | string;
   availableFrom?: string;
   availableTo?: string;
   homeDepotId?: number | null;
   assignedDriverId?: number | null;
-  assignedDriver?: { id: number; name?: string; firstName?: string; lastName?: string; email: string };
+  assignedDriver?: {
+    id: number;
+    name?: string;
+    firstName?: string;
+    lastName?: string;
+    email: string;
+  };
   homeDepot?: { id: number; name: string; address?: string };
   fleetJobs?: Array<{
     jobId: number | string;
@@ -209,10 +215,16 @@ export interface Customer {
 
 // ── Booking Flow Types ────────────────────────────────────
 
-export type BookingCategory = 'one_way' | 'round_trip' | 'repeatable';
-export type RepeatType = 'daily' | 'weekly' | 'monthly';
+export type BookingCategory = "one_way" | "round_trip" | "repeatable";
+export type RepeatType = "daily" | "weekly" | "monthly";
 
 export interface StructuredLocation {
+  id?: string;
+  kind?: "STOP" | "VIA";
+  entrance?: { lat: number; lng: number };
+  accessNotes?: string;
+  dwellSeconds?: number;
+  source?: "GOOGLE" | "MANUAL" | "HERE" | "TOMTOM" | "MAPBOX";
   address: string;
   lat?: number;
   lng?: number;
@@ -269,4 +281,3 @@ export interface CustomerSearchResult {
   phone1?: string;
   company?: string;
 }
-

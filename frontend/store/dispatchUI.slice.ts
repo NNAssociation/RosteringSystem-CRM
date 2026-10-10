@@ -1,5 +1,4 @@
-import { createSlice, PayloadAction } from '@reduxjs/toolkit';
-import { format } from 'date-fns';
+import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 
 export interface DutySpan {
   driverId: number;
@@ -10,7 +9,7 @@ export interface DutySpan {
 
 interface DispatchUIState {
   selectedDate: string; // 'yyyy-MM-dd'
-  viewMode: 'daily' | 'weekly';
+  viewMode: "daily" | "weekly";
   filters: {
     driver: string;
     vehicle: string;
@@ -24,12 +23,17 @@ interface DispatchUIState {
 }
 
 const initialState: DispatchUIState = {
-  selectedDate: new Intl.DateTimeFormat('en-CA', { timeZone: 'Australia/Sydney', year: 'numeric', month: '2-digit', day: '2-digit' }).format(new Date()),
-  viewMode: 'daily',
+  selectedDate: new Intl.DateTimeFormat("en-CA", {
+    timeZone: "Australia/Sydney",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  }).format(new Date()),
+  viewMode: "daily",
   filters: {
-    driver: '',
-    vehicle: '',
-    bookingType: '',
+    driver: "",
+    vehicle: "",
+    bookingType: "",
   },
   dutySpans: {},
   dutySpanModal: {
@@ -39,16 +43,19 @@ const initialState: DispatchUIState = {
 };
 
 export const dispatchUISlice = createSlice({
-  name: 'dispatchUI',
+  name: "dispatchUI",
   initialState,
   reducers: {
     setSelectedDate: (state, action: PayloadAction<string>) => {
       state.selectedDate = action.payload;
     },
-    setViewMode: (state, action: PayloadAction<'daily' | 'weekly'>) => {
+    setViewMode: (state, action: PayloadAction<"daily" | "weekly">) => {
       state.viewMode = action.payload;
     },
-    setFilter: (state, action: PayloadAction<{ key: keyof DispatchUIState['filters']; value: string }>) => {
+    setFilter: (
+      state,
+      action: PayloadAction<{ key: keyof DispatchUIState["filters"]; value: string }>,
+    ) => {
       state.filters[action.payload.key] = action.payload.value;
     },
     openDutySpanModal: (state, action: PayloadAction<number[]>) => {
@@ -64,7 +71,7 @@ export const dispatchUISlice = createSlice({
       state.dutySpans[key] = action.payload;
     },
     setBulkDutySpans: (state, action: PayloadAction<DutySpan[]>) => {
-      action.payload.forEach(ds => {
+      action.payload.forEach((ds) => {
         const key = `${ds.driverId}-${ds.date}`;
         state.dutySpans[key] = ds;
       });

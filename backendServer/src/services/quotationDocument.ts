@@ -1,32 +1,80 @@
 import PDFDocument from "pdfkit";
-export const money = (amount: number, currency: string) => new Intl.NumberFormat("en-AU", { style: "currency", currency }).format(amount / 100);
-export const escapeHtml = (value: unknown) => String(value ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]!);
-export function tripDate(value: string, zone: string) { return new Intl.DateTimeFormat("en-AU", { dateStyle: "medium", timeStyle: "short", timeZone: zone }).format(new Date(value)); }
+export const money = (amount: number, currency: string) =>
+  new Intl.NumberFormat("en-AU", { style: "currency", currency }).format(amount / 100);
+export const escapeHtml = (value: unknown) =>
+  String(value ?? "").replace(
+    /[&<>"']/g,
+    (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]!,
+  );
+export function tripDate(value: string, zone: string) {
+  return new Intl.DateTimeFormat("en-AU", {
+    dateStyle: "medium",
+    timeStyle: "short",
+    timeZone: zone,
+  }).format(new Date(value));
+}
 export async function quotationPdf(q: any): Promise<Buffer> {
   const doc = new PDFDocument({ size: "A4", margin: 48 });
   const chunks: Buffer[] = [];
-  const done = new Promise<Buffer>((resolve, reject) => { doc.on("data", c => chunks.push(c)); doc.on("end", () => resolve(Buffer.concat(chunks))); doc.on("error", reject); });
+  const done = new Promise<Buffer>((resolve, reject) => {
+    doc.on("data", (c) => chunks.push(c));
+    doc.on("end", () => resolve(Buffer.concat(chunks)));
+    doc.on("error", reject);
+  });
   const s = q.snapshot;
   doc.fontSize(22).text(s.companyName).moveDown(0.5);
   doc.fontSize(16).text(`Quotation Q-${q.id} / Revision ${q.revision}`).moveDown();
-  doc.fontSize(10).text(`Prepared for ${s.customerName || s.customerEmail}`).text(s.customerEmail);
+  doc
+    .fontSize(10)
+    .text(`Prepared for ${s.customerName || s.customerEmail}`)
+    .text(s.customerEmail);
   doc.text(`Valid until ${tripDate(q.expiresAt, s.timeZone)} (${s.timeZone})`).moveDown();
   doc.fontSize(13).text(s.subject).moveDown(0.5);
   doc.fontSize(10).text(`${s.startLocation} to ${s.endLocation}`);
   for (const stop of s.stops || []) doc.text(`Via: ${stop.address}`);
-  doc.text(`Departure: ${tripDate(s.startDateTime, s.timeZone)}`).text(`Arrival: ${tripDate(s.endDateTime, s.timeZone)}`);
+  doc
+    .text(`Departure: ${tripDate(s.startDateTime, s.timeZone)}`)
+    .text(`Arrival: ${tripDate(s.endDateTime, s.timeZone)}`);
   if (s.returnDateTime) doc.text(`Return departure: ${tripDate(s.returnDateTime, s.timeZone)}`);
-  if (s.recurrenceRule) doc.text(`Repeats ${s.recurrenceRule.type}, ${s.recurrenceRule.startDate} to ${s.recurrenceRule.endDate}${s.recurrenceRule.days?.length ? "; weekdays: " + s.recurrenceRule.days.map((d: number) => ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"][d]).join(", ") : ""}`);
-  doc.text(`${s.passengerCount} passengers | ${s.noOfVehicles} vehicles | ${s.tripCount} trip legs`).moveDown();
+  if (s.returnEndDateTime) doc.text(`Return arrival: ${tripDate(s.returnEndDateTime, s.timeZone)}`);
+  for (const [index, stop] of (s.returnStops || []).entries())
+    doc.text(`Return stop ${index + 1}: ${stop.address}`);
+  if (s.recurrenceRule)
+    doc.text(
+      `Repeats ${s.recurrenceRule.type}, ${s.recurrenceRule.startDate} to ${s.recurrenceRule.endDate}${s.recurrenceRule.days?.length ? "; weekdays: " + s.recurrenceRule.days.map((d: number) => ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"][d]).join(", ") : ""}`,
+    );
+  doc
+    .text(`${s.passengerCount} passengers | ${s.noOfVehicles} vehicles | ${s.tripCount} trip legs`)
+    .moveDown();
   for (const item of q.items) {
     if (doc.y > 680) doc.addPage();
-    doc.text(`${item.description}\n${item.quantity} x ${money(item.unitPriceMinor, q.currency)} = ${money(item.totalMinor, q.currency)}`).moveDown(0.5);
+    doc
+      .text(
+        `${item.description}\n${item.quantity} x ${money(item.unitPriceMinor, q.currency)} = ${money(item.totalMinor, q.currency)}`,
+      )
+      .moveDown(0.5);
   }
-  doc.moveDown().text(`Subtotal: ${money(q.subtotalMinor, q.currency)}`).text(`Discount: ${money(q.discountMinor, q.currency)}`).text(`Tax (${q.taxBasisPoints / 100}%): ${money(q.taxMinor, q.currency)}`);
-  doc.fontSize(14).text(`Total: ${money(q.totalMinor, q.currency)}`).moveDown();
-  doc.fontSize(10).text(q.message || "").moveDown().text("Terms").text(q.terms || "No additional terms.");
-  if (q.respondedAt) doc.moveDown().text(`${q.status} by ${q.respondentName} on ${tripDate(q.respondedAt, s.timeZone)}`);
-  doc.end(); return done;
+  doc
+    .moveDown()
+    .text(`Subtotal: ${money(q.subtotalMinor, q.currency)}`)
+    .text(`Discount: ${money(q.discountMinor, q.currency)}`)
+    .text(`Tax (${q.taxBasisPoints / 100}%): ${money(q.taxMinor, q.currency)}`);
+  doc
+    .fontSize(14)
+    .text(`Total: ${money(q.totalMinor, q.currency)}`)
+    .moveDown();
+  doc
+    .fontSize(10)
+    .text(q.message || "")
+    .moveDown()
+    .text("Terms")
+    .text(q.terms || "No additional terms.");
+  if (q.respondedAt)
+    doc
+      .moveDown()
+      .text(`${q.status} by ${q.respondentName} on ${tripDate(q.respondedAt, s.timeZone)}`);
+  doc.end();
+  return done;
 }
 export function quotationEmail(q: any, url?: string, response = false) {
   const s = q.snapshot;

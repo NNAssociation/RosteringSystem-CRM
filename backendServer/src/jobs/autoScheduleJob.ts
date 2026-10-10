@@ -1,6 +1,6 @@
-import { startOfWeek, addDays, startOfDay, endOfDay } from "date-fns";
-import { localDate, addDateDays, dayWindow } from "../services/businessTime.js";
+import { startOfWeek } from "date-fns";
 import { runAutoScheduling } from "../services/autoScheduleService.js";
+import { addDateDays, dayWindow, localDate } from "../services/businessTime.js";
 
 /**
  * Background job that automatically schedules jobs for the next two weeks,
@@ -9,20 +9,18 @@ import { runAutoScheduling } from "../services/autoScheduleService.js";
  */
 export async function processAutoSchedule(job: any) {
   const today = job.data?.runDate ? new Date(job.data.runDate) : new Date();
-  
+
   // Find Monday of this week
   const startOfThisWeek = startOfWeek(today, { weekStartsOn: 1 });
-  
+
   // Start date = Monday of next week (Monday + 7 days)
   const local = localDate(today);
   const weekday = new Date(`${local}T12:00Z`).getUTCDay();
   const monday = addDateDays(local, -((weekday + 6) % 7));
   const startDate = dayWindow(addDateDays(monday, 7)).start;
-  
+
   // End date = Sunday of the following week (Monday + 20 days)
   const endDate = dayWindow(addDateDays(monday, 20)).end;
-
-
 
   try {
     const result = await runAutoScheduling(startDate, endDate);
